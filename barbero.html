@@ -3,119 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | Innovation Barber Studio</title>
-    
+    <title>Admin | Innovation Barber Studio</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
-
     <style>
-        :root {
-            --bg: #000;
-            --card: #111;
-            --gold: #d4af37;
-            --green: #25d366;
-            --orange: #f39c12;
-            --white: #ffffff;
-            --border: #333;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--bg);
-            color: var(--white);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .logo { width: 130px; height: auto; margin-bottom: 10px; display: block; }
-        h2 { margin: 0; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); font-size: 1.5rem; }
-
-        /* CALENDARIO */
-        #calendar-container {
-            width: 100%;
-            max-width: 900px;
-            background: var(--card);
-            padding: 20px;
-            border-radius: 15px;
-            border: 1px solid var(--border);
-            margin-bottom: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .fc { --fc-border-color: #333; color: #fff; }
-        .fc-toolbar-title { color: var(--gold) !important; text-transform: uppercase; font-size: 1.1rem !important; }
-        .fc-button-primary { background-color: var(--gold) !important; border-color: var(--gold) !important; color: #000 !important; font-weight: bold !important; font-size: 0.8rem !important; }
-        .fc-event { cursor: pointer; border: none !important; padding: 2px; }
-
-        /* LISTA DE GESTIÓN */
+        :root { --bg: #000; --card: #111; --gold: #d4af37; --white: #fff; --border: #333; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--white); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        header { text-align: center; margin-bottom: 30px; }
+        .logo { width: 100px; margin-bottom: 10px; }
+        h2 { letter-spacing: 4px; color: var(--gold); text-transform: uppercase; }
+        #calendar-container { width: 100%; max-width: 900px; background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 30px; }
+        .fc { color: #fff; }
+        .fc-toolbar-title { color: var(--gold) !important; }
+        .fc-button-primary { background: var(--gold) !important; color: #000 !important; border: none !important; font-weight: bold !important; }
         .container { width: 100%; max-width: 500px; }
-        .section-title { color: var(--gold); margin: 20px 0; letter-spacing: 2px; text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; text-transform: uppercase; }
-        
-        .card { 
-            background: var(--card); 
-            border: 1px solid var(--border); 
-            padding: 20px; 
-            border-radius: 15px; 
-            margin-bottom: 20px; 
-            transition: 0.3s;
-        }
-
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .card h3 { margin: 0; font-size: 1.1rem; color: #fff; text-transform: uppercase; }
-        
-        .badge { font-size: 0.65rem; padding: 4px 10px; border-radius: 12px; font-weight: bold; color: #fff; }
-        .badge-pendiente { background: var(--orange); }
-        .badge-aceptada { background: #28a745; }
-
-        .card p { margin: 5px 0; font-size: 0.9rem; color: #bbb; }
-        .card p strong { color: var(--gold); }
-
-        /* BOTONES */
+        .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 15px; margin-bottom: 15px; border-left: 6px solid var(--gold); }
+        .badge { font-size: 0.7rem; padding: 4px 10px; border-radius: 10px; float: right; font-weight: bold; }
         .actions { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .btn { 
-            padding: 12px; 
-            border-radius: 8px; 
-            border: none; 
-            cursor: pointer; 
-            font-weight: bold; 
-            text-decoration: none; 
-            text-align: center; 
-            text-transform: uppercase; 
-            font-size: 0.8rem; 
-            transition: 0.3s; 
-        }
-        .btn-wa { background: var(--green); color: white; }
+        .btn { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.8rem; text-decoration: none; text-align: center; }
         .btn-accept { background: var(--gold); color: #000; }
         .btn-finish { background: #333; color: #fff; }
-        .no-citas { text-align: center; color: #555; margin-top: 30px; font-style: italic; }
     </style>
 </head>
 <body>
 
     <header>
-        <img src="logo.png" alt="Innovation Logo" class="logo">
+        <img src="logo.png" alt="Logo" class="logo">
         <h2>Admin Panel</h2>
     </header>
 
-    <div id="calendar-container">
-        <div id="calendar"></div>
-    </div>
+    <div id="calendar-container"><div id="calendar"></div></div>
 
-    <h3 class="section-title">Gestión de Citas</h3>
-    <div id="lista-citas" class="container">
-        <p class="no-citas">Cargando agenda...</p>
-    </div>
+    <div id="lista-citas" class="container"></div>
 
     <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2210/2210-preview.mp3"></audio>
 
@@ -127,121 +46,69 @@
             apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I",
             authDomain: "innovation-barber-studio.firebaseapp.com",
             projectId: "innovation-barber-studio",
-            storageBucket: "innovation-barber-studio.firebasestorage.app",
-            messagingSenderId: "589786876751",
-            appId: "1:589786876751:web:31b40f11b3810470e9933a",
             databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const contenedor = document.getElementById('lista-citas');
-        const sonido = document.getElementById('notif-sound');
         let calendar;
-        let cargaInicial = true;
+        let inicial = true;
 
-        // 1. INICIALIZAR CALENDARIO
-        document.addEventListener('DOMContentLoaded', function() {
-            const calendarEl = document.getElementById('calendar');
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridDay',
-                locale: 'es',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'timeGridDay,dayGridMonth'
-                },
-                slotMinTime: '08:00:00',
-                slotMaxTime: '21:00:00',
-                allDaySlot: false,
-                buttonText: { today: 'Hoy', month: 'Mes', day: 'Día' }
+        document.addEventListener('DOMContentLoaded', () => {
+            calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+                initialView: 'timeGridDay', locale: 'es', slotMinTime: '07:00:00', slotMaxTime: '21:00:00',
+                headerToolbar: { left: 'prev,next today', center: 'title', right: 'timeGridDay,dayGridMonth' }
             });
             calendar.render();
         });
 
-        // 2. ESCUCHAR FIREBASE
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
-            
-            // Notificación sonora para nuevas citas
-            if (!cargaInicial && data) {
-                sonido.play().catch(() => console.log("Clic requerido para audio"));
-            }
-            cargaInicial = false;
-
-            actualizarInterfaz(data);
+            if (!inicial && data) document.getElementById('notif-sound').play().catch(()=>{});
+            inicial = false;
+            render(data);
         });
 
-        // 3. RENDERIZAR TODO
-        function actualizarInterfaz(data) {
-            contenedor.innerHTML = '';
+        function render(data) {
+            const lista = document.getElementById('lista-citas');
+            lista.innerHTML = '';
             const eventos = [];
-
-            if (!data) {
-                contenedor.innerHTML = '<p class="no-citas">No hay citas registradas en la base de datos.</p>';
-                if(calendar) calendar.removeAllEvents();
-                return;
-            }
+            if (!data) return;
 
             Object.keys(data).reverse().forEach(id => {
-                const cita = data[id];
-                if (cita.estado === 'Finalizada') return;
+                const c = data[id];
+                if (c.estado === 'Finalizada') return;
 
-                // Lógica de colores y estados
-                const esAceptada = cita.estado === 'Aceptada';
-                const colorBorde = esAceptada ? 'var(--gold)' : 'var(--orange)';
-                const badgeClass = esAceptada ? 'badge-aceptada' : 'badge-pendiente';
+                eventos.push({ title: c.nombre, start: c.fecha, backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#444' });
 
-                // Agregar al Calendario
-                eventos.push({
-                    id: id,
-                    title: `${cita.nombre} - ${cita.servicio}`,
-                    start: cita.fecha,
-                    backgroundColor: esAceptada ? '#d4af37' : '#444',
-                    borderColor: '#d4af37',
-                    textColor: esAceptada ? '#000' : '#fff'
-                });
-
-                // Crear Tarjeta de Gestión
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.style.borderLeft = `6px solid ${colorBorde}`;
-
-                const msgWA = `Hola ${cita.nombre}, confirmamos tu cita para ${cita.servicio} el ${new Date(cita.fecha).toLocaleString()}. ¡Te esperamos en Innovation Barber Studio!`;
-                const urlWA = `https://wa.me/${cita.whatsapp}?text=${encodeURIComponent(msgWA)}`;
-
                 card.innerHTML = `
-                    <div class="card-header">
-                        <h3>${cita.nombre}</h3>
-                        <span class="badge ${badgeClass}">${cita.estado.toUpperCase()}</span>
-                    </div>
-                    <p><strong>📱 WhatsApp:</strong> +${cita.whatsapp}</p>
-                    <p><strong>💈 Servicio:</strong> ${cita.servicio}</p>
-                    <p><strong>📅 Fecha/Hora:</strong> ${new Date(cita.fecha).toLocaleString()}</p>
-                    
+                    <span class="badge" style="background:${c.estado==='Aceptada'?'#28a745':'#f39c12'}">${c.estado}</span>
+                    <h3>${c.nombre}</h3>
+                    <p>💈 ${c.servicio} | 📅 ${new Date(c.fecha).toLocaleString()}</p>
                     <div class="actions">
-                        <a href="${urlWA}" target="_blank" class="btn btn-wa">Enviar WhatsApp</a>
-                        
-                        ${!esAceptada ? 
-                            `<button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">Aceptar Cita</button>` : 
-                            `<button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar Cita</button>`
-                        }
+                        ${c.estado === 'Pendiente' ? 
+                        `<button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">Aceptar y WhatsApp</button>` : 
+                        `<button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar</button>`}
                     </div>
                 `;
-                contenedor.appendChild(card);
+                lista.appendChild(card);
             });
-
-            // Actualizar el calendario visual
-            if (calendar) {
-                calendar.removeAllEvents();
-                calendar.addEventSource(eventos);
-            }
+            calendar.removeAllEvents();
+            calendar.addEventSource(eventos);
         }
 
-        // 4. CAMBIAR ESTADO EN FIREBASE
-        window.cambiarEstado = (id, nuevoEstado) => {
-            update(ref(db, `citas/${id}`), { estado: nuevoEstado })
-            .catch(err => alert("Error al actualizar: " + err.message));
+        window.cambiarEstado = (id, estado) => {
+            const citaRef = ref(db, `citas/${id}`);
+            onValue(citaRef, (snap) => {
+                const c = snap.val();
+                if (c && estado === 'Aceptada') {
+                    const msg = `¡Hola ${c.nombre}! 💈 Te confirmo tu cita para *${c.servicio}* el día *${new Date(c.fecha).toLocaleString()}*. ¡Te esperamos!`;
+                    window.open(`https://wa.me/${c.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
+                }
+                update(ref(db, `citas/${id}`), { estado });
+            }, { onlyOnce: true });
         };
     </script>
 </body>
