@@ -4,37 +4,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel | Innovation Barber Studio</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+
     <style>
-        :root { --bg: #000; --card: #111; --gold: #d4af37; --green: #25d366; --white: #ffffff; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--white); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        header { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 40px; width: 100%; }
-        .logo { width: 130px; height: auto; margin-bottom: 15px; display: block; }
-        h2 { margin: 0; font-size: 1.4rem; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); }
-        .container { width: 100%; max-width: 480px; }
-        .card { background: var(--card); border: 1px solid #333; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 6px solid var(--gold); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .card h3 { margin: 0 0 10px 0; font-size: 1.1rem; color: var(--white); text-transform: uppercase; }
-        .card p { margin: 6px 0; font-size: 0.9rem; color: #bbb; }
+        :root {
+            --bg: #000;
+            --card: #111;
+            --gold: #d4af37;
+            --green: #25d366;
+            --white: #ffffff;
+            --border: #333;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            color: var(--white);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .logo { width: 120px; height: auto; margin-bottom: 10px; }
+        h2 { margin: 0; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); font-size: 1.5rem; }
+
+        /* ESTILOS DEL CALENDARIO */
+        #calendar-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--border);
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .fc { --fc-border-color: #333; --fc-page-bg-color: #111; color: #fff; }
+        .fc-toolbar-title { color: var(--gold) !important; font-size: 1.2rem !important; text-transform: uppercase; }
+        .fc-button-primary { background-color: var(--gold) !important; border-color: var(--gold) !important; color: #000 !important; font-weight: bold !important; text-transform: uppercase; font-size: 0.8rem !important; }
+        .fc-event { cursor: pointer; padding: 2px 5px; font-size: 0.85rem; border: none !important; }
+        .fc-v-event { background-color: var(--gold) !important; color: #000 !important; }
+        .fc-daygrid-dot-event { color: #fff !important; }
+        .fc-timegrid-slot { height: 3em !important; }
+
+        /* LISTA DE TARJETAS */
+        .container { width: 100%; max-width: 500px; }
+        .section-title { color: var(--gold); margin-bottom: 20px; letter-spacing: 2px; text-align: center; width: 100%; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 6px solid var(--gold); }
+        .card h3 { margin: 0 0 10px 0; font-size: 1.1rem; color: #fff; }
+        .card p { margin: 5px 0; font-size: 0.9rem; color: #bbb; }
         .card p strong { color: var(--gold); }
-        .actions { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .btn { padding: 14px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; text-decoration: none; text-align: center; text-transform: uppercase; font-size: 0.85rem; transition: 0.3s; }
+
+        .actions { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .btn { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; text-decoration: none; text-align: center; text-transform: uppercase; font-size: 0.8rem; }
         .btn-wa { background: var(--green); color: white; }
-        .btn-finish { background: #333; color: #fff; }
-        .no-citas { text-align: center; color: #666; margin-top: 50px; font-style: italic; }
+        .btn-finish { background: #333; color: #eee; }
+        .no-citas { text-align: center; color: #555; margin-top: 20px; }
     </style>
 </head>
 <body>
 
     <header>
-        <img src="logo.png" alt="Innovation Logo" class="logo">
+        <img src="logo.png" alt="Logo" class="logo">
         <h2>Admin Panel</h2>
     </header>
 
-    <div id="lista-citas" class="container">
-        <p class="no-citas">Cargando agenda de hoy...</p>
+    <div id="calendar-container">
+        <div id="calendar"></div>
     </div>
 
-    <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2357/2357-preview.mp3"></audio>
+    <h3 class="section-title">GESTIÓN DE CITAS</h3>
+    <div id="lista-citas" class="container">
+        <p class="no-citas">Cargando datos...</p>
+    </div>
+
+    <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2210/2210-preview.mp3"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -52,55 +109,94 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const contenedor = document.getElementById('lista-citas'); // Aquí está definido como contenedor
+        const contenedor = document.getElementById('lista-citas');
         const sonido = document.getElementById('notif-sound');
+        let calendar;
         let cargaInicial = true;
 
+        // INICIALIZAR CALENDARIO
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridDay', // Vista de hoy por horas
+                locale: 'es',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'timeGridDay,dayGridMonth'
+                },
+                slotMinTime: '08:00:00', // Abre a las 8am
+                slotMaxTime: '21:00:00', // Cierra a las 9pm
+                allDaySlot: false,
+                buttonText: { today: 'Hoy', month: 'Mes', day: 'Día' }
+            });
+            calendar.render();
+        });
+
+        // ESCUCHAR FIREBASE
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
             if (!cargaInicial && data) {
-                sonido.play().catch(() => console.log("Clic para sonido"));
+                sonido.play().catch(() => {});
             }
             cargaInicial = false;
-            renderCitas(data);
+            
+            actualizarInterfaz(data);
         });
 
-        function renderCitas(data) {
-            contenedor.innerHTML = ''; // Uso correcto de contenedor
+        function actualizarInterfaz(data) {
+            contenedor.innerHTML = '';
+            const eventosParaCalendario = [];
+
             if (!data) {
-                contenedor.innerHTML = '<p class="no-citas">No hay citas pendientes.</p>';
+                contenedor.innerHTML = '<p class="no-citas">No hay citas registradas.</p>';
+                if(calendar) { calendar.removeAllEvents(); }
                 return;
             }
 
             const ids = Object.keys(data).reverse();
+
             ids.forEach(id => {
                 const cita = data[id];
                 if (cita.estado === 'Finalizada') return;
 
+                // 1. Agregar al Calendario
+                eventosParaCalendario.push({
+                    id: id,
+                    title: `${cita.nombre} - ${cita.servicio}`,
+                    start: cita.fecha, // Firebase guarda "YYYY-MM-DDTHH:MM"
+                    backgroundColor: cita.estado === 'Aceptada' ? '#d4af37' : '#555',
+                    borderColor: '#d4af37'
+                });
+
+                // 2. Agregar a la Lista Inferior
                 const card = document.createElement('div');
                 card.className = 'card';
-
-                const num = cita.whatsapp || '';
-                const nombre = cita.nombre || 'Cliente';
-                const msg = `Hola ${nombre}, confirmamos tu cita para ${cita.servicio} el ${cita.fecha}. ¡Te esperamos!`;
-                const urlWA = `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+                const msg = `Hola ${cita.nombre}, confirmamos tu cita de ${cita.servicio} el día ${new Date(cita.fecha).toLocaleString()}.`;
+                const urlWA = `https://wa.me/${cita.whatsapp}?text=${encodeURIComponent(msg)}`;
 
                 card.innerHTML = `
-                    <h3>${nombre}</h3>
-                    <p><strong>📱 WhatsApp:</strong> +${num}</p>
+                    <h3>${cita.nombre}</h3>
+                    <p><strong>📱 WhatsApp:</strong> +${cita.whatsapp}</p>
                     <p><strong>💈 Servicio:</strong> ${cita.servicio}</p>
-                    <p><strong>📅 Fecha/Hora:</strong> ${cita.fecha}</p>
+                    <p><strong>📅 Fecha:</strong> ${new Date(cita.fecha).toLocaleString()}</p>
                     <div class="actions">
-                        <a href="${urlWA}" target="_blank" class="btn btn-wa">Enviar WhatsApp</a>
-                        <button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar Cita</button>
+                        <a href="${urlWA}" target="_blank" class="btn btn-wa">WhatsApp</a>
+                        <button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar</button>
                     </div>
                 `;
-                contenedor.appendChild(card); // ¡CORREGIDO AQUÍ!
+                contenedor.appendChild(card);
             });
+
+            // Refrescar eventos en el calendario
+            if (calendar) {
+                calendar.removeAllEvents();
+                calendar.addEventSource(eventosParaCalendario);
+            }
         }
 
-        window.cambiarEstado = (id, nuevoEstado) => {
-            update(ref(db, `citas/${id}`), { estado: nuevoEstado });
+        window.cambiarEstado = (id, nuevo) => {
+            update(ref(db, `citas/${id}`), { estado: nuevo });
         };
     </script>
 </body>
