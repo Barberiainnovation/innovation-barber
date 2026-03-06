@@ -10,28 +10,70 @@
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 400px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; text-align: center; }
         .logo { width: 110px; margin-bottom: 15px; }
-        h1 { color: var(--gold); margin-bottom: 25px; text-transform: uppercase; font-size: 1.3rem; }
+        h1 { color: var(--gold); margin-bottom: 25px; text-transform: uppercase; font-size: 1.3rem; letter-spacing: 1px; }
         label { display: block; margin-bottom: 8px; color: var(--gold); font-size: 0.85rem; text-align: left; font-weight: 600; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; font-family: 'Poppins'; }
-        .btn-reserva { width: 100%; padding: 16px; background: var(--gold); color: #000; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; cursor: pointer; }
-        /* DÍAS VISIBLES */
+        
+        .phone-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .area-code { width: 45%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; font-size: 0.9rem; }
+        
+        /* ELIMINAR FLECHAS DE NÚMEROS */
+        .phone-input { 
+            width: 55%; padding: 12px; border-radius: 8px; border: 1px solid #333; 
+            background: #000; color: #fff; font-family: 'Poppins';
+            /* Firefox */
+            -moz-appearance: textfield; 
+        }
+        /* Chrome, Safari, Edge, Opera */
+        .phone-input::-webkit-outer-spin-button,
+        .phone-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input, select { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; font-family: 'Poppins'; }
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+        
+        .btn-reserva { width: 100%; padding: 16px; background: var(--gold); color: #000; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
+        
+        /* VISIBILIDAD DÍAS CALENDARIO */
         .fc-col-header { background-color: #000 !important; }
         .fc-col-header-cell-cushion { color: #fff !important; text-decoration: none !important; }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <img src="logo.png" alt="Logo" class="logo">
+        <img src="logo.png" alt="Innovation Logo" class="logo">
         <h1>Reserva tu Cita</h1>
-        <label>Nombre</label><input type="text" id="nombre">
-        <label>WhatsApp</label><input type="number" id="whatsapp" placeholder="Número">
         
+        <label>Nombre Completo</label>
+        <input type="text" id="nombre" placeholder="Ej: Juan Pérez">
+
+        <label>WhatsApp</label>
+        <div class="phone-group">
+            <select id="area-code" class="area-code">
+                <option value="502">🇬🇹 +502 (GT)</option>
+                <option value="1">🇺🇸 +1 (USA)</option>
+                <option value="52">🇲🇽 +52 (MX)</option>
+                <option value="503">🇸🇻 +503 (SV)</option>
+                <option value="504">🇭🇳 +504 (HN)</option>
+                <option value="505">🇳🇮 +505 (NI)</option>
+                <option value="506">🇨🇷 +506 (CR)</option>
+                <option value="507">🇵🇦 +507 (PA)</option>
+                <option value="57">🇨🇴 +57 (CO)</option>
+                <option value="34">🇪🇸 +34 (ES)</option>
+            </select>
+            <input type="number" id="whatsapp" class="phone-input" placeholder="Número">
+        </div>
+
         <label>Servicio</label>
         <select id="servicio">
             <option value="">Cargando servicios...</option>
         </select>
 
-        <label>Fecha y Hora</label><input type="datetime-local" id="fecha">
+        <label>Fecha y Hora (6am - 10pm)</label>
+        <input type="datetime-local" id="fecha">
+
         <button class="btn-reserva" onclick="validarYEnviar()">Confirmar Reserva</button>
     </div>
 
@@ -49,7 +91,11 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // CARGAR SERVICIOS DINÁMICAMENTE
+        // Bloqueo de fechas pasadas
+        const ahora = new Date();
+        document.getElementById('fecha').min = ahora.toISOString().slice(0, 10) + "T00:00";
+
+        // CARGAR SERVICIOS DESDE FIREBASE
         onValue(ref(db, 'servicios'), (snapshot) => {
             const servicios = snapshot.val();
             const select = document.getElementById('servicio');
@@ -61,17 +107,50 @@
                     select.appendChild(opt);
                 });
             } else {
-                select.innerHTML = '<option>Corte Clásico</option>'; // Default si no hay nada
+                select.innerHTML = '<option>Corte Clásico</option>';
             }
         });
 
         window.validarYEnviar = () => {
             const nombre = document.getElementById('nombre').value;
-            const whatsapp = document.getElementById('whatsapp').value;
+            const codArea = document.getElementById('area-code').value;
+            const numTel = document.getElementById('whatsapp').value;
+            const whatsapp = codArea + numTel;
             const servicio = document.getElementById('servicio').value;
-            const fecha = document.getElementById('fecha').value;
-            if(!nombre || !fecha) return alert("Completa los datos");
-            push(ref(db, 'citas'), { nombre, whatsapp, servicio, fecha, estado: 'Pendiente' }).then(() => location.reload());
+            const fechaInput = document.getElementById('fecha').value;
+
+            if (!nombre || !numTel || !fechaInput) {
+                alert("⚠️ Completa todos los campos");
+                return;
+            }
+
+            const fechaCliente = new Date(fechaInput);
+            const hora = fechaCliente.getHours();
+
+            // HORARIO 6AM - 10PM
+            if (hora < 6 || hora >= 22) {
+                alert("💈 Nuestro horario es de 6:00 AM a 10:00 PM.");
+                return;
+            }
+
+            onValue(ref(db, 'citas'), (snapshot) => {
+                const data = snapshot.val();
+                let ocupado = false;
+                if (data) {
+                    Object.values(data).forEach(c => {
+                        if (c.estado === 'Aceptada' && Math.abs(fechaCliente.getTime() - new Date(c.fecha).getTime()) < 45 * 60 * 1000) {
+                            ocupado = true;
+                        }
+                    });
+                }
+
+                if (ocupado) {
+                    alert("❌ Horario ocupado. Elige otro con 45 min de diferencia.");
+                } else {
+                    push(ref(db, 'citas'), { nombre, whatsapp, servicio, fecha: fechaInput, estado: 'Pendiente' })
+                    .then(() => { alert("✅ Cita enviada!"); location.reload(); });
+                }
+            }, { onlyOnce: true });
         };
     </script>
 </body>
