@@ -3,107 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Innovation Barber Studio | Reservas</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Reserva | Innovation Barber Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #ffffff; --accent: #d4af37; --bg-dark: #000000; --card-bg: #111111; --input-bg: #222222; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-dark); color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .booking-card { background: var(--card-bg); width: 100%; max-width: 420px; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #333; box-shadow: 0 0 20px rgba(212, 175, 55, 0.1); }
-        .main-logo { width: 100%; max-width: 200px; margin-bottom: 25px; border-radius: 10px; }
-        .form-group { text-align: left; margin-bottom: 18px; }
-        label { display: block; font-size: 0.75rem; margin-bottom: 5px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-        
-        /* Contenedor para el teléfono y el prefijo */
-        .phone-input-group { display: flex; gap: 10px; }
-        .phone-input-group select { width: 40%; }
-        .phone-input-group input { width: 60%; }
-
-        input, select { width: 100%; padding: 14px; background: var(--input-bg); border: 1px solid #333; border-radius: 10px; color: white; font-size: 1rem; box-sizing: border-box; }
-        input:focus { outline: none; border-color: var(--accent); }
-        .btn-reserve { width: 100%; padding: 16px; background: white; color: black; border: none; border-radius: 10px; font-weight: 700; font-size: 1rem; cursor: pointer; text-transform: uppercase; margin-top: 10px; transition: 0.3s; }
-        .btn-reserve:hover { background: var(--accent); color: white; }
+        :root { --gold: #d4af37; --bg: #000; --card: #111; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 400px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { color: var(--gold); text-align: center; letter-spacing: 2px; text-transform: uppercase; font-size: 1.5rem; }
+        label { display: block; margin-bottom: 8px; color: var(--gold); font-size: 0.9rem; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; }
+        input:focus { border-color: var(--gold); outline: none; }
+        .btn-reserva { width: 100%; padding: 15px; background: var(--gold); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .btn-reserva:hover { transform: scale(1.02); }
     </style>
 </head>
 <body>
-    <div class="booking-card">
-        <img src="logo.png" alt="Innovation Barber Studio" class="main-logo">
-        <form id="form-cliente">
-            <div class="form-group">
-                <label>Nombre del Cliente</label>
-                <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required>
-            </div>
-            
-            <div class="form-group">
-                <label>WhatsApp</label>
-                <div class="phone-input-group">
-                    <select id="codigo-pais">
-                        <option value="502" selected>🇬🇹 +502</option>
-                        <option value="503">🇸🇻 +503</option>
-                        <option value="504">🇭🇳 +504</option>
-                        <option value="505">🇳🇮 +505</option>
-                        <option value="506">🇨🇷 +506</option>
-                        <option value="507">🇵🇦 +507</option>
-                        <option value="1">🇺🇸 +1</option>
-                        <option value="52">🇲🇽 +52</option>
-                        <option value="34">🇪🇸 +34</option>
-                    </select>
-                    <input type="tel" id="whatsapp-num" placeholder="Número" required>
-                </div>
-            </div>
 
-            <div class="form-group">
-                <label>Servicio</label>
-                <select id="servicio">
-                    <option value="Corte Innovation">Corte Innovation</option>
-                    <option value="Barba Studio">Perfilado de Barba</option>
-                    <option value="Combo Completo">Corte + Barba</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Fecha y Hora</label>
-                <input type="datetime-local" id="fecha" required>
-            </div>
-            <button type="submit" class="btn-reserve">Solicitar Turno</button>
-        </form>
+    <div class="container">
+        <h1>Innovation</h1>
+        <label>Nombre Completo</label>
+        <input type="text" id="nombre" placeholder="Ej: Juan Pérez">
+
+        <label>WhatsApp (Sin espacios)</label>
+        <input type="number" id="whatsapp" placeholder="Ej: 50212345678">
+
+        <label>Servicio</label>
+        <select id="servicio">
+            <option>Corte de Cabello</option>
+            <option>Barba Premium</option>
+            <option>Corte + Barba</option>
+            <option>Limpieza Facial</option>
+        </select>
+
+        <label>Fecha y Hora</label>
+        <input type="datetime-local" id="fecha">
+
+        <button class="btn-reserva" onclick="validarYEnviar()">Reservar Cita</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I",
             authDomain: "innovation-barber-studio.firebaseapp.com",
             projectId: "innovation-barber-studio",
-            storageBucket: "innovation-barber-studio.firebasestorage.app",
-            messagingSenderId: "589786876751",
-            appId: "1:589786876751:web:31b40f11b3810470e9933a",
             databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        document.getElementById('form-cliente').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            // Unimos el código de país con el número
-            const prefijo = document.getElementById('codigo-pais').value;
-            const numero = document.getElementById('whatsapp-num').value.replace(/\D/g, ''); // Limpiar el número de espacios o guiones
-            const telefonoCompleto = prefijo + numero;
+        // Bloquear fechas pasadas en el calendario
+        const hoy = new Date().toISOString().slice(0, 16);
+        document.getElementById('fecha').min = hoy;
 
-            const nuevaCitaRef = push(ref(db, 'citas'));
-            set(nuevaCitaRef, {
-                nombre: document.getElementById('nombre').value,
-                whatsapp: telefonoCompleto,
-                servicio: document.getElementById('servicio').value,
-                fecha: document.getElementById('fecha').value,
-                estado: 'Pendiente'
-            }).then(() => {
-                alert("✅ Solicitud enviada con éxito.");
-                document.getElementById('form-cliente').reset();
-            }).catch(err => alert("Error: " + err.message));
-        });
+        window.validarYEnviar = () => {
+            const nombre = document.getElementById('nombre').value;
+            const whatsapp = document.getElementById('whatsapp').value;
+            const servicio = document.getElementById('servicio').value;
+            const fechaInput = document.getElementById('fecha').value;
+
+            if (!nombre || !whatsapp || !fechaInput) {
+                alert("Por favor completa todos los datos.");
+                return;
+            }
+
+            const fechaCliente = new Date(fechaInput);
+            const tiempoClienteMS = fechaCliente.getTime();
+            const hora = fechaCliente.getHours();
+
+            // 1. Validar horario comercial
+            if (hora < 7 || hora >= 21) {
+                alert("💈 Atendemos de 7:00 AM a 9:00 PM.");
+                return;
+            }
+
+            // 2. Validar disponibilidad y 45 min
+            onValue(ref(db, 'citas'), (snapshot) => {
+                const data = snapshot.val();
+                const margen45Min = 45 * 60 * 1000;
+                let ocupado = false;
+                let aceptadas = [];
+
+                if (data) {
+                    Object.values(data).forEach(c => {
+                        if (c.estado === 'Aceptada') aceptadas.push(new Date(c.fecha).getTime());
+                    });
+                }
+
+                aceptadas.forEach(f => {
+                    if (Math.abs(tiempoClienteMS - f) < margen45Min) ocupado = true;
+                });
+
+                if (ocupado) {
+                    // Sugerir hora
+                    aceptadas.sort((a,b) => a - b);
+                    let sugerencia = tiempoClienteMS;
+                    let encontrado = false;
+                    while(!encontrado && sugerencia < new Date(fechaCliente).setHours(21,0,0,0)) {
+                        sugerencia += 15 * 60 * 1000;
+                        let choque = false;
+                        aceptadas.forEach(f => { if (Math.abs(sugerencia - f) < margen45Min) choque = true; });
+                        if (!choque) encontrado = true;
+                    }
+                    const hSug = new Date(sugerencia).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                    alert(`⚠️ Horario ocupado. Sugerimos reservar a las: ${hSug}`);
+                } else {
+                    // Guardar cita
+                    push(ref(db, 'citas'), {
+                        nombre, whatsapp, servicio, fecha: fechaInput, estado: 'Pendiente'
+                    }).then(() => {
+                        alert("✅ Cita enviada. Te confirmaremos por WhatsApp.");
+                        location.reload();
+                    });
+                }
+            }, { onlyOnce: true });
+        };
     </script>
 </body>
 </html>
