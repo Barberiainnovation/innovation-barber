@@ -3,24 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Innovation Admin</title>
+    <title>Admin Panel | Innovation Barber Studio</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #000; color: #fff; padding: 20px; text-align: center; }
-        .container { max-width: 500px; margin: auto; }
-        .card { background: #111; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: left; border-left: 5px solid #f39c12; }
-        .card.aceptada { border-left-color: #28a745; }
-        .btn { padding: 10px; border-radius: 5px; cursor: pointer; border: none; font-weight: bold; width: 100%; margin-top: 5px; text-decoration: none; display: inline-block; text-align: center; }
-        .btn-accept { background: #28a745; color: white; }
-        .btn-wa { background: #25d366; color: white; }
-        .btn-finish { background: #d4af37; color: black; }
+        :root { --bg: #000; --card: #111; --gold: #d4af37; --green: #25d366; --blue: #28a745; --red: #dc3545; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 500px; }
+        .logo { width: 120px; margin-bottom: 20px; }
+        .card { background: var(--card); border: 1px solid #333; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 6px solid #f39c12; position: relative; }
+        .card.aceptada { border-left-color: var(--blue); }
+        .card h3 { margin: 0 0 10px 0; color: var(--gold); }
+        .card p { margin: 5px 0; font-size: 0.9rem; color: #ccc; }
+        .actions { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .btn { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; text-decoration: none; text-align: center; text-transform: uppercase; font-size: 0.8rem; }
+        .btn-accept { background: var(--blue); color: white; }
+        .btn-wa { background: var(--green); color: white; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-finish { background: var(--gold); color: black; }
+        .no-citas { text-align: center; color: #555; margin-top: 50px; }
     </style>
 </head>
 <body>
-    <h1>Panel de Control</h1>
-    <div id="lista-citas" class="container">Cargando citas...</div>
+    <img src="logo.png" alt="Logo" class="logo">
+    <h2 style="letter-spacing: 2px;">PANEL DE CITAS</h2>
     
-    <audio id="sonido" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+    <div id="lista-citas" class="container">
+        <p class="no-citas">Cargando agenda...</p>
+    </div>
+
+    <audio id="notif" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -38,45 +48,49 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const lista = document.getElementById('lista-citas');
-        const sonido = document.getElementById('sonido');
-        let primeraVez = true;
+        const container = document.getElementById('lista-citas');
+        const sonido = document.getElementById('notif');
+        let cargaInicial = true;
 
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
-            if (!primeraVez && data) { 
-                sonido.play().catch(() => console.log("Clickea la página para activar sonidos")); 
+            if (!cargaInicial && data) {
+                sonido.play().catch(() => console.log("Interacciona con la web para activar sonidos"));
             }
-            primeraVez = false;
+            cargaInicial = false;
             render(data);
         });
 
         function render(data) {
-            lista.innerHTML = '';
-            if (!data) { lista.innerHTML = 'No hay citas.'; return; }
-            
+            container.innerHTML = '';
+            if (!data) { container.innerHTML = '<p class="no-citas">¡Agenda limpia!</p>'; return; }
+
             Object.keys(data).reverse().forEach(id => {
                 const c = data[id];
                 if (c.estado === 'Finalizada') return;
 
-                const div = document.createElement('div');
-                div.className = `card ${c.estado.toLowerCase()}`;
+                const card = document.createElement('div');
+                card.className = `card ${c.estado.toLowerCase()}`;
                 
-                const msjWA = `Hola ${c.nombre}, tu cita en Innovation Barber Studio está confirmada.`;
-                const linkWA = `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(msjWA)}`;
+                // Formatear mensaje para WhatsApp
+                const numLimpio = c.whatsapp.toString().replace(/\D/g, '');
+                const textoWA = `Hola ${c.nombre}, te saludamos de *Innovation Barber Studio*. Tu cita para ${c.servicio} el día ${new Date(c.fecha).toLocaleString()} ha sido *CONFIRMADA*. ¡Te esperamos!`;
+                const linkWA = `https://wa.me/${numLimpio}?text=${encodeURIComponent(textoWA)}`;
 
-                div.innerHTML = `
+                card.innerHTML = `
                     <h3>${c.nombre}</h3>
-                    <p>📱 ${c.whatsapp}</p>
-                    <p>💈 ${c.servicio}</p>
-                    <p>📅 ${c.fecha}</p>
-                    ${c.estado === 'Pendiente' ? 
-                        `<button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">ACEPTAR</button>` : 
-                        `<a href="${linkWA}" target="_blank" class="btn btn-wa">WHATSAPP</a>
-                         <button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">FINALIZAR</button>`
-                    }
+                    <p>📱 <b>WhatsApp:</b> ${c.whatsapp}</p>
+                    <p>💈 <b>Servicio:</b> ${c.servicio}</p>
+                    <p>📅 <b>Fecha:</b> ${new Date(c.fecha).toLocaleString()}</p>
+                    <div class="actions">
+                        <a href="${linkWA}" target="_blank" class="btn btn-wa">Enviar WhatsApp</a>
+                        ${c.estado === 'Pendiente' ? 
+                            `<button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">Aceptar Cita</button>` : 
+                            `<button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar y Archivar</button>`
+                        }
+                    </div>
                 `;
-                lista.appendChild(div);
+                container.appendChild(card);
             });
         }
 
