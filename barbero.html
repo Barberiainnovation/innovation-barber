@@ -11,47 +11,47 @@
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; }
         header { text-align: center; margin-bottom: 25px; }
         .logo { width: 80px; }
-        h2 { font-weight: 300; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; font-size: 0.9rem; }
+
+        /* CORRECCIÓN VISIBILIDAD DÍAS */
+        .fc-col-header-cell-cushion { 
+            color: #ffffff !important; 
+            text-decoration: none !important; 
+            text-transform: capitalize !important;
+            font-weight: 600 !important;
+            font-size: 0.85rem !important;
+        }
+        .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion { color: var(--gold) !important; }
+        .fc-daygrid-day-number { color: #ffffff !important; text-decoration: none !important; padding: 5px !important; }
 
         /* ELIMINAR RESALTADO AMARILLO */
         .fc-day-today { background: transparent !important; }
         .fc-timegrid-col.fc-day-today { background: transparent !important; }
-        .fc-timegrid-now-indicator-line { border-color: var(--gold) !important; }
-        .fc-timegrid-now-indicator-arrow { border-left-color: var(--gold) !important; }
+        .fc-timegrid-now-indicator-line { border-color: var(--gold) !important; border-width: 2px !important; }
 
         /* CALENDARIO ESTÉTICO */
         #calendar-container { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.8); margin-bottom: 40px; }
-        .fc { border: none !important; font-size: 0.85rem; }
+        .fc { border: none !important; }
         .fc-theme-standard td, .fc-theme-standard th { border: 1px solid var(--border) !important; }
-        .fc-event { border: none !important; border-radius: 6px !important; padding: 4px; font-weight: 600; }
+        .fc-event { border: none !important; border-radius: 6px !important; padding: 5px; font-weight: 600; font-size: 0.75rem !important; }
 
         /* BOTONES */
-        .fc-toolbar-title { color: var(--gold) !important; }
-        .fc-button { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; font-size: 0.65rem !important; border-radius: 8px !important; }
+        .fc-toolbar-title { color: var(--gold) !important; font-size: 1.1rem !important; }
+        .fc-button { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; border-radius: 10px !important; text-transform: uppercase !important; font-size: 0.65rem !important; }
         .fc-button-active { background: var(--gold) !important; color: #000 !important; }
 
         /* LISTA DE CITAS */
-        #seccion-lista { max-width: 500px; margin: auto; display: block; }
-        .titulo-lista { color: #444; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 3px; text-align: center; margin-bottom: 20px; }
-        .card { background: #111; border: 1px solid var(--border); padding: 18px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid var(--gold); }
+        #seccion-lista { max-width: 500px; margin: auto; }
+        .card { background: #111; border: 1px solid var(--border); padding: 20px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid var(--gold); }
         .btn { width: 100%; padding: 14px; border-radius: 10px; font-weight: bold; text-transform: uppercase; cursor: pointer; border: none; font-size: 0.7rem; }
         .btn-accept { background: var(--gold); color: #000; }
         .btn-finish { background: transparent; color: #555; border: 1px solid #333; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <header><img src="logo.png" alt="Logo" class="logo"><h2>Innovation Admin</h2></header>
-
+    <header><img src="logo.png" alt="Logo" class="logo"><h2>Admin Panel</h2></header>
     <div id="calendar-container"><div id="calendar"></div></div>
-
-    <div id="seccion-lista">
-        <h3 class="titulo-lista">Citas Pendientes / Aceptadas</h3>
-        <div id="lista-citas"></div>
-    </div>
-
-    <audio id="notif-sound" preload="auto">
-        <source src="https://assets.mixkit.co/active_storage/sfx/2210/2210-preview.mp3" type="audio/mpeg">
-    </audio>
+    <div id="seccion-lista"><div id="lista-citas"></div></div>
+    <audio id="notif-sound" preload="auto"><source src="https://assets.mixkit.co/active_storage/sfx/2210/2210-preview.mp3" type="audio/mpeg"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -67,12 +67,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         let calendar;
-        let inicial = true;
 
-        // Activar sonido en PC con el primer clic
         document.body.addEventListener('click', () => {
-            const sound = document.getElementById('notif-sound');
-            sound.play().then(() => { sound.pause(); sound.currentTime = 0; });
+            const s = document.getElementById('notif-sound');
+            s.play().then(() => { s.pause(); s.currentTime = 0; });
         }, { once: true });
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -81,8 +79,8 @@
                 locale: 'es',
                 height: 'auto',
                 navLinks: true,
-                slotMinTime: '06:00:00', // HORARIO 6AM
-                slotMaxTime: '22:00:00', // HORARIO 10PM
+                slotMinTime: '06:00:00',
+                slotMaxTime: '22:00:00',
                 nowIndicator: true,
                 navLinkDayClick: (date) => calendar.changeView('timeGridDay', date),
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridDay' },
@@ -93,8 +91,6 @@
 
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
-            if (!inicial && data) document.getElementById('notif-sound').play().catch(() => {});
-            inicial = false;
             render(data);
         });
 
@@ -107,21 +103,19 @@
             Object.keys(data).reverse().forEach(id => {
                 const c = data[id];
                 if (c.estado === 'Finalizada') return;
-
                 eventos.push({ 
                     title: `${c.nombre} | ${c.servicio}`, 
                     start: c.fecha, 
                     backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#222',
                     textColor: c.estado === 'Aceptada' ? '#000' : '#fff'
                 });
-
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
-                    <div style="font-size:0.6rem; color:var(--gold); float:right; border:1px solid; padding:2px 6px; border-radius:4px">${c.estado}</div>
+                    <div style="font-size:0.6rem; color:var(--gold); float:right">${c.estado}</div>
                     <h3>${c.nombre}</h3>
                     <p>💈 ${c.servicio}</p>
-                    <p style="font-size:0.75rem">📅 ${new Date(c.fecha).toLocaleString()}</p>
+                    <p>📅 ${new Date(c.fecha).toLocaleString()}</p>
                     ${c.estado === 'Pendiente' ? 
                     `<button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">Aceptar y WhatsApp</button>` : 
                     `<button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar</button>`}
@@ -136,7 +130,7 @@
             get(ref(db, `citas/${id}`)).then((snap) => {
                 const c = snap.val();
                 if (c && estado === 'Aceptada') {
-                    const msg = `¡Hola ${c.nombre}! 👋 Confirmamos tu cita para *${c.servicio}* en Innovation. ¡Te esperamos!`;
+                    const msg = `¡Hola ${c.nombre}! 👋 Confirmamos tu cita para *${c.servicio}*.`;
                     window.open(`https://wa.me/${c.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
                 }
                 update(ref(db, `citas/${id}`), { estado });
