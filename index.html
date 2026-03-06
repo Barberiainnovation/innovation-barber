@@ -10,44 +10,54 @@
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 400px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; text-align: center; }
         .logo { width: 110px; margin-bottom: 15px; }
-        h1 { color: var(--gold); margin-bottom: 25px; text-transform: uppercase; font-size: 1.3rem; }
-        label { display: block; margin-bottom: 8px; color: var(--gold); font-size: 0.85rem; text-align: left; }
+        h1 { color: var(--gold); margin-bottom: 25px; text-transform: uppercase; font-size: 1.3rem; letter-spacing: 1px; }
+        label { display: block; margin-bottom: 8px; color: var(--gold); font-size: 0.85rem; text-align: left; font-weight: 600; }
         
         .phone-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        .area-code { width: 40%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; }
+        .area-code { width: 40%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; font-family: 'Poppins'; }
         
-        /* Quitar flechas del input de número */
+        /* Input de número sin flechas */
         .phone-input { width: 60%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; -moz-appearance: textfield; }
         .phone-input::-webkit-outer-spin-button, .phone-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-        input, select { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; font-family: 'Poppins'; }
         input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(1); }
-        .btn-reserva { width: 100%; padding: 16px; background: var(--gold); color: #000; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; cursor: pointer; }
+        
+        .btn-reserva { width: 100%; padding: 16px; background: var(--gold); color: #000; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
+        .btn-reserva:hover { background: #b8962d; transform: scale(1.02); }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <img src="logo.png" alt="Logo" class="logo">
+        <img src="logo.png" alt="Innovation Logo" class="logo">
         <h1>Reserva tu Cita</h1>
+        
         <label>Nombre Completo</label>
-        <input type="text" id="nombre" placeholder="Tu nombre">
+        <input type="text" id="nombre" placeholder="Ej: Juan Pérez">
+
         <label>WhatsApp</label>
         <div class="phone-group">
             <select id="area-code" class="area-code">
                 <option value="502">🇬🇹 +502</option>
                 <option value="1">🇺🇸 +1</option>
                 <option value="52">🇲🇽 +52</option>
+                <option value="503">🇸🇻 +503</option>
             </select>
             <input type="number" id="whatsapp" class="phone-input" placeholder="Número">
         </div>
+
         <label>Servicio</label>
         <select id="servicio">
             <option>Corte de Cabello</option>
             <option>Barba Premium</option>
             <option>Combo: Corte + Barba</option>
+            <option>Limpieza Facial</option>
         </select>
-        <label>Fecha y Hora</label>
+
+        <label>Fecha y Hora (6am - 10pm)</label>
         <input type="datetime-local" id="fecha">
+
         <button class="btn-reserva" onclick="validarYEnviar()">Confirmar Reserva</button>
     </div>
 
@@ -65,29 +75,50 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Mínimo hoy para evitar errores
-        const d = new Date();
-        document.getElementById('fecha').min = d.toISOString().slice(0,10) + "T00:00";
+        // Bloqueo de fechas pasadas
+        const ahora = new Date();
+        document.getElementById('fecha').min = ahora.toISOString().slice(0, 10) + "T00:00";
 
         window.validarYEnviar = () => {
             const nombre = document.getElementById('nombre').value;
             const whatsapp = document.getElementById('area-code').value + document.getElementById('whatsapp').value;
             const servicio = document.getElementById('servicio').value;
-            const fecha = document.getElementById('fecha').value;
+            const fechaInput = document.getElementById('fecha').value;
 
-            if(!nombre || !fecha || !document.getElementById('whatsapp').value) return alert("Completa los datos");
+            if (!nombre || !document.getElementById('whatsapp').value || !fechaInput) {
+                alert("⚠️ Completa todos los campos");
+                return;
+            }
 
-            const tCliente = new Date(fecha).getTime();
-            onValue(ref(db, 'citas'), (snap) => {
-                const data = snap.val();
+            const fechaCliente = new Date(fechaInput);
+            const tiempoClienteMS = fechaCliente.getTime();
+            const hora = fechaCliente.getHours();
+
+            // VALIDACIÓN HORARIO 6AM - 10PM
+            if (hora < 6 || hora >= 22) {
+                alert("💈 Atendemos de 6:00 AM a 10:00 PM.");
+                return;
+            }
+
+            onValue(ref(db, 'citas'), (snapshot) => {
+                const data = snapshot.val();
+                const margen = 45 * 60 * 1000;
                 let ocupado = false;
-                if(data) {
+
+                if (data) {
                     Object.values(data).forEach(c => {
-                        if(c.estado === 'Aceptada' && Math.abs(tCliente - new Date(c.fecha).getTime()) < 45*60*1000) ocupado = true;
+                        if (c.estado === 'Aceptada' && Math.abs(tiempoClienteMS - new Date(c.fecha).getTime()) < margen) {
+                            ocupado = true;
+                        }
                     });
                 }
-                if(ocupado) alert("Horario ocupado (margen 45 min)");
-                else push(ref(db, 'citas'), { nombre, whatsapp, servicio, fecha, estado: 'Pendiente' }).then(() => location.reload());
+
+                if (ocupado) {
+                    alert("❌ Horario ocupado. Por favor elige otra hora con 45 min de diferencia.");
+                } else {
+                    push(ref(db, 'citas'), { nombre, whatsapp, servicio, fecha: fechaInput, estado: 'Pendiente' })
+                    .then(() => { alert("✅ Cita enviada!"); location.reload(); });
+                }
             }, { onlyOnce: true });
         };
     </script>
