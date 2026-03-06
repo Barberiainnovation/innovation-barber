@@ -12,54 +12,50 @@
         header { text-align: center; margin-bottom: 25px; }
         .logo { width: 80px; }
 
-        /* CORRECCIÓN DE VISIBILIDAD DE DÍAS - FONDO NEGRO FORZADO */
+        /* VISIBILIDAD DE DÍAS */
         .fc-col-header { background-color: #000 !important; }
         .fc-col-header-cell { background-color: #000 !important; border: 1px solid var(--border) !important; }
-        .fc-col-header-cell-cushion { 
-            color: #ffffff !important; 
-            text-decoration: none !important; 
-            text-transform: capitalize !important;
-            font-weight: 600 !important;
-            font-size: 0.85rem !important;
-            display: block !important;
-            padding: 10px 0 !important;
-        }
-        .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion { color: var(--gold) !important; }
-        .fc-daygrid-day-number { color: #ffffff !important; text-decoration: none !important; padding: 5px !important; }
+        .fc-col-header-cell-cushion { color: #fff !important; text-transform: capitalize !important; font-weight: 600; display: block; padding: 10px 0 !important; text-decoration: none !important; }
+        .fc-daygrid-day-number { color: #fff !important; text-decoration: none !important; }
 
-        /* ELIMINAR RESALTADO AMARILLO */
-        .fc-day-today { background: transparent !important; }
-        .fc-timegrid-col.fc-day-today { background: transparent !important; }
-        .fc-timegrid-now-indicator-line { border-color: var(--gold) !important; border-width: 2px !important; }
-
-        /* CALENDARIO ESTÉTICO */
-        #calendar-container { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.8); margin-bottom: 40px; }
-        .fc { border: none !important; }
-        .fc-theme-standard td, .fc-theme-standard th { border: 1px solid var(--border) !important; }
-        .fc-event { border: none !important; border-radius: 6px !important; padding: 5px; font-weight: 600; font-size: 0.75rem !important; }
-
-        /* BOTONES */
-        .fc-toolbar-title { color: var(--gold) !important; font-size: 1.1rem !important; }
-        .fc-button { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; border-radius: 10px !important; text-transform: uppercase !important; font-size: 0.65rem !important; }
-        .fc-button-active { background: var(--gold) !important; color: #000 !important; }
-
-        /* LISTA DE CITAS */
-        #seccion-lista { max-width: 500px; margin: auto; }
-        .card { background: #111; border: 1px solid var(--border); padding: 20px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid var(--gold); }
-        .btn { width: 100%; padding: 14px; border-radius: 10px; font-weight: bold; text-transform: uppercase; cursor: pointer; border: none; font-size: 0.7rem; }
+        /* CALENDARIO Y LISTAS */
+        #calendar-container { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 40px; }
+        .card { background: #111; border: 1px solid var(--border); padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid var(--gold); }
+        
+        /* SECCIÓN GESTIÓN SERVICIOS */
+        .admin-section { max-width: 500px; margin: 40px auto; padding: 20px; background: var(--card); border-radius: 15px; border: 1px solid var(--gold); }
+        .admin-section h3 { color: var(--gold); text-transform: uppercase; font-size: 0.9rem; margin-top: 0; }
+        .service-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #222; font-size: 0.85rem; }
+        .btn-del { color: #ff4444; cursor: pointer; font-weight: bold; }
+        input[type="text"] { width: 70%; padding: 8px; border-radius: 5px; border: 1px solid #333; background: #000; color: #fff; }
+        
+        .btn { padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; font-size: 0.7rem; }
         .btn-accept { background: var(--gold); color: #000; }
-        .btn-finish { background: transparent; color: #555; border: 1px solid #333; margin-top: 10px; }
+        .btn-finish { background: transparent; color: #555; border: 1px solid #333; margin-top: 5px; }
+        .btn-add { background: var(--gold); color: #000; padding: 8px 15px; }
     </style>
 </head>
 <body>
     <header><img src="logo.png" alt="Logo" class="logo"><h2>Admin Panel</h2></header>
+    
     <div id="calendar-container"><div id="calendar"></div></div>
-    <div id="seccion-lista"><div id="lista-citas"></div></div>
+
+    <div style="max-width:500px; margin:auto;"><div id="lista-citas"></div></div>
+
+    <div class="admin-section">
+        <h3>Gestión de Servicios</h3>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <input type="text" id="nuevo-servicio" placeholder="Nombre del servicio">
+            <button class="btn btn-add" onclick="agregarServicio()">Añadir</button>
+        </div>
+        <div id="lista-servicios-admin"></div>
+    </div>
+
     <audio id="notif-sound" preload="auto"><source src="https://assets.mixkit.co/active_storage/sfx/2210/2210-preview.mp3" type="audio/mpeg"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, update, push, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I",
@@ -72,20 +68,11 @@
         const db = getDatabase(app);
         let calendar;
 
-        document.body.addEventListener('click', () => {
-            const s = document.getElementById('notif-sound');
-            s.play().then(() => { s.pause(); s.currentTime = 0; });
-        }, { once: true });
-
+        // Iniciar Calendario
         document.addEventListener('DOMContentLoaded', () => {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'dayGridMonth',
-                locale: 'es',
-                height: 'auto',
-                navLinks: true,
-                slotMinTime: '06:00:00',
-                slotMaxTime: '22:00:00',
-                nowIndicator: true,
+                initialView: 'dayGridMonth', locale: 'es', height: 'auto', navLinks: true,
+                slotMinTime: '06:00:00', slotMaxTime: '22:00:00', nowIndicator: true,
                 navLinkDayClick: (date) => calendar.changeView('timeGridDay', date),
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridDay' },
                 buttonText: { today: 'Hoy', month: 'Mes', day: 'Día' }
@@ -93,50 +80,53 @@
             calendar.render();
         });
 
+        // Escuchar Citas
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
-            render(data);
+            renderCitas(data);
         });
 
-        function render(data) {
+        // Escuchar Servicios
+        onValue(ref(db, 'servicios'), (snapshot) => {
+            const servicios = snapshot.val();
+            const div = document.getElementById('lista-servicios-admin');
+            div.innerHTML = '';
+            if(servicios) {
+                Object.keys(servicios).forEach(id => {
+                    div.innerHTML += `<div class="service-item">${servicios[id]} <span class="btn-del" onclick="eliminarServicio('${id}')">✕</span></div>`;
+                });
+            }
+        });
+
+        function renderCitas(data) {
             const lista = document.getElementById('lista-citas');
             lista.innerHTML = '';
             const eventos = [];
             if (!data) return;
-
             Object.keys(data).reverse().forEach(id => {
                 const c = data[id];
                 if (c.estado === 'Finalizada') return;
-                eventos.push({ 
-                    title: `${c.nombre} | ${c.servicio}`, 
-                    start: c.fecha, 
-                    backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#222',
-                    textColor: c.estado === 'Aceptada' ? '#000' : '#fff'
-                });
+                eventos.push({ title: `${c.nombre} | ${c.servicio}`, start: c.fecha, backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#222', textColor: c.estado === 'Aceptada' ? '#000' : '#fff' });
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.innerHTML = `
-                    <div style="font-size:0.6rem; color:var(--gold); float:right">${c.estado}</div>
-                    <h3>${c.nombre}</h3>
-                    <p>💈 ${c.servicio}</p>
-                    <p>📅 ${new Date(c.fecha).toLocaleString()}</p>
-                    ${c.estado === 'Pendiente' ? 
-                    `<button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">Aceptar y WhatsApp</button>` : 
-                    `<button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar</button>`}
-                `;
+                card.innerHTML = `<div style="font-size:0.6rem; color:var(--gold); float:right">${c.estado}</div><h3>${c.nombre}</h3><p>💈 ${c.servicio}</p><p>📅 ${new Date(c.fecha).toLocaleString()}</p>
+                ${c.estado === 'Pendiente' ? `<button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">Aceptar</button>` : `<button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Terminar</button>`}`;
                 lista.appendChild(card);
             });
-            calendar.removeAllEvents();
-            calendar.addEventSource(eventos);
+            calendar.removeAllEvents(); calendar.addEventSource(eventos);
         }
+
+        window.agregarServicio = () => {
+            const input = document.getElementById('nuevo-servicio');
+            if(input.value) { push(ref(db, 'servicios'), input.value); input.value = ''; }
+        };
+
+        window.eliminarServicio = (id) => { if(confirm('¿Eliminar servicio?')) remove(ref(db, `servicios/${id}`)); };
 
         window.cambiarEstado = (id, estado) => {
             get(ref(db, `citas/${id}`)).then((snap) => {
                 const c = snap.val();
-                if (c && estado === 'Aceptada') {
-                    const msg = `¡Hola ${c.nombre}! 👋 Confirmamos tu cita para *${c.servicio}*.`;
-                    window.open(`https://wa.me/${c.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
-                }
+                if (c && estado === 'Aceptada') window.open(`https://wa.me/${c.whatsapp}?text=${encodeURIComponent('Cita confirmada: ' + c.servicio)}`, '_blank');
                 update(ref(db, `citas/${id}`), { estado });
             });
         };
