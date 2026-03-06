@@ -2,24 +2,19 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Innovation Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <title>DIAGNÓSTICO INNOVATION</title>
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #000; color: #fff; padding: 20px; }
-        .container { max-width: 500px; margin: auto; }
-        .card { background: #111; border: 1px solid #333; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 6px solid #d4af37; }
-        .btn { display: block; width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: none; font-weight: bold; text-align: center; text-decoration: none; cursor: pointer; text-transform: uppercase; }
-        .btn-wa { background: #25d366; color: white; }
-        .btn-status { background: #28a745; color: white; }
-        .btn-finish { background: #d4af37; color: #000; }
-        .logo { width: 100px; display: block; margin: 0 auto 20px; }
+        body { background: #000; color: #0f0; font-family: monospace; padding: 20px; }
+        .debug-card { border: 1px solid #0f0; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
+        .btn-wa { background: #25d366; color: white; padding: 10px; display: block; text-align: center; text-decoration: none; margin-top: 10px; border-radius: 5px; font-weight: bold; }
+        .btn-status { background: #d4af37; color: black; border: none; padding: 10px; width: 100%; margin-top: 5px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-    <img src="logo.png" class="logo">
-    <h2 style="text-align:center;">CITAS INNOVATION</h2>
-    <div id="lista-citas" class="container">Cargando...</div>
+    <h1>PANEL DE CONTROL (MODO DIAGNÓSTICO)</h1>
+    <div id="status">Conectando con Firebase...</div>
+    <hr>
+    <div id="lista-citas"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -38,41 +33,49 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const lista = document.getElementById('lista-citas');
+        const status = document.getElementById('status');
 
+        // Escuchar la base de datos
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
-            lista.innerHTML = '';
-
+            console.log("Datos recibidos:", data);
+            
             if (!data) {
-                lista.innerHTML = '<p style="text-align:center;">No hay citas registradas.</p>';
+                status.innerText = "CONECTADO: No hay datos en la carpeta 'citas'.";
+                lista.innerHTML = "";
                 return;
             }
+
+            status.innerText = "CONECTADO: Mostrando citas encontradas.";
+            lista.innerHTML = "";
 
             Object.keys(data).reverse().forEach(id => {
                 const c = data[id];
                 if (c.estado === 'Finalizada') return;
 
+                // Crear el contenedor de la cita
                 const div = document.createElement('div');
-                div.className = 'card';
-                
-                // Creamos el link de WhatsApp con el número que viene de Firebase
-                const linkWA = `https://wa.me/${c.whatsapp}?text=Hola%20${encodeURIComponent(c.nombre)}%2C%20confirmamos%20tu%20cita%20en%20Innovation%20Barber%20Studio.`;
+                div.className = 'debug-card';
+
+                // Forzar el link de WhatsApp si el dato existe
+                // Usamos c['whatsapp'] para asegurar que lea la propiedad
+                const num = c.whatsapp || "No encontrado";
+                const linkWA = `https://wa.me/${num}`;
 
                 div.innerHTML = `
-                    <h3>${c.nombre}</h3>
-                    <p>📱 WhatsApp: ${c.whatsapp}</p>
-                    <p>💈 Servicio: ${c.servicio}</p>
-                    <p>📅 Fecha: ${c.fecha}</p>
+                    <strong>ID:</strong> ${id}<br>
+                    <strong>CLIENTE:</strong> ${c.nombre}<br>
+                    <strong>WHATSAPP EN DB:</strong> ${num}<br>
+                    <strong>ESTADO:</strong> ${c.estado}<br>
                     
-                    <a href="${linkWA}" target="_blank" class="btn btn-wa">ENVIAR WHATSAPP</a>
-
-                    ${c.estado === 'Pendiente' ? 
-                        `<button class="btn btn-status" onclick="cambiarEstado('${id}', 'Aceptada')">ACEPTAR CITA</button>` : 
-                        `<button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">FINALIZAR CITA</button>`
-                    }
+                    <a href="${linkWA}" target="_blank" class="btn-wa">ABRIR WHATSAPP DIRECTO</a>
+                    
+                    <button class="btn-status" onclick="cambiarEstado('${id}', 'Finalizada')">ARCHIVAR CITA</button>
                 `;
                 lista.appendChild(div);
             });
+        }, (error) => {
+            status.innerText = "ERROR DE PERMISOS: " + error.message;
         });
 
         window.cambiarEstado = (id, nuevo) => {
