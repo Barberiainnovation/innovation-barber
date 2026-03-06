@@ -3,111 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Innovation Barber | Admin</title>
+    <title>Admin | Innovation Barber</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <style>
-        :root { --bg: #000; --card: #0d0d0d; --gold: #d4af37; --border: #1a1a1a; --text: #e0e0e0; }
-        
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background: var(--bg); 
-            color: var(--text); 
-            margin: 0; 
-            padding: 10px; 
-            overflow-x: hidden;
-        }
+        :root { --bg: #000; --card: #0d0d0d; --gold: #d4af37; --border: #1a1a1a; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; }
+        header { text-align: center; margin-bottom: 25px; }
+        .logo { width: 80px; }
+        h2 { font-weight: 300; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; font-size: 0.9rem; }
 
-        header { text-align: center; margin: 20px 0; }
-        .logo { width: 70px; filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.3)); }
-        h2 { font-weight: 300; letter-spacing: 5px; color: var(--gold); text-transform: uppercase; font-size: 0.9rem; margin-top: 10px; }
-
-        /* --- CALENDARIO ESTÉTICO --- */
-        #calendar-container { 
-            background: var(--card); 
-            padding: 15px; 
-            border-radius: 20px; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-            margin-bottom: 40px;
-        }
-
-        /* Quitar bordes de tabla internos */
-        .fc { border: none !important; }
-        .fc-theme-standard td, .fc-theme-standard th { border: 1px solid var(--border) !important; }
-        .fc-scrollgrid { border: none !important; }
-
-        /* Estilo de los eventos (Citas) */
-        .fc-event {
-            border: none !important;
-            border-radius: 8px !important;
-            padding: 5px 8px !important;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            font-size: 0.75rem !important;
-            font-weight: 600 !important;
-        }
-
-        /* Vista de día: Personalización de horas */
-        .fc-timegrid-slot { height: 3.5em !important; border-bottom: 1px solid #111 !important; }
-        .fc-timegrid-slot-label-cushion { color: #555 !important; font-size: 0.7rem; text-transform: uppercase; }
-
-        /* Indicador de hora actual Premium */
-        .fc-timegrid-now-indicator-line { border-color: var(--gold) !important; border-width: 2px !important; }
+        /* ELIMINAR RESALTADO AMARILLO */
+        .fc-day-today { background: transparent !important; }
+        .fc-timegrid-col.fc-day-today { background: transparent !important; }
+        .fc-timegrid-now-indicator-line { border-color: var(--gold) !important; }
         .fc-timegrid-now-indicator-arrow { border-left-color: var(--gold) !important; }
 
-        /* Botones y Toolbar */
-        .fc-toolbar-title { color: var(--gold) !important; font-weight: 600 !important; font-size: 1.1rem !important; }
-        .fc-button { 
-            background: transparent !important; 
-            border: 1px solid var(--border) !important; 
-            color: var(--gold) !important; 
-            font-size: 0.65rem !important; 
-            text-transform: uppercase !important;
-            transition: 0.3s !important;
-            border-radius: 10px !important;
-        }
+        /* CALENDARIO ESTÉTICO */
+        #calendar-container { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.8); margin-bottom: 40px; }
+        .fc { border: none !important; font-size: 0.85rem; }
+        .fc-theme-standard td, .fc-theme-standard th { border: 1px solid var(--border) !important; }
+        .fc-event { border: none !important; border-radius: 6px !important; padding: 4px; font-weight: 600; }
+
+        /* BOTONES */
+        .fc-toolbar-title { color: var(--gold) !important; }
+        .fc-button { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; font-size: 0.65rem !important; border-radius: 8px !important; }
         .fc-button-active { background: var(--gold) !important; color: #000 !important; }
-        .fc-button:hover { background: rgba(212, 175, 55, 0.1) !important; }
 
-        /* --- LISTA DE CITAS ABAJO --- */
-        #seccion-lista { max-width: 500px; margin: auto; }
-        .titulo-lista { color: #444; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 3px; text-align: center; margin-bottom: 25px; }
-        
-        .card { 
-            background: linear-gradient(145deg, #111, #050505);
-            border: 1px solid var(--border); 
-            padding: 20px; 
-            border-radius: 15px; 
-            margin-bottom: 15px; 
-            position: relative;
-            transition: 0.3s;
-        }
-        .card:hover { border-color: var(--gold); }
-        .card h3 { margin: 0; font-size: 1rem; font-weight: 600; letter-spacing: 1px; }
-        .card p { margin: 5px 0; font-size: 0.8rem; color: #888; }
-        
-        .btn { width: 100%; padding: 14px; border-radius: 10px; font-weight: bold; text-transform: uppercase; cursor: pointer; border: none; font-size: 0.7rem; letter-spacing: 1px; transition: 0.3s; }
-        .btn-accept { background: var(--gold); color: #000; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2); }
-        .btn-finish { background: transparent; color: #555; border: 1px solid #333; }
-        .btn-finish:hover { color: #fff; border-color: #fff; }
-
-        /* Eliminar resaltado del día de hoy */
-        .fc-day-today { background: transparent !important; }
+        /* LISTA DE CITAS */
+        #seccion-lista { max-width: 500px; margin: auto; display: block; }
+        .titulo-lista { color: #444; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 3px; text-align: center; margin-bottom: 20px; }
+        .card { background: #111; border: 1px solid var(--border); padding: 18px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid var(--gold); }
+        .btn { width: 100%; padding: 14px; border-radius: 10px; font-weight: bold; text-transform: uppercase; cursor: pointer; border: none; font-size: 0.7rem; }
+        .btn-accept { background: var(--gold); color: #000; }
+        .btn-finish { background: transparent; color: #555; border: 1px solid #333; margin-top: 10px; }
     </style>
 </head>
 <body>
+    <header><img src="logo.png" alt="Logo" class="logo"><h2>Innovation Admin</h2></header>
 
-    <header>
-        <img src="logo.png" alt="Logo" class="logo">
-        <h2>Innovation Admin</h2>
-    </header>
-
-    <div id="calendar-container">
-        <div id="calendar"></div>
-    </div>
+    <div id="calendar-container"><div id="calendar"></div></div>
 
     <div id="seccion-lista">
-        <h3 class="titulo-lista">Registro de hoy</h3>
+        <h3 class="titulo-lista">Citas Pendientes / Aceptadas</h3>
         <div id="lista-citas"></div>
     </div>
 
@@ -131,7 +69,7 @@
         let calendar;
         let inicial = true;
 
-        // Desbloqueo de sonido
+        // Activar sonido en PC con el primer clic
         document.body.addEventListener('click', () => {
             const sound = document.getElementById('notif-sound');
             sound.play().then(() => { sound.pause(); sound.currentTime = 0; });
@@ -143,10 +81,9 @@
                 locale: 'es',
                 height: 'auto',
                 navLinks: true,
+                slotMinTime: '06:00:00', // HORARIO 6AM
+                slotMaxTime: '22:00:00', // HORARIO 10PM
                 nowIndicator: true,
-                slotDuration: '00:15:00', // Slots de 15 min para más precisión
-                slotLabelInterval: '01:00',
-                expandRows: true,
                 navLinkDayClick: (date) => calendar.changeView('timeGridDay', date),
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridDay' },
                 buttonText: { today: 'Hoy', month: 'Mes', day: 'Día' }
@@ -184,10 +121,10 @@
                     <div style="font-size:0.6rem; color:var(--gold); float:right; border:1px solid; padding:2px 6px; border-radius:4px">${c.estado}</div>
                     <h3>${c.nombre}</h3>
                     <p>💈 ${c.servicio}</p>
-                    <p style="font-size:0.75rem">📅 ${new Date(c.fecha).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                    <p style="font-size:0.75rem">📅 ${new Date(c.fecha).toLocaleString()}</p>
                     ${c.estado === 'Pendiente' ? 
-                    `<button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">Confirmar Cita</button>` : 
-                    `<button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Corte Terminado</button>`}
+                    `<button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">Aceptar y WhatsApp</button>` : 
+                    `<button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar</button>`}
                 `;
                 lista.appendChild(card);
             });
