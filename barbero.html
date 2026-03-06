@@ -3,34 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | Innovation Barber Studio</title>
+    <title>Innovation Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #000; --card: #111; --gold: #d4af37; --green: #25d366; --blue: #28a745; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 500px; }
-        .logo { width: 120px; margin-bottom: 20px; }
-        .card { background: var(--card); border: 1px solid #333; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 6px solid #f39c12; }
-        .card.aceptada { border-left-color: var(--blue); }
-        .card h3 { margin: 0 0 10px 0; color: var(--gold); text-transform: uppercase; }
-        .card p { margin: 5px 0; font-size: 0.9rem; color: #ccc; }
-        .actions { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .btn { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; text-decoration: none; text-align: center; text-transform: uppercase; font-size: 0.8rem; transition: 0.3s; }
-        .btn-wa { background: var(--green); color: white; display: block; }
-        .btn-accept { background: var(--blue); color: white; }
-        .btn-finish { background: var(--gold); color: black; }
-        .no-citas { text-align: center; color: #555; margin-top: 50px; }
+        body { font-family: 'Poppins', sans-serif; background: #000; color: #fff; padding: 20px; }
+        .container { max-width: 500px; margin: auto; }
+        .card { background: #111; border: 1px solid #333; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 6px solid #d4af37; }
+        .btn { display: block; width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: none; font-weight: bold; text-align: center; text-decoration: none; cursor: pointer; text-transform: uppercase; }
+        .btn-wa { background: #25d366; color: white; }
+        .btn-status { background: #28a745; color: white; }
+        .btn-finish { background: #d4af37; color: #000; }
+        .logo { width: 100px; display: block; margin: 0 auto 20px; }
     </style>
 </head>
 <body>
-    <img src="logo.png" alt="Logo Innovation" class="logo">
-    <h2 style="letter-spacing: 2px;">CITAS RECIBIDAS</h2>
-    
-    <div id="lista-citas" class="container">
-        <p class="no-citas">Cargando agenda...</p>
-    </div>
-
-    <audio id="notif" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+    <img src="logo.png" class="logo">
+    <h2 style="text-align:center;">CITAS INNOVATION</h2>
+    <div id="lista-citas" class="container">Cargando...</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -48,66 +37,46 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const container = document.getElementById('lista-citas');
-        const sonido = document.getElementById('notif');
-        let cargaInicial = true;
+        const lista = document.getElementById('lista-citas');
 
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
-            // Solo suena si no es la primera carga (para citas nuevas)
-            if (!cargaInicial && data) {
-                sonido.play().catch(() => console.log("Permite el sonido haciendo clic en la página"));
-            }
-            cargaInicial = false;
-            render(data);
-        });
+            lista.innerHTML = '';
 
-        function render(data) {
-            container.innerHTML = '';
             if (!data) {
-                container.innerHTML = '<p class="no-citas">¡Agenda limpia! No hay citas.</p>';
+                lista.innerHTML = '<p style="text-align:center;">No hay citas registradas.</p>';
                 return;
             }
 
-            // Convertir objeto a array, revertir para ver las más nuevas arriba
-            const citasArray = Object.keys(data).map(id => ({ id, ...data[id] }));
-            citasArray.reverse().forEach(c => {
+            Object.keys(data).reverse().forEach(id => {
+                const c = data[id];
                 if (c.estado === 'Finalizada') return;
 
-                const card = document.createElement('div');
-                card.className = `card ${c.estado.toLowerCase()}`;
+                const div = document.createElement('div');
+                div.className = 'card';
                 
-                // IMPORTANTE: Limpiamos el número de cualquier espacio y creamos el link
-                // Si el campo se llama 'whatsapp' en Firebase, lo usamos aquí:
-                const numeroFinal = c.whatsapp ? c.whatsapp.toString().replace(/\s/g, '') : '';
-                const msj = `Hola ${c.nombre}, te saludamos de *Innovation Barber Studio*. Confirmamos tu cita: ${c.servicio} el ${new Date(c.fecha).toLocaleString()}.`;
-                const linkWA = `https://wa.me/${numeroFinal}?text=${encodeURIComponent(msj)}`;
+                // Creamos el link de WhatsApp con el número que viene de Firebase
+                const linkWA = `https://wa.me/${c.whatsapp}?text=Hola%20${encodeURIComponent(c.nombre)}%2C%20confirmamos%20tu%20cita%20en%20Innovation%20Barber%20Studio.`;
 
-                card.innerHTML = `
+                div.innerHTML = `
                     <h3>${c.nombre}</h3>
-                    <p><b>📱 WhatsApp:</b> +${c.whatsapp}</p>
-                    <p><b>💈 Servicio:</b> ${c.servicio}</p>
-                    <p><b>📅 Fecha:</b> ${new Date(c.fecha).toLocaleString()}</p>
+                    <p>📱 WhatsApp: ${c.whatsapp}</p>
+                    <p>💈 Servicio: ${c.servicio}</p>
+                    <p>📅 Fecha: ${c.fecha}</p>
                     
-                    <div class="actions">
-                        <a href="${linkWA}" target="_blank" class="btn btn-wa">
-                            Enviar WhatsApp
-                        </a>
+                    <a href="${linkWA}" target="_blank" class="btn btn-wa">ENVIAR WHATSAPP</a>
 
-                        ${c.estado === 'Pendiente' ? 
-                            `<button class="btn btn-accept" onclick="cambiarEstado('${c.id}', 'Aceptada')">Aceptar Cita</button>` : 
-                            `<button class="btn btn-finish" onclick="cambiarEstado('${c.id}', 'Finalizada')">Finalizar Cita</button>`
-                        }
-                    </div>
+                    ${c.estado === 'Pendiente' ? 
+                        `<button class="btn btn-status" onclick="cambiarEstado('${id}', 'Aceptada')">ACEPTAR CITA</button>` : 
+                        `<button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">FINALIZAR CITA</button>`
+                    }
                 `;
-                container.appendChild(card);
+                lista.appendChild(div);
             });
-        }
+        });
 
-        // Función global para cambiar estado
-        window.cambiarEstado = (id, nuevoEstado) => {
-            update(ref(db, `citas/${id}`), { estado: nuevoEstado })
-            .catch(err => alert("Error al actualizar: " + err.message));
+        window.cambiarEstado = (id, nuevo) => {
+            update(ref(db, `citas/${id}`), { estado: nuevo });
         };
     </script>
 </body>
