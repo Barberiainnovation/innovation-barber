@@ -3,90 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Innovation Admin | Panel de Control</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Innovation Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-dark: #000000;
-            --card-bg: #111111;
-            --accent-gold: #d4af37;
-            --success: #28a745;
-            --danger: #dc3545;
-            --whatsapp: #25d366;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--bg-dark);
-            color: white;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .logo-small { width: 120px; height: 120px; object-fit: contain; margin-bottom: 10px; }
-
-        header { text-align: center; margin-bottom: 30px; }
-
-        h1 { font-size: 1.2rem; letter-spacing: 3px; color: var(--accent-gold); text-transform: uppercase; }
-
-        .container { width: 100%; max-width: 500px; }
-
-        .card-cita {
-            background: var(--card-bg);
-            border: 1px solid #222;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 5px solid #444;
-            transition: 0.3s;
-        }
-
-        .card-cita.pendiente { border-left-color: #f39c12; }
-        .card-cita.aceptada { border-left-color: var(--success); }
-
-        .info h3 { margin: 0; font-size: 1rem; color: #fff; }
-        .info p { margin: 3px 0; font-size: 0.85rem; color: #888; }
-
-        .actions { display: flex; flex-direction: column; gap: 8px; min-width: 150px; }
-
-        .btn {
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            text-decoration: none;
-            text-align: center;
-        }
-
-        .btn-accept { background: var(--success); color: white; }
-        .btn-reject { background: var(--danger); color: white; }
-        .btn-finish { background: var(--accent-gold); color: black; }
-        .btn-whatsapp { background: var(--whatsapp); color: white; }
-
-        .no-data { text-align: center; color: #444; margin-top: 50px; }
+        body { font-family: 'Poppins', sans-serif; background: #000; color: #fff; padding: 20px; text-align: center; }
+        .container { max-width: 500px; margin: auto; }
+        .card { background: #111; border: 1px solid #333; padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: left; border-left: 5px solid #f39c12; }
+        .card.aceptada { border-left-color: #28a745; }
+        .btn { padding: 10px; border-radius: 5px; cursor: pointer; border: none; font-weight: bold; width: 100%; margin-top: 5px; text-decoration: none; display: inline-block; text-align: center; }
+        .btn-accept { background: #28a745; color: white; }
+        .btn-wa { background: #25d366; color: white; }
+        .btn-finish { background: #d4af37; color: black; }
     </style>
 </head>
 <body>
-
-    <header>
-        <img src="logo.png" alt="Innovation Logo" class="logo-small">
-        <h1>Admin Panel</h1>
-    </header>
-
-    <div class="container" id="lista-citas">
-        <p class="no-data">Cargando agenda...</p>
-    </div>
-
-    <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+    <h1>Panel de Control</h1>
+    <div id="lista-citas" class="container">Cargando citas...</div>
+    
+    <audio id="sonido" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -99,72 +33,55 @@
             storageBucket: "innovation-barber-studio.firebasestorage.app",
             messagingSenderId: "589786876751",
             appId: "1:589786876751:web:31b40f11b3810470e9933a",
-            measurementId: "G-KEQM3D5L1P",
             databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const container = document.getElementById('lista-citas');
-        const sound = document.getElementById('notif-sound');
-        let primeraCarga = true;
+        const lista = document.getElementById('lista-citas');
+        const sonido = document.getElementById('sonido');
+        let primeraVez = true;
 
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
-            
-            // Sonido si hay una nueva cita (después de la carga inicial)
-            if (!primeraCarga && data) {
-                sound.play().catch(e => console.log("Sonido bloqueado por el navegador"));
+            if (!primeraVez && data) { 
+                sonido.play().catch(() => console.log("Clickea la página para activar sonidos")); 
             }
-            primeraCarga = false;
-            
-            renderCitas(data);
+            primeraVez = false;
+            render(data);
         });
 
-        function renderCitas(data) {
-            container.innerHTML = '';
-            if (!data) {
-                container.innerHTML = '<p class="no-data">No hay solicitudes hoy.</p>';
-                return;
-            }
+        function render(data) {
+            lista.innerHTML = '';
+            if (!data) { lista.innerHTML = 'No hay citas.'; return; }
+            
+            Object.keys(data).reverse().forEach(id => {
+                const c = data[id];
+                if (c.estado === 'Finalizada') return;
 
-            const citasArray = Object.keys(data)
-                .map(id => ({ id, ...data[id] }))
-                .filter(cita => cita.estado !== 'Finalizada')
-                .reverse();
-
-            citasArray.forEach(c => {
-                // Limpiar el número para el link wa.me
-                const numLimpio = c.whatsapp ? c.whatsapp.toString().replace(/\D/g, '') : '';
-                const msj = `Hola ${c.nombre}, te saludamos de *Innovation Barber Studio*. Tu cita para ${c.servicio} el día ${new Date(c.fecha).toLocaleString()} ha sido *CONFIRMADA*. ¡Te esperamos!`;
-                const linkWA = `https://wa.me/${numLimpio}?text=${encodeURIComponent(msj)}`;
-
-                const card = document.createElement('div');
-                card.className = `card-cita ${c.estado.toLowerCase()}`;
+                const div = document.createElement('div');
+                div.className = `card ${c.estado.toLowerCase()}`;
                 
-                card.innerHTML = `
-                    <div class="info">
-                        <h3>${c.nombre}</h3>
-                        <p>📱 ${c.whatsapp || 'Sin número'}</p> 
-                        <p>💈 ${c.servicio}</p>
-                        <p>📅 ${new Date(c.fecha).toLocaleString()}</p>
-                    </div>
-                    <div class="actions">
-                        ${c.estado === 'Pendiente' ? `
-                            <button class="btn btn-accept" onclick="cambiarEstado('${c.id}', 'Aceptada')">Aceptar</button>
-                            <button class="btn btn-reject" onclick="cambiarEstado('${c.id}', 'Rechazada')">Rechazar</button>
-                        ` : `
-                            <a href="${linkWA}" target="_blank" class="btn btn-whatsapp">Enviar WhatsApp</a>
-                            <button class="btn btn-finish" onclick="cambiarEstado('${c.id}', 'Finalizada')">Finalizar</button>
-                        `}
-                    </div>
+                const msjWA = `Hola ${c.nombre}, tu cita en Innovation Barber Studio está confirmada.`;
+                const linkWA = `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(msjWA)}`;
+
+                div.innerHTML = `
+                    <h3>${c.nombre}</h3>
+                    <p>📱 ${c.whatsapp}</p>
+                    <p>💈 ${c.servicio}</p>
+                    <p>📅 ${c.fecha}</p>
+                    ${c.estado === 'Pendiente' ? 
+                        `<button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">ACEPTAR</button>` : 
+                        `<a href="${linkWA}" target="_blank" class="btn btn-wa">WHATSAPP</a>
+                         <button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">FINALIZAR</button>`
+                    }
                 `;
-                container.appendChild(card);
+                lista.appendChild(div);
             });
         }
 
-        window.cambiarEstado = (id, nuevoEstado) => {
-            update(ref(db, `citas/${id}`), { estado: nuevoEstado });
+        window.cambiarEstado = (id, nuevo) => {
+            update(ref(db, `citas/${id}`), { estado: nuevo });
         };
     </script>
 </body>
