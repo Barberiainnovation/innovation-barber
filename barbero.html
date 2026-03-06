@@ -3,24 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | Innovation Barber Studio</title>
+    <title>Admin | Innovation Barber Studio</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #000; color: #fff; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 500px; }
-        .logo { width: 120px; margin-bottom: 20px; }
-        .no-citas { text-align: center; color: #555; margin-top: 50px; }
-        /* Estilos de la tarjeta */
-        .card { background: #111; border: 1px solid #333; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 6px solid #d4af37; }
-        .btn-wa { background: #25d366; color: white; padding: 12px; display: block; text-align: center; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 10px; text-transform: uppercase; }
-        .btn-finish { width: 100%; margin-top: 8px; padding: 10px; background: #444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        :root { --gold: #d4af37; --bg: #000; --card: #111; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 450px; }
+        .card { background: var(--card); border: 1px solid #333; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 6px solid var(--gold); }
+        .btn-wa { background: #25d366; color: white; padding: 12px; display: block; text-align: center; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 15px; text-transform: uppercase; }
+        .btn-finish { width: 100%; margin-top: 10px; padding: 10px; background: #333; color: #aaa; border: none; border-radius: 8px; cursor: pointer; }
+        h3 { margin: 0; color: var(--gold); text-transform: uppercase; }
+        p { margin: 5px 0; font-size: 0.9rem; color: #ccc; }
     </style>
 </head>
 <body>
-    <img src="logo.png" alt="Logo" class="logo">
-    <h2>CITAS RECIBIDAS</h2>
-    
-    <div id="lista-citas" class="container">Cargando agenda...</div>
+    <h2 style="letter-spacing: 2px;">CITAS RECIBIDAS</h2>
+    <div id="lista-citas" class="container">Cargando datos de Firebase...</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -38,47 +36,49 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const contenedor = document.getElementById('lista-citas');
 
         onValue(ref(db, 'citas'), (snapshot) => {
-            render(snapshot.val());
-        });
+            const data = snapshot.val();
+            contenedor.innerHTML = '';
 
-        // ESTA ES LA FUNCIÓN QUE DEBES PEGAR/REEMPLAZAR
-        function render(data) {
-            const lista = document.getElementById('lista-citas');
-            lista.innerHTML = '';
-            
             if (!data) {
-                lista.innerHTML = '<p class="no-citas">No hay citas nuevas.</p>';
+                contenedor.innerHTML = '<p style="text-align:center;">No hay citas en la agenda.</p>';
                 return;
             }
 
+            // Convertimos a array y mostramos las más nuevas arriba
             Object.keys(data).reverse().forEach(id => {
-                const c = data[id];
-                if (c.estado === 'Finalizada') return;
+                const cita = data[id];
 
-                // Si no hay whatsapp en Firebase, mostrará "SINDATO" para que sepamos qué falla
-                const telefono = c.whatsapp ? c.whatsapp.toString().replace(/\D/g, '') : 'SINDATO';
-                const msjWA = `Hola ${c.nombre}, confirmamos tu cita en Innovation Barber Studio.`;
-                
-                const div = document.createElement('div');
-                div.className = 'card';
-                div.innerHTML = `
-                    <h3 style="color:#d4af37; margin:0;">${c.nombre}</h3>
-                    <p><strong>WhatsApp:</strong> ${telefono}</p>
-                    <p><strong>Servicio:</strong> ${c.servicio}</p>
-                    <p><strong>Fecha:</strong> ${c.fecha}</p>
+                // NO mostrar si ya está finalizada
+                if (cita.estado === 'Finalizada') return;
+
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                // Usamos los nombres exactos que me pasaste: nombre, whatsapp, servicio, fecha
+                const tel = cita.whatsapp || '';
+                const nombreCliente = cita.nombre || 'Sin nombre';
+                const msg = `Hola ${nombreCliente}, te saludamos de Innovation Barber Studio. Tu cita para ${cita.servicio} el día ${cita.fecha} está confirmada.`;
+                const urlWA = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
+
+                card.innerHTML = `
+                    <h3>${nombreCliente}</h3>
+                    <p><strong>📱 Tel:</strong> ${tel}</p>
+                    <p><strong>💈 Servicio:</strong> ${cita.servicio}</p>
+                    <p><strong>📅 Fecha:</strong> ${cita.fecha}</p>
+                    <p><strong>📍 Estado:</strong> ${cita.estado}</p>
                     
-                    <a href="https://wa.me/${telefono}?text=${encodeURIComponent(msjWA)}" target="_blank" class="btn-wa">
-                       ABRIR WHATSAPP
-                    </a>
+                    <a href="${urlWA}" target="_blank" class="btn-wa">ENVIAR WHATSAPP</a>
+                    
                     <button class="btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">
-                       ARCHIVAR CITA
+                        ARCHIVAR CITA
                     </button>
                 `;
-                lista.appendChild(div);
+                contenedor.appendChild(card);
             });
-        }
+        });
 
         window.cambiarEstado = (id, nuevo) => {
             update(ref(db, `citas/${id}`), { estado: nuevo });
