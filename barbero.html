@@ -6,130 +6,21 @@
     <title>Admin Panel | Innovation Barber Studio</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #000;
-            --card: #111;
-            --gold: #d4af37;
-            --green: #25d366;
-            --white: #ffffff;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--bg);
-            color: var(--white);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* ENCABEZADO CENTRADO CON LOGO ORIGINAL */
-        header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            margin-bottom: 40px;
-            width: 100%;
-        }
-
-        .logo {
-            width: 130px; /* Tamaño del logo (ajústalo si es necesario) */
-            height: auto;
-            margin-bottom: 15px;
-            /* SE ELIMINARON EL BORDE Y EL CÍRCULO */
-            display: block;
-        }
-
-        h2 {
-            margin: 0;
-            font-size: 1.4rem;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            color: var(--gold);
-        }
-
-        /* CONTENEDOR DE CITAS */
-        .container {
-            width: 100%;
-            max-width: 480px;
-        }
-
-        .card {
-            background: var(--card);
-            border: 1px solid #333;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            border-left: 6px solid var(--gold);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-
-        .card h3 {
-            margin: 0 0 10px 0;
-            font-size: 1.1rem;
-            color: var(--white);
-            text-transform: uppercase;
-        }
-
-        .card p {
-            margin: 6px 0;
-            font-size: 0.9rem;
-            color: #bbb;
-        }
-
-        .card p strong {
-            color: var(--gold);
-        }
-
-        /* BOTONES */
-        .actions {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 14px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            text-decoration: none;
-            text-align: center;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            transition: 0.3s;
-        }
-
-        .btn-wa {
-            background: var(--green);
-            color: white;
-        }
-
-        .btn-wa:hover {
-            background: #1eb954;
-        }
-
-        .btn-finish {
-            background: #333;
-            color: #fff;
-        }
-
-        .btn-finish:hover {
-            background: #444;
-        }
-
-        .no-citas {
-            text-align: center;
-            color: #666;
-            margin-top: 50px;
-            font-style: italic;
-        }
+        :root { --bg: #000; --card: #111; --gold: #d4af37; --green: #25d366; --white: #ffffff; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--white); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        header { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 40px; width: 100%; }
+        .logo { width: 130px; height: auto; margin-bottom: 15px; display: block; }
+        h2 { margin: 0; font-size: 1.4rem; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); }
+        .container { width: 100%; max-width: 480px; }
+        .card { background: var(--card); border: 1px solid #333; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 6px solid var(--gold); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .card h3 { margin: 0 0 10px 0; font-size: 1.1rem; color: var(--white); text-transform: uppercase; }
+        .card p { margin: 6px 0; font-size: 0.9rem; color: #bbb; }
+        .card p strong { color: var(--gold); }
+        .actions { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .btn { padding: 14px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; text-decoration: none; text-align: center; text-transform: uppercase; font-size: 0.85rem; transition: 0.3s; }
+        .btn-wa { background: var(--green); color: white; }
+        .btn-finish { background: #333; color: #fff; }
+        .no-citas { text-align: center; color: #666; margin-top: 50px; font-style: italic; }
     </style>
 </head>
 <body>
@@ -161,69 +52,55 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const contenedor = document.getElementById('lista-citas');
+        const contenedor = document.getElementById('lista-citas'); // Aquí está definido como contenedor
         const sonido = document.getElementById('notif-sound');
         let cargaInicial = true;
 
-        // Escuchar cambios en la base de datos
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
-            
-            // Sonar si hay una nueva cita (solo después de cargar la página)
             if (!cargaInicial && data) {
-                sonido.play().catch(() => console.log("Interacción requerida para sonido"));
+                sonido.play().catch(() => console.log("Clic para sonido"));
             }
             cargaInicial = false;
-
             renderCitas(data);
         });
 
         function renderCitas(data) {
-            contenedor.innerHTML = '';
-
+            contenedor.innerHTML = ''; // Uso correcto de contenedor
             if (!data) {
-                contenedor.innerHTML = '<p class="no-citas">No hay citas pendientes por ahora.</p>';
+                contenedor.innerHTML = '<p class="no-citas">No hay citas pendientes.</p>';
                 return;
             }
 
-            // Convertir a array y mostrar las más recientes arriba
             const ids = Object.keys(data).reverse();
-
             ids.forEach(id => {
                 const cita = data[id];
-
-                // Ocultar citas finalizadas
                 if (cita.estado === 'Finalizada') return;
 
                 const card = document.createElement('div');
                 card.className = 'card';
 
-                // Preparar link de WhatsApp (usamos los nombres exactos de tu DB)
                 const num = cita.whatsapp || '';
                 const nombre = cita.nombre || 'Cliente';
-                const msg = `Hola ${nombre}, te saludamos de *Innovation Barber Studio*. Confirmamos tu cita para ${cita.servicio} el día ${new Date(cita.fecha).toLocaleString()}. ¡Te esperamos!`;
+                const msg = `Hola ${nombre}, confirmamos tu cita para ${cita.servicio} el ${cita.fecha}. ¡Te esperamos!`;
                 const urlWA = `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
 
                 card.innerHTML = `
                     <h3>${nombre}</h3>
                     <p><strong>📱 WhatsApp:</strong> +${num}</p>
                     <p><strong>💈 Servicio:</strong> ${cita.servicio}</p>
-                    <p><strong>📅 Fecha/Hora:</strong> ${new Date(cita.fecha).toLocaleString()}</p>
-                    <p><strong>📍 Estado actual:</strong> ${cita.estado}</p>
-                    
+                    <p><strong>📅 Fecha/Hora:</strong> ${cita.fecha}</p>
                     <div class="actions">
                         <a href="${urlWA}" target="_blank" class="btn btn-wa">Enviar WhatsApp</a>
                         <button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar Cita</button>
                     </div>
                 `;
-                container.appendChild(card);
+                contenedor.appendChild(card); // ¡CORREGIDO AQUÍ!
             });
         }
 
-        // Función para archivar/finalizar cita
         window.cambiarEstado = (id, nuevoEstado) => {
-            update(ref(db, `citas/${id}`), { estado: nuevoEstado })
-            .catch(err => alert("Error: " + err.message));
+            update(ref(db, `citas/${id}`), { estado: nuevoEstado });
         };
     </script>
 </body>
