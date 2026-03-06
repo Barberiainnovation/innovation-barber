@@ -187,11 +187,12 @@
                     alert("⚠️ Este horario ya está reservado. Por favor elige otro.");
                 } else {
                     const nuevaCitaRef = push(ref(db, 'citas'));
-                    set(nuevaCitaRef, {
-                        nombre: document.getElementById('nombre').value,
-                        servicio: document.getElementById('servicio').value,
-                        fecha: fechaVal,
-                        estado: 'Pendiente'
+                    set(nuevaRef, {
+    nombre: document.getElementById('nombre').value,
+    whatsapp: document.getElementById('whatsapp').value, // <--- ESTA ES LA NUEVA
+    servicio: document.getElementById('servicio').value,
+    fecha: fechaVal,
+    estado: 'Pendiente'
                     }).then(() => {
                         alert("✅ Solicitud enviada a Innovation Barber Studio. Espera la confirmación.");
                         form.reset();
