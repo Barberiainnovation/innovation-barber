@@ -3,32 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin | Innovation</title>
+    <title>Admin | Innovation Barber</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <style>
         :root { --bg: #000; --card: #111; --gold: #d4af37; --border: #333; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; }
         header { text-align: center; margin-bottom: 20px; }
         .logo { width: 80px; }
-        #calendar-container { background: var(--card); padding: 10px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 30px; }
-        .fc { color: #fff; font-size: 0.8rem; }
-        .fc-toolbar-title { color: var(--gold) !important; font-size: 1rem !important; }
-        .fc-button { background: var(--gold) !important; color: #000 !important; border: none !important; font-weight: bold !important; }
         
-        .container { width: 100%; max-width: 450px; margin: auto; }
-        .card { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid var(--gold); }
+        /* Contenedor del Calendario */
+        #calendar-container { 
+            background: var(--card); 
+            padding: 10px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border); 
+            margin-bottom: 30px; 
+            min-height: 400px;
+        }
+
+        /* Lista de Citas (Garantizar visibilidad) */
+        #seccion-lista { 
+            width: 100%; 
+            max-width: 500px; 
+            margin: 20px auto; 
+            display: block !important; /* Evita que desaparezca */
+        }
+        
+        .titulo-lista { 
+            color: var(--gold); 
+            text-transform: uppercase; 
+            font-size: 0.9rem; 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 10px; 
+            margin-bottom: 20px; 
+            text-align: center;
+        }
+
+        .card { 
+            background: var(--card); 
+            border: 1px solid var(--border); 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin-bottom: 15px; 
+            border-left: 5px solid var(--gold); 
+        }
+
+        .fc { color: #fff; font-size: 0.85rem; }
+        .fc-toolbar-title { color: var(--gold) !important; font-size: 1rem !important; }
+        .fc-button { background: var(--gold) !important; color: #000 !important; border: none !important; font-weight: bold !important; font-size: 0.7rem !important; }
+        
         .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; text-transform: uppercase; cursor: pointer; margin-top: 10px; }
         .btn-accept { background: var(--gold); color: #000; }
         .btn-finish { background: #222; color: #fff; border: 1px solid #444; }
     </style>
 </head>
 <body>
-    <header><img src="logo.png" alt="Logo" class="logo"><h2>Panel Admin</h2></header>
+    <header><img src="logo.png" alt="Logo" class="logo"><h2>Admin Panel</h2></header>
 
     <div id="calendar-container"><div id="calendar"></div></div>
 
-    <div class="container"><div id="lista-citas"></div></div>
+    <div id="seccion-lista">
+        <h3 class="titulo-lista">Citas Próximas</h3>
+        <div id="lista-citas"></div>
+    </div>
 
     <audio id="notif-sound" preload="auto">
         <source src="https://assets.mixkit.co/active_storage/sfx/2210/2210-preview.mp3" type="audio/mpeg">
@@ -50,13 +88,18 @@
         let calendar;
         let inicial = true;
 
+        // ACTIVAR SONIDO EN PC: El navegador necesita que hagas clic UNA vez.
+        document.body.addEventListener('click', () => {
+            const sound = document.getElementById('notif-sound');
+            sound.play().then(() => { sound.pause(); sound.currentTime = 0; });
+        }, { once: true });
+
         document.addEventListener('DOMContentLoaded', () => {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'dayGridMonth',
                 locale: 'es',
                 height: 'auto',
                 navLinks: true,
-                // Al tocar el número o el día, va a la vista de día
                 navLinkDayClick: (date) => calendar.changeView('timeGridDay', date),
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridDay' },
                 buttonText: { today: 'Hoy', month: 'Mes', day: 'Día' }
@@ -66,10 +109,9 @@
 
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
-            // Sonido: Solo si no es la primera carga y hay datos nuevos
             if (!inicial && data) {
                 const sound = document.getElementById('notif-sound');
-                sound.play().catch(e => console.log("Interacción requerida para sonido"));
+                sound.play().catch(e => console.log("Haz clic en la página para activar sonido"));
             }
             inicial = false;
             render(data);
@@ -85,7 +127,6 @@
                 const c = data[id];
                 if (c.estado === 'Finalizada') return;
 
-                // Ahora el evento muestra Nombre y Servicio
                 eventos.push({ 
                     title: `${c.nombre} - ${c.servicio}`, 
                     start: c.fecha, 
@@ -96,9 +137,9 @@
                 card.className = 'card';
                 card.innerHTML = `
                     <div style="font-size:0.7rem; color:var(--gold); float:right">${c.estado}</div>
-                    <h3>${c.nombre}</h3>
-                    <p>💈 ${c.servicio}</p>
-                    <p>📅 ${new Date(c.fecha).toLocaleString()}</p>
+                    <h3 style="margin:0">${c.nombre}</h3>
+                    <p style="margin:5px 0">💈 ${c.servicio}</p>
+                    <p style="margin:5px 0; font-size:0.8rem">📅 ${new Date(c.fecha).toLocaleString()}</p>
                     ${c.estado === 'Pendiente' ? 
                     `<button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">Aceptar y WhatsApp</button>` : 
                     `<button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar</button>`}
