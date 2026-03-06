@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Innovation Barber Studio | Reservas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #ffffff; /* Blanco predominante del logo */
+            --accent: #d4af37;  /* Dorado para resaltar detalles */
+            --bg-dark: #000000; /* Fondo negro como el logo */
+            --card-bg: #111111;
+            --input-bg: #222222;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-dark);
+            color: white;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .booking-card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 420px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255,255,255,0.05);
+            text-align: center;
+            border: 1px solid #333;
+        }
+
+        /* Contenedor del Logo */
+        .logo-area {
+            margin-bottom: 25px;
+        }
+
+        .main-logo {
+            width: 100%;
+            max-width: 220px; /* Ajuste para que luzca el poste de barbería */
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            margin-bottom: 5px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            background: var(--input-bg);
+            border: 1px solid #333;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn-reserve {
+            width: 100%;
+            padding: 16px;
+            background: white; /* Botón blanco para contrastar */
+            color: black;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-reserve:hover {
+            background: #ccc;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 0.7rem;
+            color: #555;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="booking-card">
+        <div class="logo-area">
+             <img src="Logo.png" alt="Innovation Barber Studio" class="main-logo">
+        </div>
+
+        <form id="form-cliente">
+            <div class="form-group">
+                <label>Nombre del Cliente</label>
+                <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required>
+            </div>
+
+            <div class="form-group">
+                <label>Servicio</label>
+                <select id="servicio">
+                    <option value="Corte Innovation">Corte Innovation</option>
+                    <option value="Barba Studio">Perfilado de Barba</option>
+                    <option value="Combo Completo">Corte + Barba</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Fecha y Hora</label>
+                <input type="datetime-local" id="fecha" required>
+            </div>
+
+            <button type="submit" class="btn-reserve">Solicitar Turno</button>
+        </form>
+
+        <div class="footer">
+            INNOVATION BARBER STUDIO © 2026
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // CONFIGURACIÓN DE TU PROYECTO FIREBASE
+        const firebaseConfig = {
+  apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I",
+  authDomain: "innovation-barber-studio.firebaseapp.com",
+  projectId: "innovation-barber-studio",
+  storageBucket: "innovation-barber-studio.firebasestorage.app",
+  messagingSenderId: "589786876751",
+  appId: "1:589786876751:web:31b40f11b3810470e9933a",
+  measurementId: "G-KEQM3D5L1P"
+};
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const form = document.getElementById('form-cliente');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fechaVal = document.getElementById('fecha').value;
+            
+            // Validar si la hora ya está Aceptada en la base de datos
+            const citasRef = ref(db, 'citas');
+            onValue(citasRef, (snapshot) => {
+                const data = snapshot.val();
+                let ocupado = false;
+                
+                for (let id in data) {
+                    if (data[id].fecha === fechaVal && data[id].estado === 'Aceptada') {
+                        ocupado = true;
+                    }
+                }
+
+                if (ocupado) {
+                    alert("⚠️ Este horario ya está reservado. Por favor elige otro.");
+                } else {
+                    const nuevaCitaRef = push(ref(db, 'citas'));
+                    set(nuevaCitaRef, {
+                        nombre: document.getElementById('nombre').value,
+                        servicio: document.getElementById('servicio').value,
+                        fecha: fechaVal,
+                        estado: 'Pendiente'
+                    }).then(() => {
+                        alert("✅ Solicitud enviada a Innovation Barber Studio. Espera la confirmación.");
+                        form.reset();
+                    });
+                }
+            }, { onlyOnce: true });
+        });
+    </script>
+</body>
+</html>
