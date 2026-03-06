@@ -6,25 +6,25 @@
     <title>Admin Panel | Innovation Barber Studio</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #000; --card: #111; --gold: #d4af37; --green: #25d366; --blue: #28a745; --red: #dc3545; }
+        :root { --bg: #000; --card: #111; --gold: #d4af37; --green: #25d366; --blue: #28a745; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 500px; }
         .logo { width: 120px; margin-bottom: 20px; }
-        .card { background: var(--card); border: 1px solid #333; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 6px solid #f39c12; position: relative; }
+        .card { background: var(--card); border: 1px solid #333; padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 6px solid #f39c12; }
         .card.aceptada { border-left-color: var(--blue); }
-        .card h3 { margin: 0 0 10px 0; color: var(--gold); }
+        .card h3 { margin: 0 0 10px 0; color: var(--gold); text-transform: uppercase; }
         .card p { margin: 5px 0; font-size: 0.9rem; color: #ccc; }
         .actions { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .btn { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; text-decoration: none; text-align: center; text-transform: uppercase; font-size: 0.8rem; }
+        .btn { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; text-decoration: none; text-align: center; text-transform: uppercase; font-size: 0.8rem; transition: 0.3s; }
+        .btn-wa { background: var(--green); color: white; display: block; }
         .btn-accept { background: var(--blue); color: white; }
-        .btn-wa { background: var(--green); color: white; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-finish { background: var(--gold); color: black; }
         .no-citas { text-align: center; color: #555; margin-top: 50px; }
     </style>
 </head>
 <body>
-    <img src="logo.png" alt="Logo" class="logo">
-    <h2 style="letter-spacing: 2px;">PANEL DE CITAS</h2>
+    <img src="logo.png" alt="Logo Innovation" class="logo">
+    <h2 style="letter-spacing: 2px;">CITAS RECIBIDAS</h2>
     
     <div id="lista-citas" class="container">
         <p class="no-citas">Cargando agenda...</p>
@@ -54,8 +54,9 @@
 
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
+            // Solo suena si no es la primera carga (para citas nuevas)
             if (!cargaInicial && data) {
-                sonido.play().catch(() => console.log("Interacciona con la web para activar sonidos"));
+                sonido.play().catch(() => console.log("Permite el sonido haciendo clic en la página"));
             }
             cargaInicial = false;
             render(data);
@@ -63,30 +64,39 @@
 
         function render(data) {
             container.innerHTML = '';
-            if (!data) { container.innerHTML = '<p class="no-citas">¡Agenda limpia!</p>'; return; }
+            if (!data) {
+                container.innerHTML = '<p class="no-citas">¡Agenda limpia! No hay citas.</p>';
+                return;
+            }
 
-            Object.keys(data).reverse().forEach(id => {
-                const c = data[id];
+            // Convertir objeto a array, revertir para ver las más nuevas arriba
+            const citasArray = Object.keys(data).map(id => ({ id, ...data[id] }));
+            citasArray.reverse().forEach(c => {
                 if (c.estado === 'Finalizada') return;
 
                 const card = document.createElement('div');
                 card.className = `card ${c.estado.toLowerCase()}`;
                 
-                // Formatear mensaje para WhatsApp
-                const numLimpio = c.whatsapp.toString().replace(/\D/g, '');
-                const textoWA = `Hola ${c.nombre}, te saludamos de *Innovation Barber Studio*. Tu cita para ${c.servicio} el día ${new Date(c.fecha).toLocaleString()} ha sido *CONFIRMADA*. ¡Te esperamos!`;
-                const linkWA = `https://wa.me/${numLimpio}?text=${encodeURIComponent(textoWA)}`;
+                // IMPORTANTE: Limpiamos el número de cualquier espacio y creamos el link
+                // Si el campo se llama 'whatsapp' en Firebase, lo usamos aquí:
+                const numeroFinal = c.whatsapp ? c.whatsapp.toString().replace(/\s/g, '') : '';
+                const msj = `Hola ${c.nombre}, te saludamos de *Innovation Barber Studio*. Confirmamos tu cita: ${c.servicio} el ${new Date(c.fecha).toLocaleString()}.`;
+                const linkWA = `https://wa.me/${numeroFinal}?text=${encodeURIComponent(msj)}`;
 
                 card.innerHTML = `
                     <h3>${c.nombre}</h3>
-                    <p>📱 <b>WhatsApp:</b> ${c.whatsapp}</p>
-                    <p>💈 <b>Servicio:</b> ${c.servicio}</p>
-                    <p>📅 <b>Fecha:</b> ${new Date(c.fecha).toLocaleString()}</p>
+                    <p><b>📱 WhatsApp:</b> +${c.whatsapp}</p>
+                    <p><b>💈 Servicio:</b> ${c.servicio}</p>
+                    <p><b>📅 Fecha:</b> ${new Date(c.fecha).toLocaleString()}</p>
+                    
                     <div class="actions">
-                        <a href="${linkWA}" target="_blank" class="btn btn-wa">Enviar WhatsApp</a>
+                        <a href="${linkWA}" target="_blank" class="btn btn-wa">
+                            Enviar WhatsApp
+                        </a>
+
                         ${c.estado === 'Pendiente' ? 
-                            `<button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">Aceptar Cita</button>` : 
-                            `<button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar y Archivar</button>`
+                            `<button class="btn btn-accept" onclick="cambiarEstado('${c.id}', 'Aceptada')">Aceptar Cita</button>` : 
+                            `<button class="btn btn-finish" onclick="cambiarEstado('${c.id}', 'Finalizada')">Finalizar Cita</button>`
                         }
                     </div>
                 `;
@@ -94,8 +104,10 @@
             });
         }
 
-        window.cambiarEstado = (id, nuevo) => {
-            update(ref(db, `citas/${id}`), { estado: nuevo });
+        // Función global para cambiar estado
+        window.cambiarEstado = (id, nuevoEstado) => {
+            update(ref(db, `citas/${id}`), { estado: nuevoEstado })
+            .catch(err => alert("Error al actualizar: " + err.message));
         };
     </script>
 </body>
