@@ -153,7 +153,7 @@
                 return;
             }
 
-            // Convertir a array y filtrar las que NO están finalizadas
+            // Convertimos los datos en una lista y quitamos las finalizadas
             const citasArray = Object.keys(data)
                 .map(id => ({ id, ...data[id] }))
                 .filter(cita => cita.estado !== 'Finalizada')
@@ -165,22 +165,34 @@
             }
 
             citasArray.forEach(cita => {
+                const id = cita.id;
+                const c = cita; // Usamos 'c' como abreviatura para tu código
+
+                // 1. PREPARAMOS EL MENSAJE DE WHATSAPP
+                const mensaje = `Hola ${c.nombre}, tu cita en *Innovation Barber Studio* para el servicio de ${c.servicio} el día ${new Date(c.fecha).toLocaleString()} ha sido *CONFIRMADA*. ¡Te esperamos!`;
+                const urlWhatsapp = `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(mensaje)}`;
+
                 const card = document.createElement('div');
-                card.className = `card-cita ${cita.estado.toLowerCase()}`;
+                card.className = `card-cita ${c.estado.toLowerCase()}`;
                 
+                // 2. GENERAMOS EL HTML DE LA TARJETA
                 card.innerHTML = `
                     <div class="info">
-                        <h3>${cita.nombre}</h3>
-                        <p><strong>💈 ${cita.servicio}</strong></p>
-                        <p>📅 ${new Date(cita.fecha).toLocaleString('es-ES')}</p>
+                        <h3>${c.nombre}</h3>
+                        <p>📱 ${c.whatsapp || 'Sin número'}</p> 
+                        <p>💈 ${c.servicio}</p>
+                        <p>📅 ${new Date(c.fecha).toLocaleString()}</p>
                     </div>
                     <div class="actions">
-                        ${cita.estado === 'Pendiente' ? `
-                            <button class="btn btn-accept" onclick="cambiarEstado('${cita.id}', 'Aceptada')">Aceptar</button>
-                            <button class="btn btn-reject" onclick="cambiarEstado('${cita.id}', 'Rechazada')">Rechazar</button>
-                        ` : `
-                            <button class="btn btn-finish" onclick="cambiarEstado('${cita.id}', 'Finalizada')">Finalizar</button>
-                        `}
+                        ${c.estado === 'Pendiente' ? `
+                            <button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">Aceptar</button>
+                            <button class="btn btn-reject" onclick="cambiarEstado('${id}', 'Rechazada')">Rechazar</button>
+                        ` : c.estado === 'Aceptada' ? `
+                            <a href="${urlWhatsapp}" target="_blank" class="btn" style="background:#25d366; color:white; text-decoration:none; text-align:center; display:flex; align-items:center; justify-content:center;">
+                                Enviar WhatsApp
+                            </a>
+                            <button class="btn btn-finish" style="margin-top:5px" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar</button>
+                        ` : ''}
                     </div>
                 `;
                 container.appendChild(card);
