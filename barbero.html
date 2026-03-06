@@ -8,40 +8,89 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <style>
         :root { --bg: #000; --card: #111; --gold: #d4af37; --white: #fff; --border: #333; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--white); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
         
-        header { text-align: center; margin-bottom: 20px; }
-        .logo { width: 90px; margin-bottom: 10px; }
-        h2 { letter-spacing: 3px; color: var(--gold); text-transform: uppercase; font-size: 1.1rem; margin: 0; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: var(--bg); 
+            color: var(--white); 
+            margin: 0; 
+            padding: 10px; 
+            display: block; /* Cambiado de flex para evitar errores de superposición */
+        }
+        
+        header { text-align: center; margin-bottom: 20px; padding-top: 10px; }
+        .logo { width: 80px; margin-bottom: 5px; }
+        h2 { letter-spacing: 2px; color: var(--gold); text-transform: uppercase; font-size: 1rem; margin: 0; }
 
-        /* Estilos Calendario */
-        #calendar-container { width: 100%; max-width: 900px; background: var(--card); padding: 10px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 25px; box-sizing: border-box; }
+        /* Contenedor del Calendario */
+        #calendar-container { 
+            width: 100%; 
+            max-width: 900px; 
+            background: var(--card); 
+            padding: 10px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border); 
+            margin: 0 auto 30px auto; /* Margen inferior para separar de la lista */
+            box-sizing: border-box;
+            overflow: hidden;
+        }
         
-        .fc { color: #fff; font-size: 0.85rem; max-height: 500px; }
-        .fc-toolbar-title { color: var(--gold) !important; font-size: 1rem !important; text-transform: capitalize; }
-        .fc-button { background: var(--gold) !important; color: #000 !important; border: none !important; font-weight: bold !important; font-size: 0.7rem !important; text-transform: uppercase; }
-        .fc-daygrid-day-number { color: var(--white); text-decoration: none; padding: 5px; }
-        .fc-col-header-cell-cushion { color: var(--gold); text-decoration: none; text-transform: capitalize; }
+        .fc { color: #fff; font-size: 0.8rem; }
+        .fc-toolbar-title { color: var(--gold) !important; font-size: 0.95rem !important; }
+        .fc-button { background: var(--gold) !important; color: #000 !important; border: none !important; font-weight: bold !important; font-size: 0.65rem !important; }
         
-        /* Lista de Citas */
-        .container { width: 100%; max-width: 450px; }
-        .section-title { color: var(--gold); text-align: center; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 2px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; }
+        /* Contenedor de la Lista de Citas */
+        .container { 
+            width: 100%; 
+            max-width: 450px; 
+            margin: 0 auto; 
+            padding-bottom: 50px; /* Espacio al final para scroll */
+        }
+
+        .section-title { 
+            color: var(--gold); 
+            text-align: center; 
+            text-transform: uppercase; 
+            font-size: 0.9rem; 
+            letter-spacing: 2px; 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 10px; 
+            margin-bottom: 20px; 
+            margin-top: 10px;
+        }
         
-        .card { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid var(--gold); }
+        .card { 
+            background: var(--card); 
+            border: 1px solid var(--border); 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin-bottom: 15px; 
+            border-left: 5px solid var(--gold);
+            display: block; /* Asegura que no se colapse */
+        }
+
         .badge { font-size: 0.6rem; padding: 3px 8px; border-radius: 8px; float: right; font-weight: bold; text-transform: uppercase; color: #fff; }
+        .card h3 { margin: 0 0 8px 0; font-size: 0.95rem; }
+        .card p { margin: 4px 0; font-size: 0.8rem; color: #bbb; }
+        .actions { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
         
-        .card h3 { margin: 0 0 8px 0; font-size: 0.95rem; color: var(--white); }
-        .card p { margin: 3px 0; font-size: 0.8rem; color: #bbb; line-height: 1.4; }
-        .card strong { color: var(--gold); }
-
-        .actions { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
-        .btn { padding: 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.7rem; text-decoration: none; text-align: center; transition: 0.2s; }
+        .btn { 
+            padding: 12px; 
+            border-radius: 8px; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            font-size: 0.75rem; 
+            text-align: center; 
+            text-decoration: none;
+        }
         .btn-accept { background: var(--gold); color: #000; }
         .btn-finish { background: #222; color: #fff; border: 1px solid #444; }
-        
-        /* Ajuste para móviles */
+
+        /* Arreglo para botones del calendario en móvil */
         @media (max-width: 480px) {
-            .fc-toolbar { flex-direction: column; gap: 8px; }
+            .fc-toolbar { display: flex; flex-direction: column; gap: 5px; }
         }
     </style>
 </head>
@@ -49,7 +98,7 @@
 
     <header>
         <img src="logo.png" alt="Logo" class="logo">
-        <h2>Panel Administrativo</h2>
+        <h2>Panel Admin</h2>
     </header>
 
     <div id="calendar-container">
@@ -57,7 +106,7 @@
     </div>
 
     <div class="container">
-        <h3 class="section-title">Citas Pendientes / Aceptadas</h3>
+        <h3 class="section-title">Gestión de Citas</h3>
         <div id="lista-citas"></div>
     </div>
 
@@ -77,31 +126,22 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         let calendar;
-        let inicial = true;
 
         document.addEventListener('DOMContentLoaded', () => {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'dayGridMonth', // 1. Carga en Mes primero
-                locale: 'es', // 2. Idioma Español
-                firstDay: 1, // Lunes como primer día
-                navLinks: true, // 3. Habilita clic en días para ir a vista de día
-                navLinkDayClick: function(date, jsEvent) {
-                    calendar.changeView('timeGridDay', date);
-                },
-                buttonText: { today: 'Hoy', month: 'Mes', day: 'Día' },
+                initialView: 'dayGridMonth',
+                locale: 'es',
+                height: 'auto', // Ajuste automático para no pisar la lista
+                navLinks: true,
+                navLinkDayClick: function(date) { calendar.changeView('timeGridDay', date); },
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridDay' },
-                slotMinTime: '07:00:00',
-                slotMaxTime: '21:00:00',
-                allDaySlot: false,
-                height: 'auto'
+                buttonText: { today: 'Hoy', month: 'Mes', day: 'Día' }
             });
             calendar.render();
         });
 
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
-            if (!inicial && data) document.getElementById('notif-sound').play().catch(()=>{});
-            inicial = false;
             render(data);
         });
 
@@ -118,23 +158,20 @@
                 eventos.push({ 
                     title: c.nombre, 
                     start: c.fecha, 
-                    backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#444',
-                    borderColor: '#d4af37'
+                    backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#444' 
                 });
 
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.style.borderLeftColor = c.estado === 'Aceptada' ? '#28a745' : '#f39c12';
                 card.innerHTML = `
                     <span class="badge" style="background:${c.estado==='Aceptada'?'#28a745':'#f39c12'}">${c.estado}</span>
                     <h3>${c.nombre}</h3>
-                    <p><strong>💈 Servicio:</strong> ${c.servicio}</p>
-                    <p><strong>📅 Fecha:</strong> ${new Date(c.fecha).toLocaleString('es-ES', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})}</p>
-                    <p><strong>📱 WA:</strong> +${c.whatsapp}</p>
+                    <p>💈 ${c.servicio}</p>
+                    <p>📅 ${new Date(c.fecha).toLocaleString('es-ES', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})}</p>
                     <div class="actions">
                         ${c.estado === 'Pendiente' ? 
                         `<button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">Aceptar y WhatsApp</button>` : 
-                        `<button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar Cita</button>`}
+                        `<button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar</button>`}
                     </div>
                 `;
                 lista.appendChild(card);
@@ -144,11 +181,10 @@
         }
 
         window.cambiarEstado = (id, estado) => {
-            const citaRef = ref(db, `citas/${id}`);
-            get(citaRef).then((snap) => {
+            get(ref(db, `citas/${id}`)).then((snap) => {
                 const c = snap.val();
                 if (c && estado === 'Aceptada') {
-                    const msg = `¡Hola ${c.nombre}! 👋 Te confirmo tu cita para *${c.servicio}* el día *${new Date(c.fecha).toLocaleString()}*. ¡Te esperamos en Innovation! 💈`;
+                    const msg = `¡Hola ${c.nombre}! 👋 Te confirmo tu cita para *${c.servicio}* el día *${new Date(c.fecha).toLocaleString()}*. ¡Te esperamos!`;
                     window.open(`https://wa.me/${c.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
                 }
                 update(ref(db, `citas/${id}`), { estado });
