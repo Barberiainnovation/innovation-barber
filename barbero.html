@@ -12,6 +12,30 @@
         header { text-align: center; margin-bottom: 20px; }
         .logo { width: 80px; }
         
+        /* --- ESTILOS PARA QUITAR EL AMARILLO --- */
+        /* Quita el fondo resaltado del día de hoy en vista de Mes y Día */
+        .fc-day-today {
+            background-color: transparent !important;
+        }
+        /* Quita el resaltado amarillo de la columna de tiempo en vista de Día */
+        .fc-timegrid-col.fc-day-today {
+            background-color: transparent !important;
+        }
+        /* Cambia el color del indicador de la hora actual (la línea roja/amarilla) a Dorado */
+        .fc-timegrid-now-indicator-line {
+            border-color: var(--gold) !important;
+            border-width: 2px !important;
+        }
+        .fc-timegrid-now-indicator-arrow {
+            border-color: var(--gold) !important;
+            border-top-color: transparent !important;
+            border-bottom-color: transparent !important;
+        }
+        /* Quita cualquier borde de selección azul/amarillo */
+        .fc-highlight {
+            background: rgba(212, 175, 55, 0.1) !important; /* Un dorado casi invisible */
+        }
+
         /* Contenedor del Calendario */
         #calendar-container { 
             background: var(--card); 
@@ -19,36 +43,12 @@
             border-radius: 12px; 
             border: 1px solid var(--border); 
             margin-bottom: 30px; 
-            min-height: 400px;
         }
 
-        /* Lista de Citas (Garantizar visibilidad) */
-        #seccion-lista { 
-            width: 100%; 
-            max-width: 500px; 
-            margin: 20px auto; 
-            display: block !important; /* Evita que desaparezca */
-        }
+        #seccion-lista { width: 100%; max-width: 500px; margin: 20px auto; display: block; }
+        .titulo-lista { color: var(--gold); text-transform: uppercase; font-size: 0.9rem; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; text-align: center; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid var(--gold); }
         
-        .titulo-lista { 
-            color: var(--gold); 
-            text-transform: uppercase; 
-            font-size: 0.9rem; 
-            border-bottom: 1px solid var(--border); 
-            padding-bottom: 10px; 
-            margin-bottom: 20px; 
-            text-align: center;
-        }
-
-        .card { 
-            background: var(--card); 
-            border: 1px solid var(--border); 
-            padding: 15px; 
-            border-radius: 12px; 
-            margin-bottom: 15px; 
-            border-left: 5px solid var(--gold); 
-        }
-
         .fc { color: #fff; font-size: 0.85rem; }
         .fc-toolbar-title { color: var(--gold) !important; font-size: 1rem !important; }
         .fc-button { background: var(--gold) !important; color: #000 !important; border: none !important; font-weight: bold !important; font-size: 0.7rem !important; }
@@ -88,7 +88,6 @@
         let calendar;
         let inicial = true;
 
-        // ACTIVAR SONIDO EN PC: El navegador necesita que hagas clic UNA vez.
         document.body.addEventListener('click', () => {
             const sound = document.getElementById('notif-sound');
             sound.play().then(() => { sound.pause(); sound.currentTime = 0; });
@@ -102,7 +101,8 @@
                 navLinks: true,
                 navLinkDayClick: (date) => calendar.changeView('timeGridDay', date),
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridDay' },
-                buttonText: { today: 'Hoy', month: 'Mes', day: 'Día' }
+                buttonText: { today: 'Hoy', month: 'Mes', day: 'Día' },
+                nowIndicator: true, // Muestra la línea del tiempo actual, pero ahora en dorado.
             });
             calendar.render();
         });
@@ -110,8 +110,7 @@
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
             if (!inicial && data) {
-                const sound = document.getElementById('notif-sound');
-                sound.play().catch(e => console.log("Haz clic en la página para activar sonido"));
+                document.getElementById('notif-sound').play().catch(() => {});
             }
             inicial = false;
             render(data);
@@ -130,7 +129,8 @@
                 eventos.push({ 
                     title: `${c.nombre} - ${c.servicio}`, 
                     start: c.fecha, 
-                    backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#444' 
+                    backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#444',
+                    textColor: c.estado === 'Aceptada' ? '#000' : '#fff'
                 });
 
                 const card = document.createElement('div');
