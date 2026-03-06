@@ -12,6 +12,7 @@
             --accent-gold: #d4af37;
             --success: #28a745;
             --danger: #dc3545;
+            --whatsapp: #25d366;
         }
 
         body {
@@ -25,7 +26,6 @@
             align-items: center;
         }
 
-        /* LOGO TAMAÑO PEQUEÑO Y CONTROLADO */
         .logo-small {
             width: 120px; 
             height: 120px;
@@ -70,7 +70,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Colores por estado */
         .card-cita.pendiente { border-left-color: #f39c12; }
         .card-cita.aceptada { border-left-color: var(--success); }
 
@@ -81,7 +80,7 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            min-width: 120px;
+            min-width: 140px;
         }
 
         .btn {
@@ -90,14 +89,20 @@
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             transition: 0.3s;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-accept { background: var(--success); color: white; }
         .btn-reject { background: var(--danger); color: white; }
         .btn-finish { background: var(--accent-gold); color: black; }
+        .btn-whatsapp { background: var(--whatsapp); color: white; }
 
         .btn:hover { opacity: 0.8; transform: scale(1.02); }
 
@@ -123,7 +128,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // Configuración de Firebase proporcionada
         const firebaseConfig = {
             apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I",
             authDomain: "innovation-barber-studio.firebaseapp.com",
@@ -132,14 +136,13 @@
             messagingSenderId: "589786876751",
             appId: "1:589786876751:web:31b40f11b3810470e9933a",
             measurementId: "G-KEQM3D5L1P",
-            databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" // URL deducida del ID
+            databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const container = document.getElementById('lista-citas');
 
-        // Escuchar la base de datos en tiempo real
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
             renderCitas(data);
@@ -153,7 +156,6 @@
                 return;
             }
 
-            // Convertimos los datos en una lista y quitamos las finalizadas
             const citasArray = Object.keys(data)
                 .map(id => ({ id, ...data[id] }))
                 .filter(cita => cita.estado !== 'Finalizada')
@@ -166,16 +168,15 @@
 
             citasArray.forEach(cita => {
                 const id = cita.id;
-                const c = cita; // Usamos 'c' como abreviatura para tu código
+                const c = cita;
 
-                // 1. PREPARAMOS EL MENSAJE DE WHATSAPP
+                // Crear mensaje y link de WhatsApp
                 const mensaje = `Hola ${c.nombre}, tu cita en *Innovation Barber Studio* para el servicio de ${c.servicio} el día ${new Date(c.fecha).toLocaleString()} ha sido *CONFIRMADA*. ¡Te esperamos!`;
                 const urlWhatsapp = `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(mensaje)}`;
 
                 const card = document.createElement('div');
                 card.className = `card-cita ${c.estado.toLowerCase()}`;
                 
-                // 2. GENERAMOS EL HTML DE LA TARJETA
                 card.innerHTML = `
                     <div class="info">
                         <h3>${c.nombre}</h3>
@@ -188,21 +189,24 @@
                             <button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">Aceptar</button>
                             <button class="btn btn-reject" onclick="cambiarEstado('${id}', 'Rechazada')">Rechazar</button>
                         ` : c.estado === 'Aceptada' ? `
-                            <a href="${urlWhatsapp}" target="_blank" class="btn" style="background:#25d366; color:white; text-decoration:none; text-align:center; display:flex; align-items:center; justify-content:center;">
+                            <a href="${urlWhatsapp}" target="_blank" class="btn btn-whatsapp">
                                 Enviar WhatsApp
                             </a>
-                            <button class="btn btn-finish" style="margin-top:5px" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar</button>
-                        ` : ''}
+                            <button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar</button>
+                        ` : `
+                            <button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar</button>
+                        `}
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // Función global para actualizar estado
+        // Hacemos la función global para que el HTML la reconozca
         window.cambiarEstado = (id, nuevoEstado) => {
-            update(ref(db, `citas/${id}`), { estado: nuevoEstado })
-            .catch(err => alert("Error: " + err));
+            const updates = {};
+            updates[`/citas/${id}/estado`] = nuevoEstado;
+            update(ref(db), updates).catch(err => alert("Error: " + err));
         };
     </script>
 </body>
