@@ -8,26 +8,49 @@
     <style>
         :root { --primary: #ffffff; --accent: #d4af37; --bg-dark: #000000; --card-bg: #111111; --input-bg: #222222; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-dark); color: white; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .booking-card { background: var(--card-bg); width: 100%; max-width: 420px; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #333; }
-        .main-logo { width: 100%; max-width: 220px; margin-bottom: 25px; }
+        .booking-card { background: var(--card-bg); width: 100%; max-width: 420px; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #333; box-shadow: 0 0 20px rgba(212, 175, 55, 0.1); }
+        .main-logo { width: 100%; max-width: 200px; margin-bottom: 25px; border-radius: 10px; }
         .form-group { text-align: left; margin-bottom: 18px; }
-        label { display: block; font-size: 0.75rem; margin-bottom: 5px; color: #888; text-transform: uppercase; }
+        label { display: block; font-size: 0.75rem; margin-bottom: 5px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Contenedor para el teléfono y el prefijo */
+        .phone-input-group { display: flex; gap: 10px; }
+        .phone-input-group select { width: 40%; }
+        .phone-input-group input { width: 60%; }
+
         input, select { width: 100%; padding: 14px; background: var(--input-bg); border: 1px solid #333; border-radius: 10px; color: white; font-size: 1rem; box-sizing: border-box; }
-        .btn-reserve { width: 100%; padding: 16px; background: white; color: black; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
+        input:focus { outline: none; border-color: var(--accent); }
+        .btn-reserve { width: 100%; padding: 16px; background: white; color: black; border: none; border-radius: 10px; font-weight: 700; font-size: 1rem; cursor: pointer; text-transform: uppercase; margin-top: 10px; transition: 0.3s; }
+        .btn-reserve:hover { background: var(--accent); color: white; }
     </style>
 </head>
 <body>
     <div class="booking-card">
-        <img src="logo.png" alt="Innovation" class="main-logo">
+        <img src="logo.png" alt="Innovation Barber Studio" class="main-logo">
         <form id="form-cliente">
             <div class="form-group">
-                <label>Nombre</label>
-                <input type="text" id="nombre" required>
+                <label>Nombre del Cliente</label>
+                <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required>
             </div>
+            
             <div class="form-group">
-                <label>WhatsApp (Ej: 50212345678)</label>
-                <input type="tel" id="whatsapp" required>
+                <label>WhatsApp</label>
+                <div class="phone-input-group">
+                    <select id="codigo-pais">
+                        <option value="502" selected>🇬🇹 +502</option>
+                        <option value="503">🇸🇻 +503</option>
+                        <option value="504">🇭🇳 +504</option>
+                        <option value="505">🇳🇮 +505</option>
+                        <option value="506">🇨🇷 +506</option>
+                        <option value="507">🇵🇦 +507</option>
+                        <option value="1">🇺🇸 +1</option>
+                        <option value="52">🇲🇽 +52</option>
+                        <option value="34">🇪🇸 +34</option>
+                    </select>
+                    <input type="tel" id="whatsapp-num" placeholder="Número" required>
+                </div>
             </div>
+
             <div class="form-group">
                 <label>Servicio</label>
                 <select id="servicio">
@@ -63,17 +86,23 @@
 
         document.getElementById('form-cliente').addEventListener('submit', (e) => {
             e.preventDefault();
-            const nuevaRef = push(ref(db, 'citas'));
-            set(nuevaRef, {
+            
+            // Unimos el código de país con el número
+            const prefijo = document.getElementById('codigo-pais').value;
+            const numero = document.getElementById('whatsapp-num').value.replace(/\D/g, ''); // Limpiar el número de espacios o guiones
+            const telefonoCompleto = prefijo + numero;
+
+            const nuevaCitaRef = push(ref(db, 'citas'));
+            set(nuevaCitaRef, {
                 nombre: document.getElementById('nombre').value,
-                whatsapp: document.getElementById('whatsapp').value,
+                whatsapp: telefonoCompleto,
                 servicio: document.getElementById('servicio').value,
                 fecha: document.getElementById('fecha').value,
                 estado: 'Pendiente'
             }).then(() => {
-                alert("✅ ¡Cita enviada!");
+                alert("✅ Solicitud enviada con éxito.");
                 document.getElementById('form-cliente').reset();
-            });
+            }).catch(err => alert("Error: " + err.message));
         });
     </script>
 </body>
