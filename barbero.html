@@ -3,55 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin | Innovation Barber</title>
+    <title>Innovation Admin | Barber</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <style>
-        :root { --bg: #000; --card: #0d0d0d; --gold: #d4af37; --border: #1a1a1a; }
+        :root { --bg: #000; --card: #0d0d0d; --gold: #d4af37; --border: #1a1a1a; --text-dim: #888; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; }
-        header { text-align: center; margin-bottom: 25px; }
-        .logo { width: 80px; }
+        
+        header { text-align: center; margin: 20px 0 30px; }
+        .logo { width: 70px; }
+        h2 { font-weight: 300; letter-spacing: 5px; color: var(--gold); text-transform: uppercase; font-size: 0.8rem; margin-top: 10px; }
 
-        /* VISIBILIDAD DE DÍAS */
+        /* --- CALENDARIO PREMIUM --- */
+        #calendar-container { 
+            background: var(--card); padding: 20px; border-radius: 20px; 
+            border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.8); margin-bottom: 40px; 
+        }
+
+        /* Corrección visibilidad Días y Horas */
         .fc-col-header { background-color: #000 !important; }
-        .fc-col-header-cell { background-color: #000 !important; border: 1px solid var(--border) !important; }
-        .fc-col-header-cell-cushion { color: #fff !important; text-transform: capitalize !important; font-weight: 600; display: block; padding: 10px 0 !important; text-decoration: none !important; }
-        .fc-daygrid-day-number { color: #fff !important; text-decoration: none !important; }
+        .fc-col-header-cell-cushion { color: #fff !important; text-transform: capitalize !important; font-weight: 600; font-size: 0.8rem; padding: 10px 0 !important; text-decoration: none !important; display: block !important; }
+        .fc-timegrid-slot-label-cushion { color: var(--text-dim) !important; font-size: 0.7rem !important; }
+        .fc-daygrid-day-number { color: #fff !important; text-decoration: none !important; font-size: 0.8rem; padding: 8px !important; }
+        
+        .fc-theme-standard td, .fc-theme-standard th { border: 1px solid #111 !important; }
+        .fc-day-today { background: transparent !important; }
+        .fc-timegrid-now-indicator-line { border-color: var(--gold) !important; border-width: 2px !important; }
 
-        /* CALENDARIO Y LISTAS */
-        #calendar-container { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 40px; }
-        .card { background: #111; border: 1px solid var(--border); padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid var(--gold); }
+        /* Estilo Eventos */
+        .fc-event { border: none !important; border-radius: 8px !important; padding: 4px 8px !important; font-weight: 600 !important; font-size: 0.7rem !important; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+
+        /* Botones FullCalendar */
+        .fc-button { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; border-radius: 12px !important; text-transform: uppercase !important; font-size: 0.6rem !important; font-weight: 600 !important; letter-spacing: 1px !important; }
+        .fc-button-active { background: var(--gold) !important; color: #000 !important; }
+        .fc-toolbar-title { color: var(--gold) !important; font-size: 1rem !important; font-weight: 600 !important; text-transform: uppercase; }
+
+        /* --- LISTA DE CITAS Y SERVICIOS --- */
+        .admin-box { max-width: 500px; margin: 0 auto 20px; }
+        .card { 
+            background: linear-gradient(145deg, #111, #080808); border: 1px solid var(--border); 
+            padding: 20px; border-radius: 18px; margin-bottom: 15px; border-left: 4px solid var(--gold); 
+        }
+        .card h3 { margin: 0; font-size: 0.9rem; letter-spacing: 1px; }
+        .card p { margin: 5px 0; font-size: 0.75rem; color: var(--text-dim); }
         
-        /* SECCIÓN GESTIÓN SERVICIOS */
-        .admin-section { max-width: 500px; margin: 40px auto; padding: 20px; background: var(--card); border-radius: 15px; border: 1px solid var(--gold); }
-        .admin-section h3 { color: var(--gold); text-transform: uppercase; font-size: 0.9rem; margin-top: 0; }
-        .service-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #222; font-size: 0.85rem; }
+        .btn { width: 100%; padding: 14px; border-radius: 10px; font-weight: bold; text-transform: uppercase; cursor: pointer; border: none; font-size: 0.65rem; letter-spacing: 1px; margin-top: 10px; }
+        .btn-gold { background: var(--gold); color: #000; }
+        .btn-outline { background: transparent; color: #444; border: 1px solid #222; }
+
+        .service-editor { background: var(--card); border: 1px solid var(--gold); padding: 20px; border-radius: 18px; margin-top: 40px; }
+        .service-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #111; font-size: 0.8rem; color: #ccc; }
         .btn-del { color: #ff4444; cursor: pointer; font-weight: bold; }
-        input[type="text"] { width: 70%; padding: 8px; border-radius: 5px; border: 1px solid #333; background: #000; color: #fff; }
-        
-        .btn { padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; font-size: 0.7rem; }
-        .btn-accept { background: var(--gold); color: #000; }
-        .btn-finish { background: transparent; color: #555; border: 1px solid #333; margin-top: 5px; }
-        .btn-add { background: var(--gold); color: #000; padding: 8px 15px; }
+
+        /* Indicador de Sonido */
+        #status-audio { position: fixed; bottom: 15px; right: 15px; font-size: 0.55rem; padding: 6px 15px; border-radius: 20px; background: #111; color: #ff4444; border: 1px solid #222; cursor: pointer; letter-spacing: 1px; z-index: 1000; }
+        #status-audio.activo { color: #44ff44; border-color: var(--gold); }
     </style>
 </head>
 <body>
-    <header><img src="logo.png" alt="Logo" class="logo"><h2>Admin Panel</h2></header>
+    <header><img src="logo.png" alt="Logo" class="logo"><h2>Innovation Admin</h2></header>
     
     <div id="calendar-container"><div id="calendar"></div></div>
 
-    <div style="max-width:500px; margin:auto;"><div id="lista-citas"></div></div>
+    <div class="admin-box"><div id="lista-citas"></div></div>
 
-    <div class="admin-section">
-        <h3>Gestión de Servicios</h3>
-        <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <input type="text" id="nuevo-servicio" placeholder="Nombre del servicio">
-            <button class="btn btn-add" onclick="agregarServicio()">Añadir</button>
+    <div class="admin-box service-editor">
+        <h3 style="color:var(--gold); font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; margin-bottom:15px;">Gestionar Catálogo</h3>
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="nuevo-servicio" placeholder="Nombre servicio" style="flex:1; background:#000; color:#fff; border:1px solid #222; padding:12px; border-radius:10px;">
+            <button class="btn-gold" style="width:80px; margin:0; border-radius:10px;" onclick="agregarServicio()">+</button>
         </div>
-        <div id="lista-servicios-admin"></div>
+        <div id="lista-servicios-admin" style="margin-top:15px;"></div>
     </div>
 
-    <audio id="notif-sound" preload="auto"><source src="https://assets.mixkit.co/active_storage/sfx/2210/2210-preview.mp3" type="audio/mpeg"></audio>
+    <div id="status-audio">🔈 SONIDO OFF (CLIC PARA ACTIVAR)</div>
+    <audio id="notif-sound" preload="auto" crossorigin="anonymous"><source src="https://assets.mixkit.co/active_storage/sfx/2210/2210-preview.mp3" type="audio/mpeg"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -67,8 +93,13 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         let calendar;
+        let inicial = true;
+        const sound = document.getElementById('notif-sound');
 
-        // Iniciar Calendario
+        document.addEventListener('click', () => {
+            sound.play().then(() => { sound.pause(); sound.currentTime = 0; document.getElementById('status-audio').innerText = "🔔 SONIDO LISTO"; document.getElementById('status-audio').className = "activo"; });
+        }, { once: false });
+
         document.addEventListener('DOMContentLoaded', () => {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'dayGridMonth', locale: 'es', height: 'auto', navLinks: true,
@@ -80,22 +111,20 @@
             calendar.render();
         });
 
-        // Escuchar Citas
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
+            if(!inicial && data) sound.play().catch(() => {});
+            inicial = false;
             renderCitas(data);
         });
 
-        // Escuchar Servicios
-        onValue(ref(db, 'servicios'), (snapshot) => {
-            const servicios = snapshot.val();
+        onValue(ref(db, 'servicios'), (snap) => {
             const div = document.getElementById('lista-servicios-admin');
             div.innerHTML = '';
-            if(servicios) {
-                Object.keys(servicios).forEach(id => {
-                    div.innerHTML += `<div class="service-item">${servicios[id]} <span class="btn-del" onclick="eliminarServicio('${id}')">✕</span></div>`;
-                });
-            }
+            const servs = snap.val();
+            if(servs) Object.keys(servs).forEach(id => {
+                div.innerHTML += `<div class="service-item">${servs[id]} <span class="btn-del" onclick="eliminarServicio('${id}')">✕</span></div>`;
+            });
         });
 
         function renderCitas(data) {
@@ -106,27 +135,25 @@
             Object.keys(data).reverse().forEach(id => {
                 const c = data[id];
                 if (c.estado === 'Finalizada') return;
-                eventos.push({ title: `${c.nombre} | ${c.servicio}`, start: c.fecha, backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#222', textColor: c.estado === 'Aceptada' ? '#000' : '#fff' });
+                eventos.push({ title: `${c.nombre}`, start: c.fecha, backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#222', textColor: c.estado === 'Aceptada' ? '#000' : '#fff' });
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.innerHTML = `<div style="font-size:0.6rem; color:var(--gold); float:right">${c.estado}</div><h3>${c.nombre}</h3><p>💈 ${c.servicio}</p><p>📅 ${new Date(c.fecha).toLocaleString()}</p>
-                ${c.estado === 'Pendiente' ? `<button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">Aceptar</button>` : `<button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Terminar</button>`}`;
+                card.innerHTML = `<div style="font-size:0.6rem; color:var(--gold); float:right; text-transform:uppercase;">${c.estado}</div><h3>${c.nombre}</h3><p>💈 ${c.servicio}</p><p>📅 ${new Date(c.fecha).toLocaleString([], {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})}</p>
+                ${c.estado === 'Pendiente' ? `<button class="btn btn-gold" onclick="cambiarEstado('${id}', 'Aceptada')">Confirmar</button>` : `<button class="btn btn-outline" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar</button>`}`;
                 lista.appendChild(card);
             });
             calendar.removeAllEvents(); calendar.addEventSource(eventos);
         }
 
         window.agregarServicio = () => {
-            const input = document.getElementById('nuevo-servicio');
-            if(input.value) { push(ref(db, 'servicios'), input.value); input.value = ''; }
+            const v = document.getElementById('nuevo-servicio').value;
+            if(v) { push(ref(db, 'servicios'), v); document.getElementById('nuevo-servicio').value = ''; }
         };
-
-        window.eliminarServicio = (id) => { if(confirm('¿Eliminar servicio?')) remove(ref(db, `servicios/${id}`)); };
-
+        window.eliminarServicio = (id) => { if(confirm('¿Borrar?')) remove(ref(db, `servicios/${id}`)); };
         window.cambiarEstado = (id, estado) => {
-            get(ref(db, `citas/${id}`)).then((snap) => {
+            get(ref(db, `citas/${id}`)).then(snap => {
                 const c = snap.val();
-                if (c && estado === 'Aceptada') window.open(`https://wa.me/${c.whatsapp}?text=${encodeURIComponent('Cita confirmada: ' + c.servicio)}`, '_blank');
+                if(c && estado === 'Aceptada') window.open(`https://wa.me/${c.whatsapp}?text=${encodeURIComponent('¡Hola '+c.nombre+'! Tu cita de '+c.servicio+' ha sido confirmada.')}`);
                 update(ref(db, `citas/${id}`), { estado });
             });
         };
