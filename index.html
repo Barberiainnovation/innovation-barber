@@ -47,7 +47,7 @@
 <body>
     <div class="container">
         <img src="logo.png" alt="Logo" class="logo">
-        <h1>Innovation Studio</h1>
+        <h1>Innovation Barber Studio</h1>
         
         <label>Nombre Completo</label>
         <input type="text" id="nombre" placeholder="Tu nombre">
@@ -92,11 +92,20 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        // Bloqueo de fechas pasadas
+        document.getElementById('fecha').min = new Date().toISOString().slice(0, 16);
+
         onValue(ref(db, 'servicios'), (snap) => {
             const select = document.getElementById('servicio');
             select.innerHTML = '';
             const data = snap.val();
-            if(data) Object.values(data).forEach(s => select.innerHTML += `<option value="${s}">${s}</option>`);
+            if(data) {
+                Object.values(data).forEach(s => {
+                    select.innerHTML += `<option value="${s}">${s}</option>`;
+                });
+            } else {
+                select.innerHTML = '<option>Corte de Cabello</option>';
+            }
         });
 
         window.validarYEnviar = () => {
@@ -105,9 +114,10 @@
             const servicio = document.getElementById('servicio').value;
             const fechaInput = document.getElementById('fecha').value;
 
-            if (!nombre || !fechaInput) return alert("Por favor, llena los campos.");
+            if (!nombre || !document.getElementById('whatsapp').value || !fechaInput) return alert("Por favor, llena todos los campos.");
+            
             const fecha = new Date(fechaInput);
-            if (fecha.getHours() < 6 || fecha.getHours() >= 22) return alert("Horario: 6 AM - 10 PM");
+            if (fecha.getHours() < 6 || fecha.getHours() >= 22) return alert("Horario de atención: 6 AM - 10 PM");
 
             onValue(ref(db, 'citas'), (snap) => {
                 const data = snap.val();
@@ -115,8 +125,8 @@
                 if(data) Object.values(data).forEach(c => {
                     if(c.estado === 'Aceptada' && Math.abs(fecha.getTime() - new Date(c.fecha).getTime()) < 45*60*1000) ocupado = true;
                 });
-                if(ocupado) alert("Horario ocupado.");
-                else push(ref(db, 'citas'), { nombre, whatsapp, servicio, fecha: fechaInput, estado: 'Pendiente' }).then(() => { alert("Cita enviada!"); location.reload(); });
+                if(ocupado) alert("Este horario ya está reservado. Por favor elige otro con 45 min de diferencia.");
+                else push(ref(db, 'citas'), { nombre, whatsapp, servicio, fecha: fechaInput, estado: 'Pendiente' }).then(() => { alert("¡Cita enviada con éxito!"); location.reload(); });
             }, { onlyOnce: true });
         };
     </script>
