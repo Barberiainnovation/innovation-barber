@@ -8,9 +8,9 @@
     
     <style>
         :root {
-            --primary: #ffffff; /* Blanco predominante del logo */
-            --accent: #d4af37;  /* Dorado para resaltar detalles */
-            --bg-dark: #000000; /* Fondo negro como el logo */
+            --primary: #ffffff;
+            --accent: #d4af37;
+            --bg-dark: #000000;
             --card-bg: #111111;
             --input-bg: #222222;
         }
@@ -38,14 +38,13 @@
             border: 1px solid #333;
         }
 
-        /* Contenedor del Logo */
         .logo-area {
             margin-bottom: 25px;
         }
 
         .main-logo {
             width: 100%;
-            max-width: 220px; /* Ajuste para que luzca el poste de barbería */
+            max-width: 220px;
             height: auto;
             border-radius: 10px;
         }
@@ -83,7 +82,7 @@
         .btn-reserve {
             width: 100%;
             padding: 16px;
-            background: white; /* Botón blanco para contrastar */
+            background: white;
             color: black;
             border: none;
             border-radius: 10px;
@@ -130,9 +129,9 @@
             </div>
 
             <div class="form-group">
-    <label>WhatsApp (Ej: 50212345678)</label>
-    <input type="tel" id="whatsapp" placeholder="Código de área + número" required>
-</div>
+                <label>WhatsApp (con código de área)</label>
+                <input type="tel" id="whatsapp" placeholder="Ej: 50212345678" required>
+            </div>
             
             <div class="form-group">
                 <label>Fecha y Hora</label>
@@ -151,51 +150,58 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // CONFIGURACIÓN DE TU PROYECTO FIREBASE
+        // CONFIGURACIÓN CORREGIDA
         const firebaseConfig = {
-  apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I",
-  authDomain: "innovation-barber-studio.firebaseapp.com",
-  projectId: "innovation-barber-studio",
-  storageBucket: "innovation-barber-studio.firebasestorage.app",
-  messagingSenderId: "589786876751",
-  appId: "1:589786876751:web:31b40f11b3810470e9933a",
-  measurementId: "G-KEQM3D5L1P"
-};
+            apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I",
+            authDomain: "innovation-barber-studio.firebaseapp.com",
+            projectId: "innovation-barber-studio",
+            storageBucket: "innovation-barber-studio.firebasestorage.app",
+            messagingSenderId: "589786876751",
+            appId: "1:589786876751:web:31b40f11b3810470e9933a",
+            measurementId: "G-KEQM3D5L1P",
+            databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" // IMPORTANTE: URL añadida
+        };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-
         const form = document.getElementById('form-cliente');
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             const fechaVal = document.getElementById('fecha').value;
+            const whatsappVal = document.getElementById('whatsapp').value;
+            const nombreVal = document.getElementById('nombre').value;
+            const servicioVal = document.getElementById('servicio').value;
             
-            // Validar si la hora ya está Aceptada en la base de datos
             const citasRef = ref(db, 'citas');
+            
             onValue(citasRef, (snapshot) => {
                 const data = snapshot.val();
                 let ocupado = false;
                 
-                for (let id in data) {
-                    if (data[id].fecha === fechaVal && data[id].estado === 'Aceptada') {
-                        ocupado = true;
+                if (data) {
+                    for (let id in data) {
+                        if (data[id].fecha === fechaVal && data[id].estado === 'Aceptada') {
+                            ocupado = true;
+                        }
                     }
                 }
 
                 if (ocupado) {
                     alert("⚠️ Este horario ya está reservado. Por favor elige otro.");
                 } else {
-                    const nuevaCitaRef = push(ref(db, 'citas'));
-                    set(nuevaRef, {
-    nombre: document.getElementById('nombre').value,
-    whatsapp: document.getElementById('whatsapp').value, // <--- ESTA ES LA NUEVA
-    servicio: document.getElementById('servicio').value,
-    fecha: fechaVal,
-    estado: 'Pendiente'
+                    const nuevaCitaRef = push(ref(db, 'citas')); // Nombre de variable corregido
+                    set(nuevaCitaRef, {
+                        nombre: nombreVal,
+                        whatsapp: whatsappVal,
+                        servicio: servicioVal,
+                        fecha: fechaVal,
+                        estado: 'Pendiente'
                     }).then(() => {
                         alert("✅ Solicitud enviada a Innovation Barber Studio. Espera la confirmación.");
                         form.reset();
+                    }).catch((error) => {
+                        alert("Error: " + error.message);
                     });
                 }
             }, { onlyOnce: true });
