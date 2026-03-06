@@ -26,31 +26,13 @@
             align-items: center;
         }
 
-        .logo-small {
-            width: 120px; 
-            height: 120px;
-            object-fit: contain;
-            margin-bottom: 10px;
-            display: block;
-        }
+        .logo-small { width: 120px; height: 120px; object-fit: contain; margin-bottom: 10px; }
 
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+        header { text-align: center; margin-bottom: 30px; }
 
-        h1 {
-            font-size: 1.2rem;
-            letter-spacing: 3px;
-            color: var(--accent-gold);
-            text-transform: uppercase;
-            margin: 0;
-        }
+        h1 { font-size: 1.2rem; letter-spacing: 3px; color: var(--accent-gold); text-transform: uppercase; }
 
-        .container {
-            width: 100%;
-            max-width: 500px;
-        }
+        .container { width: 100%; max-width: 500px; }
 
         .card-cita {
             background: var(--card-bg);
@@ -62,12 +44,7 @@
             justify-content: space-between;
             align-items: center;
             border-left: 5px solid #444;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            transition: 0.3s;
         }
 
         .card-cita.pendiente { border-left-color: #f39c12; }
@@ -76,12 +53,7 @@
         .info h3 { margin: 0; font-size: 1rem; color: #fff; }
         .info p { margin: 3px 0; font-size: 0.85rem; color: #888; }
 
-        .actions {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            min-width: 140px;
-        }
+        .actions { display: flex; flex-direction: column; gap: 8px; min-width: 150px; }
 
         .btn {
             border: none;
@@ -91,12 +63,8 @@
             font-weight: 600;
             font-size: 0.7rem;
             text-transform: uppercase;
-            transition: 0.3s;
             text-decoration: none;
             text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .btn-accept { background: var(--success); color: white; }
@@ -104,13 +72,7 @@
         .btn-finish { background: var(--accent-gold); color: black; }
         .btn-whatsapp { background: var(--whatsapp); color: white; }
 
-        .btn:hover { opacity: 0.8; transform: scale(1.02); }
-
-        .no-data {
-            text-align: center;
-            color: #444;
-            margin-top: 50px;
-        }
+        .no-data { text-align: center; color: #444; margin-top: 50px; }
     </style>
 </head>
 <body>
@@ -121,8 +83,10 @@
     </header>
 
     <div class="container" id="lista-citas">
-        <p class="no-data">Conectando con la agenda...</p>
+        <p class="no-data">Cargando agenda...</p>
     </div>
+
+    <audio id="notif-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -142,15 +106,23 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const container = document.getElementById('lista-citas');
+        const sound = document.getElementById('notif-sound');
+        let primeraCarga = true;
 
         onValue(ref(db, 'citas'), (snapshot) => {
             const data = snapshot.val();
+            
+            // Sonido si hay una nueva cita (después de la carga inicial)
+            if (!primeraCarga && data) {
+                sound.play().catch(e => console.log("Sonido bloqueado por el navegador"));
+            }
+            primeraCarga = false;
+            
             renderCitas(data);
         });
 
         function renderCitas(data) {
             container.innerHTML = '';
-            
             if (!data) {
                 container.innerHTML = '<p class="no-data">No hay solicitudes hoy.</p>';
                 return;
@@ -161,18 +133,11 @@
                 .filter(cita => cita.estado !== 'Finalizada')
                 .reverse();
 
-            if (citasArray.length === 0) {
-                container.innerHTML = '<p class="no-data">¡Agenda limpia! No hay citas pendientes.</p>';
-                return;
-            }
-
-            citasArray.forEach(cita => {
-                const id = cita.id;
-                const c = cita;
-
-                // Crear mensaje y link de WhatsApp
-                const mensaje = `Hola ${c.nombre}, tu cita en *Innovation Barber Studio* para el servicio de ${c.servicio} el día ${new Date(c.fecha).toLocaleString()} ha sido *CONFIRMADA*. ¡Te esperamos!`;
-                const urlWhatsapp = `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(mensaje)}`;
+            citasArray.forEach(c => {
+                // Limpiar el número para el link wa.me
+                const numLimpio = c.whatsapp ? c.whatsapp.toString().replace(/\D/g, '') : '';
+                const msj = `Hola ${c.nombre}, te saludamos de *Innovation Barber Studio*. Tu cita para ${c.servicio} el día ${new Date(c.fecha).toLocaleString()} ha sido *CONFIRMADA*. ¡Te esperamos!`;
+                const linkWA = `https://wa.me/${numLimpio}?text=${encodeURIComponent(msj)}`;
 
                 const card = document.createElement('div');
                 card.className = `card-cita ${c.estado.toLowerCase()}`;
@@ -186,15 +151,11 @@
                     </div>
                     <div class="actions">
                         ${c.estado === 'Pendiente' ? `
-                            <button class="btn btn-accept" onclick="cambiarEstado('${id}', 'Aceptada')">Aceptar</button>
-                            <button class="btn btn-reject" onclick="cambiarEstado('${id}', 'Rechazada')">Rechazar</button>
-                        ` : c.estado === 'Aceptada' ? `
-                            <a href="${urlWhatsapp}" target="_blank" class="btn btn-whatsapp">
-                                Enviar WhatsApp
-                            </a>
-                            <button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar</button>
+                            <button class="btn btn-accept" onclick="cambiarEstado('${c.id}', 'Aceptada')">Aceptar</button>
+                            <button class="btn btn-reject" onclick="cambiarEstado('${c.id}', 'Rechazada')">Rechazar</button>
                         ` : `
-                            <button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar</button>
+                            <a href="${linkWA}" target="_blank" class="btn btn-whatsapp">Enviar WhatsApp</a>
+                            <button class="btn btn-finish" onclick="cambiarEstado('${c.id}', 'Finalizada')">Finalizar</button>
                         `}
                     </div>
                 `;
@@ -202,11 +163,8 @@
             });
         }
 
-        // Hacemos la función global para que el HTML la reconozca
         window.cambiarEstado = (id, nuevoEstado) => {
-            const updates = {};
-            updates[`/citas/${id}/estado`] = nuevoEstado;
-            update(ref(db), updates).catch(err => alert("Error: " + err));
+            update(ref(db, `citas/${id}`), { estado: nuevoEstado });
         };
     </script>
 </body>
