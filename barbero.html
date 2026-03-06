@@ -25,7 +25,7 @@
             align-items: center;
         }
 
-        /* ENCABEZADO CENTRADO */
+        /* ENCABEZADO CENTRADO CON LOGO ORIGINAL */
         header {
             display: flex;
             flex-direction: column;
@@ -37,11 +37,11 @@
         }
 
         .logo {
-            width: 130px; /* Tamaño del logo */
+            width: 130px; /* Tamaño del logo (ajústalo si es necesario) */
             height: auto;
             margin-bottom: 15px;
-            border-radius: 50%; /* Opcional: si tu logo es circular */
-            border: 2px solid var(--gold); /* Borde elegante */
+            /* SE ELIMINARON EL BORDE Y EL CÍRCULO */
+            display: block;
         }
 
         h2 {
@@ -198,7 +198,7 @@
                 const card = document.createElement('div');
                 card.className = 'card';
 
-                // Preparar link de WhatsApp
+                // Preparar link de WhatsApp (usamos los nombres exactos de tu DB)
                 const num = cita.whatsapp || '';
                 const nombre = cita.nombre || 'Cliente';
                 const msg = `Hola ${nombre}, te saludamos de *Innovation Barber Studio*. Confirmamos tu cita para ${cita.servicio} el día ${new Date(cita.fecha).toLocaleString()}. ¡Te esperamos!`;
@@ -216,7 +216,7 @@
                         <button class="btn btn-finish" onclick="cambiarEstado('${id}', 'Finalizada')">Finalizar Cita</button>
                     </div>
                 `;
-                contenedor.appendChild(card);
+                container.appendChild(card);
             });
         }
 
