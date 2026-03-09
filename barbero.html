@@ -96,6 +96,16 @@
             </div>
         </div>
 
+        <div id="modalManual" class="modal">
+            <div class="modal-content">
+                <h3 style="color:var(--gold); margin-top:0;">NUEVA CITA MANUAL</h3>
+                <p id="manual-fecha-texto" style="font-size:0.7rem; color:#888; margin-bottom:15px;"></p>
+                <input type="text" id="manual-nombre" placeholder="Nombre del Cliente">
+                <button class="btn btn-gold" id="btn-guardar-manual">GUARDAR CITA</button>
+                <button class="btn" style="background:#222; color:#fff;" onclick="document.getElementById('modalManual').style.display='none'">CANCELAR</button>
+            </div>
+        </div>
+
         <div id="modalConfig" class="modal">
             <div class="modal-content">
                 <h3 style="color:var(--gold); margin-top:0;">CONFIGURACIÓN</h3>
@@ -129,6 +139,7 @@
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
         let calendar;
+        let selectedInfoManual = null;
 
         const limpiarPrecio = (p) => String(p || 0).replace(/Q/g, '').trim();
 
@@ -181,9 +192,7 @@
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
                 buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
                 navLinks: true,
-                navLinkDayClick: (date) => {
-                    calendar.changeView('timeGridDay', date);
-                },
+                navLinkDayClick: (date) => { calendar.changeView('timeGridDay', date); },
                 eventClick: (info) => {
                     const id = info.event.id;
                     const meta = info.event.extendedProps;
@@ -193,24 +202,16 @@
                     pNota.style.display = meta.nota ? 'block' : 'none';
                     pNota.innerText = "Nota: " + (meta.nota || "");
                     document.getElementById('modalEvento').style.display = 'flex';
-                    document.getElementById('btn-eliminar-pop').onclick = () => {
-                        remove(ref(db, `citas/${id}`));
-                        cerrarPop();
-                    };
+                    document.getElementById('btn-eliminar-pop').onclick = () => { remove(ref(db, `citas/${id}`)); cerrarPop(); };
                 },
                 selectable: true,
                 select: (info) => {
                     const vistaActual = calendar.view.type;
                     if (vistaActual === 'timeGridWeek' || vistaActual === 'timeGridDay') {
-                        const n = prompt("Nombre Cliente (Cita Manual):");
-                        if(n) push(ref(db, 'citas'), { 
-                            nombre: n + " (M)", 
-                            servicio: "Manual", 
-                            whatsapp: "N/A",
-                            fecha: info.startStr.slice(0,16), 
-                            estado: 'Aceptada', 
-                            precio: 0 
-                        });
+                        selectedInfoManual = info;
+                        document.getElementById('manual-fecha-texto').innerText = new Date(info.startStr).toLocaleString();
+                        document.getElementById('manual-nombre').value = '';
+                        document.getElementById('modalManual').style.display = 'flex';
                     } else {
                         calendar.changeView('timeGridDay', info.start);
                     }
@@ -222,11 +223,25 @@
             onValue(ref(db, 'servicios'), snap => renderServicios(snap.val()));
         }
 
+        document.getElementById('btn-guardar-manual').onclick = () => {
+            const nombre = document.getElementById('manual-nombre').value;
+            if(nombre && selectedInfoManual) {
+                push(ref(db, 'citas'), { 
+                    nombre: nombre + " (M)", 
+                    servicio: "Manual", 
+                    whatsapp: "N/A",
+                    fecha: selectedInfoManual.startStr.slice(0,16), 
+                    estado: 'Aceptada', 
+                    precio: 0 
+                });
+                document.getElementById('modalManual').style.display = 'none';
+            }
+        };
+
         function renderAdmin(data) {
             const lista = document.getElementById('lista-citas'); lista.innerHTML = '';
             const eventos = []; let totalIngresos = 0; let contadorFinalizadas = 0;
             const statsServicios = {}; const mesActual = new Date().getMonth();
-
             if(data) {
                 Object.keys(data).reverse().forEach(id => {
                     const c = data[id]; const f = new Date(c.fecha);
