@@ -42,11 +42,11 @@
         .card h3 { margin: 0 0 5px 0; font-size: 0.95rem; }
         .price-tag { position: absolute; top: 20px; right: 20px; color: var(--gold); font-weight: bold; font-size: 0.9rem; }
         
-        .btn { width: 100%; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; font-size: 0.6rem; margin-top: 8px; text-transform: uppercase; transition: 0.3s; }
+        .btn { width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; font-size: 0.65rem; margin-top: 10px; text-transform: uppercase; transition: 0.3s; }
         .btn-gold { background: var(--gold); color: #000; }
         .btn-red { background: transparent; border: 1px solid var(--red); color: var(--red); }
-        .btn-outline { background: transparent; border: 1px solid #444; color: #aaa; }
         .btn-blue { background: transparent; border: 1px solid var(--blue); color: var(--blue); }
+        .btn-outline { background: transparent; border: 1px solid #444; color: #aaa; }
 
         .modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
         .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; margin: auto; }
@@ -63,7 +63,7 @@
             <img src="logo.png" style="width: 70px; margin-bottom:15px;">
             <h2 style="color:var(--gold); font-size:0.75rem; letter-spacing:2px; margin-bottom:25px;">INNOVATION BUSINESS</h2>
             <button class="btn btn-gold" onclick="loginGoogle()" style="background:#fff;">Entrar con Google</button>
-            <button class="btn" onclick="registrarNuevoAdmin()" style="color:var(--gold); border:1px solid var(--gold); background:transparent; margin-top:15px;">Registrarse</button>
+            <button class="btn btn-outline" onclick="registrarNuevoAdmin()" style="border:1px solid var(--gold); color:var(--gold); margin-top:15px;">Registrarse</button>
         </div>
     </div>
 
@@ -88,7 +88,7 @@
             </aside>
         </div>
 
-        <h2 id="seccion-citas" style="font-size: 0.8rem; letter-spacing: 2px; color: var(--gold); margin-top: 40px;">GESTIÓN DE CITAS</h2>
+        <h2 style="font-size: 0.8rem; letter-spacing: 2px; color: var(--gold); margin-top: 40px;">GESTIÓN DE CITAS</h2>
         <div class="citas-list" id="lista-citas"></div>
 
         <div id="modalEvento" class="modal">
@@ -137,10 +137,7 @@
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
         
-        let calendar;
-        let selectedInfoManual = null;
-        let serviciosActuales = {};
-        let iti;
+        let calendar, selectedInfoManual = null, serviciosActuales = {}, iti;
 
         const inputTel = document.querySelector("#manual-whatsapp");
         iti = window.intlTelInput(inputTel, {
@@ -197,6 +194,8 @@
                         Object.keys(serviciosActuales).forEach(id => {
                             selectS.innerHTML += `<option value="${id}">${serviciosActuales[id].nombre} (Q${serviciosActuales[id].precio})</option>`;
                         });
+                        document.getElementById('manual-nombre').value = '';
+                        document.getElementById('manual-whatsapp').value = '';
                         document.getElementById('modalManual').style.display = 'flex';
                     } else { calendar.changeView('timeGridDay', info.start); }
                     calendar.unselect();
@@ -209,6 +208,41 @@
                 renderServicios(serviciosActuales);
             });
         }
+
+        // GESTIÓN DE BOTONES: OTRO HORARIO Y RECHAZAR
+        window.gestionarCita = (id, accion) => {
+            get(ref(db, `citas/${id}`)).then(s => {
+                const c = s.val();
+                if (!c) return;
+
+                let msg = "";
+                if(accion === 'cancelar') {
+                    msg = "Tu cita no ha sido aceptada, agenda llena";
+                } else if(accion === 'otro') {
+                    msg = "Este horario ya ha sido ocupado, ¿gustas agendar en otro horario?";
+                }
+
+                if(c.whatsapp && c.whatsapp !== "N/A") {
+                    window.open(`https://wa.me/${c.whatsapp.replace('+', '')}?text=${encodeURIComponent(msg)}`);
+                }
+                
+                // SE ELIMINA LA NOTIFICACIÓN Y DEL CALENDARIO AL INSTANTE
+                remove(ref(db, `citas/${id}`));
+            });
+        };
+
+        window.cambiarEstado = (id, est) => {
+            get(ref(db, `citas/${id}`)).then(s => {
+                const c = s.val();
+                if(!c) return;
+                if(est === 'Aceptada' && c.whatsapp !== "N/A") {
+                    const f = new Date(c.fecha);
+                    const msg = `¡Hola ${c.nombre}! Tu cita en INNOVATION Barber Studio ha sido aceptada para el ${f.toLocaleDateString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' })}. ¡Te esperamos!`;
+                    window.open(`https://wa.me/${c.whatsapp.replace('+', '')}?text=${encodeURIComponent(msg)}`);
+                }
+                update(ref(db, `citas/${id}`), { estado: est });
+            });
+        };
 
         document.getElementById('btn-guardar-manual').onclick = () => {
             const nombre = document.getElementById('manual-nombre').value;
@@ -223,7 +257,9 @@
                 push(ref(db, 'citas'), nuevaCita).then(() => {
                     document.getElementById('modalManual').style.display = 'none';
                     if(fullWhatsapp && fullWhatsapp !== "N/A") {
-                        enviarMensajeWhatsApp(fullWhatsapp, `¡Hola ${nombre}! Tu cita en INNOVATION Barber Studio ha sido aceptada. ¡Te esperamos!`);
+                        const f = new Date(nuevaCita.fecha);
+                        const msg = `¡Hola ${nombre}! Tu cita en INNOVATION Barber Studio ha sido aceptada para el ${f.toLocaleDateString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' })}. ¡Te esperamos!`;
+                        window.open(`https://wa.me/${fullWhatsapp}?text=${encodeURIComponent(msg)}`);
                     }
                 });
             }
@@ -231,11 +267,11 @@
 
         function renderAdmin(data) {
             const lista = document.getElementById('lista-citas'); lista.innerHTML = '';
-            const eventos = []; let totalIngresos = 0; let contadorFinalizadas = 0;
-            const statsServicios = {}; const mesActual = new Date().getMonth();
+            const eventos = []; let totalIngresos = 0, contadorFinalizadas = 0;
+            const statsServicios = {}, mesActual = new Date().getMonth();
             if(data) {
                 Object.keys(data).reverse().forEach(id => {
-                    const c = data[id]; const f = new Date(c.fecha);
+                    const c = data[id], f = new Date(c.fecha);
                     const pLimpio = limpiarPrecio(c.precio);
                     if(c.estado === 'Finalizada' && f.getMonth() === mesActual) {
                         totalIngresos += parseFloat(pLimpio) || 0;
@@ -244,18 +280,14 @@
                     }
                     eventos.push({ id: id, title: c.nombre, start: c.fecha, backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : (c.estado === 'Finalizada' ? '#111' : '#333'), borderColor: 'transparent' });
                     
-                    if(c.estado !== 'Finalizada' && c.estado !== 'Cancelada') {
+                    if(c.estado === 'Pendiente' || c.estado === 'Aceptada') {
                         const card = document.createElement('div'); card.className = 'card';
                         card.innerHTML = `
                             <div class="price-tag">Q${pLimpio}</div>
                             <div style="font-size:0.55rem; color:var(--gold);">${c.estado}</div>
                             <h3>${c.nombre}</h3>
                             <p style="font-size:0.7rem; color:#888;">${c.servicio} | ${f.toLocaleString()}</p>
-                            
-                            <button class="btn btn-gold" onclick="cambiarEstado('${id}', '${c.estado==='Pendiente'?'Aceptada':'Finalizada'}')">
-                                ${c.estado==='Pendiente'?'ACEPTAR CITA':'FINALIZAR Y COBRAR'}
-                            </button>
-
+                            <button class="btn btn-gold" onclick="cambiarEstado('${id}', '${c.estado==='Pendiente'?'Aceptada':'Finalizada'}')">${c.estado==='Pendiente'?'ACEPTAR CITA':'FINALIZAR Y COBRAR'}</button>
                             ${c.estado === 'Pendiente' ? `
                                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                                     <button class="btn btn-blue" onclick="gestionarCita('${id}', 'otro')">OTRO HORARIO</button>
@@ -274,39 +306,9 @@
             if(calendar) { calendar.removeAllEvents(); calendar.addEventSource(eventos); }
         }
 
-        window.gestionarCita = (id, accion) => {
-            get(ref(db, `citas/${id}`)).then(s => {
-                const c = s.val();
-                let msg = "";
-                if(accion === 'cancelar') {
-                    msg = "Tu cita no ha sido aceptada, agenda llena";
-                    update(ref(db, `citas/${id}`), { estado: 'Cancelada' });
-                } else {
-                    msg = "Este horario ya ha sido ocupado, ¿gustas agendar en otro horario?";
-                }
-                if(c.whatsapp && c.whatsapp !== "N/A") enviarMensajeWhatsApp(c.whatsapp, msg);
-            });
-        };
-
-        window.enviarMensajeWhatsApp = (num, texto) => {
-            window.open(`https://wa.me/${num.replace('+', '')}?text=${encodeURIComponent(texto)}`);
-        };
-
-        window.cambiarEstado = (id, est) => {
-            get(ref(db, `citas/${id}`)).then(s => {
-                const c = s.val();
-                if(est === 'Aceptada' && c.whatsapp !== "N/A") {
-                    const f = new Date(c.fecha);
-                    const msg = `¡Hola ${c.nombre}! Tu cita en INNOVATION Barber Studio ha sido aceptada para el ${f.toLocaleDateString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' })}. ¡Te esperamos!`;
-                    enviarMensajeWhatsApp(c.whatsapp, msg);
-                }
-                update(ref(db, `citas/${id}`), { estado: est });
-            });
-        };
-
         window.agregarServicio = () => {
             const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value;
-            if(n && p) { push(ref(db, 'servicios'), { nombre: n, precio: p }); }
+            if(n && p) { push(ref(db, 'servicios'), { nombre: n, precio: p }); document.getElementById('serv-n').value=''; document.getElementById('serv-p').value=''; }
         };
 
         function renderServicios(servs) {
