@@ -19,11 +19,9 @@
         .logo { width: 50px; }
         .btn-config { background: transparent; border: none; color: var(--gold); font-size: 1.5rem; cursor: pointer; }
 
-        /* GRID PRINCIPAL */
         .main-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
         @media (max-width: 950px) { .main-grid { grid-template-columns: 1fr; } }
 
-        /* DASHBOARD LATERAL */
         .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 25px; height: fit-content; border-top: 4px solid var(--gold); position: sticky; top: 10px; }
         .stat-card { text-align: center; margin-bottom: 20px; }
         .stat-val { font-size: 2rem; font-weight: 600; color: var(--green); display: block; }
@@ -32,14 +30,12 @@
         #servicios-stats { font-size: 0.75rem; color: #bbb; line-height: 1.8; margin: 15px 0; padding: 15px 0; border-top: 1px solid #1a1a1a; }
         .total-highlight { background: rgba(46, 204, 113, 0.1); border: 1px solid var(--green); padding: 15px; border-radius: 12px; text-align: center; margin-top: 10px; }
 
-        /* CALENDARIO */
         #calendar-container { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; }
         .fc { --fc-border-color: #1a1a1a; --fc-today-bg-color: rgba(212,175,55,0.05); font-size: 0.85rem; }
         .fc-button { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; font-size: 0.6rem !important; text-transform: uppercase !important; }
         .fc-button-active { background: var(--gold) !important; color: #000 !important; }
         .fc-daygrid-day-number, .fc-col-header-cell-cushion { text-decoration: none !important; color: #fff !important; }
 
-        /* LISTA DE CITAS */
         .citas-list { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; padding-bottom: 50px; }
         .card { background: #080808; border: 1px solid var(--border); padding: 20px; border-radius: 18px; position: relative; border-left: 4px solid var(--gold); }
         .card h3 { margin: 0 0 5px 0; font-size: 0.95rem; }
@@ -49,7 +45,6 @@
         .btn-gold { background: var(--gold); color: #000; }
         .btn-red { background: transparent; border: 1px solid var(--red); color: var(--red); }
 
-        /* MODALES */
         .modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter: blur(5px); }
         .modal-content { background:var(--card); margin:10% auto; padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; }
         input { background:#000; color:#fff; border:1px solid #222; padding:14px; border-radius:12px; width:100%; margin-bottom:15px; box-sizing:border-box; }
@@ -124,6 +119,9 @@
         const provider = new GoogleAuthProvider();
         let calendar;
 
+        // Ayudante para limpiar la "Q" duplicada
+        const limpiarPrecio = (p) => String(p || 0).replace(/Q/g, '').trim();
+
         window.loginGoogle = () => signInWithPopup(auth, provider);
         window.logout = () => signOut(auth).then(() => location.reload());
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
@@ -197,8 +195,10 @@
             if(data) {
                 Object.keys(data).reverse().forEach(id => {
                     const c = data[id]; const f = new Date(c.fecha);
+                    const pLimpio = limpiarPrecio(c.precio);
+                    
                     if(c.estado === 'Finalizada' && f.getMonth() === mesActual) {
-                        totalIngresos += parseFloat(c.precio) || 0;
+                        totalIngresos += parseFloat(pLimpio) || 0;
                         contadorFinalizadas++;
                         statsServicios[c.servicio] = (statsServicios[c.servicio] || 0) + 1;
                     }
@@ -206,7 +206,7 @@
                     
                     if(c.estado !== 'Finalizada') {
                         const card = document.createElement('div'); card.className = 'card';
-                        card.innerHTML = `<div class="price-tag">Q${c.precio || 0}</div><div style="font-size:0.55rem; color:var(--gold);">${c.estado}</div><h3>${c.nombre}</h3><p style="font-size:0.7rem; color:#888;">${c.servicio} | ${f.toLocaleString()}</p><button class="btn btn-gold" onclick="cambiarEstado('${id}', '${c.estado==='Pendiente'?'Aceptada':'Finalizada'}')">${c.estado==='Pendiente'?'Aceptar':'Finalizar'}</button>`;
+                        card.innerHTML = `<div class="price-tag">Q${pLimpio}</div><div style="font-size:0.55rem; color:var(--gold);">${c.estado}</div><h3>${c.nombre}</h3><p style="font-size:0.7rem; color:#888;">${c.servicio} | ${f.toLocaleString()}</p><button class="btn btn-gold" onclick="cambiarEstado('${id}', '${c.estado==='Pendiente'?'Aceptada':'Finalizada'}')">${c.estado==='Pendiente'?'Aceptar':'Finalizar'}</button>`;
                         lista.appendChild(card);
                     }
                 });
@@ -234,7 +234,7 @@
         function renderServicios(servs) {
             const div = document.getElementById('lista-servicios-admin'); div.innerHTML = '';
             if(servs) Object.keys(servs).forEach(id => {
-                div.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #1a1a1a; font-size: 0.75rem;"><span>${servs[id].nombre} (Q${servs[id].precio})</span><span style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"><i class="fas fa-trash"></i></span></div>`;
+                div.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #1a1a1a; font-size: 0.75rem;"><span>${servs[id].nombre} (Q${limpiarPrecio(servs[id].precio)})</span><span style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"><i class="fas fa-trash"></i></span></div>`;
             });
         }
         window.eliminarServicio = (id) => confirm('¿Borrar?') && remove(ref(db, `servicios/${id}`));
