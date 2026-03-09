@@ -40,7 +40,6 @@
         .card { background: #080808; border: 1px solid var(--border); padding: 20px; border-radius: 18px; position: relative; border-left: 4px solid var(--gold); }
         .card h3 { margin: 0 0 5px 0; font-size: 0.95rem; }
         .price-tag { position: absolute; top: 20px; right: 20px; color: var(--gold); font-weight: bold; font-size: 0.9rem; }
-        .note-box { background: rgba(212,175,55,0.1); border-radius: 8px; padding: 10px; margin: 10px 0; font-size: 0.75rem; border: 1px dashed var(--gold); color: #ddd; }
         
         .btn { width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; font-size: 0.65rem; margin-top: 10px; text-transform: uppercase; }
         .btn-gold { background: var(--gold); color: #000; }
@@ -48,7 +47,7 @@
 
         .modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
         .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; margin: auto; }
-        input { background:#000; color:#fff; border:1px solid #222; padding:14px; border-radius:12px; width:100%; margin-bottom:15px; box-sizing:border-box; }
+        input, select { background:#000; color:#fff; border:1px solid #222; padding:14px; border-radius:12px; width:100%; margin-bottom:15px; box-sizing:border-box; font-family: 'Poppins', sans-serif; }
     </style>
 </head>
 <body>
@@ -100,8 +99,14 @@
             <div class="modal-content">
                 <h3 style="color:var(--gold); margin-top:0;">NUEVA CITA MANUAL</h3>
                 <p id="manual-fecha-texto" style="font-size:0.7rem; color:#888; margin-bottom:15px;"></p>
+                
                 <input type="text" id="manual-nombre" placeholder="Nombre del Cliente">
-                <button class="btn btn-gold" id="btn-guardar-manual">GUARDAR CITA</button>
+                <input type="number" id="manual-whatsapp" placeholder="WhatsApp (Ej: 50212345678)">
+                
+                <select id="manual-servicio">
+                    </select>
+
+                <button class="btn btn-gold" id="btn-guardar-manual">GUARDAR Y CONFIRMAR</button>
                 <button class="btn" style="background:#222; color:#fff;" onclick="document.getElementById('modalManual').style.display='none'">CANCELAR</button>
             </div>
         </div>
@@ -138,17 +143,12 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
+        
         let calendar;
         let selectedInfoManual = null;
+        let serviciosActuales = {};
 
         const limpiarPrecio = (p) => String(p || 0).replace(/Q/g, '').trim();
-
-        window.mostrarAvisoAdmin = (titulo, texto, icono = "fa-info-circle") => {
-            document.getElementById('avisoTitulo').innerText = titulo;
-            document.getElementById('avisoTexto').innerText = texto;
-            document.getElementById('avisoIcono').className = `fas ${icono}`;
-            document.getElementById('modalAvisoAdmin').style.display = 'flex';
-        };
 
         window.loginGoogle = () => signInWithPopup(auth, provider);
         window.logout = () => signOut(auth).then(() => location.reload());
@@ -156,22 +156,6 @@
         window.toggleConfig = () => {
             const m = document.getElementById('modalConfig');
             m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
-        };
-
-        window.registrarNuevoAdmin = () => {
-            signInWithPopup(auth, provider).then((result) => {
-                const user = result.user;
-                get(ref(db, 'admins_autorizados')).then((snap) => {
-                    if (!snap.exists()) {
-                        set(ref(db, 'admins_autorizados/' + user.uid), { nombre: user.displayName, email: user.email, rol: 'Dueño' }).then(() => location.reload());
-                    } else {
-                        set(ref(db, 'solicitudes_acceso/' + user.uid), { nombre: user.displayName, email: user.email, fecha: new Date().toISOString() }).then(() => { 
-                            mostrarAvisoAdmin("SOLICITUD", "Acceso enviado. El administrador debe autorizarte."); 
-                            signOut(auth); 
-                        });
-                    }
-                });
-            });
         };
 
         onAuthStateChanged(auth, (user) => {
@@ -195,12 +179,8 @@
                 navLinkDayClick: (date) => { calendar.changeView('timeGridDay', date); },
                 eventClick: (info) => {
                     const id = info.event.id;
-                    const meta = info.event.extendedProps;
                     document.getElementById('pop-nombre').innerText = info.event.title;
                     document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString();
-                    const pNota = document.getElementById('pop-nota');
-                    pNota.style.display = meta.nota ? 'block' : 'none';
-                    pNota.innerText = "Nota: " + (meta.nota || "");
                     document.getElementById('modalEvento').style.display = 'flex';
                     document.getElementById('btn-eliminar-pop').onclick = () => { remove(ref(db, `citas/${id}`)); cerrarPop(); };
                 },
@@ -210,7 +190,16 @@
                     if (vistaActual === 'timeGridWeek' || vistaActual === 'timeGridDay') {
                         selectedInfoManual = info;
                         document.getElementById('manual-fecha-texto').innerText = new Date(info.startStr).toLocaleString();
+                        
+                        // Llenar el selector de servicios con lo que hay en la BD
+                        const selectS = document.getElementById('manual-servicio');
+                        selectS.innerHTML = '';
+                        Object.keys(serviciosActuales).forEach(id => {
+                            selectS.innerHTML += `<option value="${id}">${serviciosActuales[id].nombre} (Q${serviciosActuales[id].precio})</option>`;
+                        });
+                        
                         document.getElementById('manual-nombre').value = '';
+                        document.getElementById('manual-whatsapp').value = '';
                         document.getElementById('modalManual').style.display = 'flex';
                     } else {
                         calendar.changeView('timeGridDay', info.start);
@@ -220,21 +209,42 @@
             });
             calendar.render();
             onValue(ref(db, 'citas'), snap => renderAdmin(snap.val()));
-            onValue(ref(db, 'servicios'), snap => renderServicios(snap.val()));
+            onValue(ref(db, 'servicios'), snap => {
+                serviciosActuales = snap.val() || {};
+                renderServicios(serviciosActuales);
+            });
         }
 
+        // GUARDAR CITA MANUAL Y ENVIAR WHATSAPP
         document.getElementById('btn-guardar-manual').onclick = () => {
             const nombre = document.getElementById('manual-nombre').value;
-            if(nombre && selectedInfoManual) {
-                push(ref(db, 'citas'), { 
+            const whatsapp = document.getElementById('manual-whatsapp').value;
+            const servicioKey = document.getElementById('manual-servicio').value;
+            const serv = serviciosActuales[servicioKey];
+
+            if(nombre && selectedInfoManual && serv) {
+                const nuevaCita = { 
                     nombre: nombre + " (M)", 
-                    servicio: "Manual", 
-                    whatsapp: "N/A",
+                    servicio: serv.nombre, 
+                    whatsapp: whatsapp || "N/A",
                     fecha: selectedInfoManual.startStr.slice(0,16), 
                     estado: 'Aceptada', 
-                    precio: 0 
+                    precio: serv.precio 
+                };
+
+                push(ref(db, 'citas'), nuevaCita).then(() => {
+                    document.getElementById('modalManual').style.display = 'none';
+                    
+                    // Si hay WhatsApp, abrirlo con el mismo texto de confirmación
+                    if(whatsapp && whatsapp !== "N/A") {
+                        const fechaCita = new Date(nuevaCita.fecha);
+                        const opciones = { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' };
+                        const mensaje = `¡Hola ${nombre}! Tu cita en INNOVATION Barber Studio ha sido aceptada para el ${fechaCita.toLocaleDateString('es-GT', opciones)}. ¡Te esperamos!`;
+                        window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(mensaje)}`);
+                    }
                 });
-                document.getElementById('modalManual').style.display = 'none';
+            } else {
+                alert("Por favor completa el nombre y selecciona un servicio.");
             }
         };
 
@@ -254,7 +264,7 @@
                     eventos.push({ 
                         id: id, title: c.nombre, start: c.fecha, 
                         backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : (c.estado === 'Finalizada' ? '#111' : '#333'), 
-                        borderColor: 'transparent', extendedProps: { nota: c.nota || "" }
+                        borderColor: 'transparent'
                     });
                     if(c.estado !== 'Finalizada') {
                         const card = document.createElement('div'); card.className = 'card';
@@ -263,7 +273,6 @@
                             <div style="font-size:0.55rem; color:var(--gold);">${c.estado}</div>
                             <h3>${c.nombre}</h3>
                             <p style="font-size:0.7rem; color:#888;">${c.servicio} | ${f.toLocaleString()}</p>
-                            ${c.nota ? `<div class="note-box"><i class="fas fa-sticky-note" style="color:var(--gold);"></i> ${c.nota}</div>` : ""}
                             <button class="btn btn-gold" onclick="cambiarEstado('${id}', '${c.estado==='Pendiente'?'Aceptada':'Finalizada'}')">
                                 ${c.estado==='Pendiente'?'Aceptar Cita':'Finalizar y Cobrar'}
                             </button>`;
@@ -293,18 +302,13 @@
 
         window.agregarServicio = () => {
             const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value;
-            if(n && p) { 
-                push(ref(db, 'servicios'), { nombre: n, precio: p }); 
-                document.getElementById('serv-n').value = ''; 
-                document.getElementById('serv-p').value = ''; 
-                mostrarAvisoAdmin("CATÁLOGO", "Servicio añadido correctamente.");
-            }
+            if(n && p) { push(ref(db, 'servicios'), { nombre: n, precio: p }); }
         };
 
         function renderServicios(servs) {
             const div = document.getElementById('lista-servicios-admin'); div.innerHTML = '';
             if(servs) Object.keys(servs).forEach(id => {
-                div.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #1a1a1a; font-size: 0.75rem;"><span>${servs[id].nombre} (Q${limpiarPrecio(servs[id].precio)})</span><span style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"><i class="fas fa-trash"></i></span></div>`;
+                div.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #1a1a1a; font-size: 0.75rem;"><span>${servs[id].nombre} (Q${servs[id].precio})</span><span style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"><i class="fas fa-trash"></i></span></div>`;
             });
         }
         window.eliminarServicio = (id) => remove(ref(db, `servicios/${id}`));
