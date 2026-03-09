@@ -132,7 +132,6 @@
 
         const limpiarPrecio = (p) => String(p || 0).replace(/Q/g, '').trim();
 
-        // Función de aviso interna para evitar textos técnicos
         window.mostrarAvisoAdmin = (titulo, texto, icono = "fa-info-circle") => {
             document.getElementById('avisoTitulo').innerText = titulo;
             document.getElementById('avisoTexto').innerText = texto;
@@ -184,7 +183,6 @@
                 navLinks: true,
                 navLinkDayClick: (date) => {
                     calendar.changeView('timeGridDay', date);
-                    document.getElementById('seccion-citas').scrollIntoView({ behavior: 'smooth' });
                 },
                 eventClick: (info) => {
                     const id = info.event.id;
@@ -199,6 +197,24 @@
                         remove(ref(db, `citas/${id}`));
                         cerrarPop();
                     };
+                },
+                selectable: true,
+                select: (info) => {
+                    const vistaActual = calendar.view.type;
+                    if (vistaActual === 'timeGridWeek' || vistaActual === 'timeGridDay') {
+                        const n = prompt("Nombre Cliente (Cita Manual):");
+                        if(n) push(ref(db, 'citas'), { 
+                            nombre: n + " (M)", 
+                            servicio: "Manual", 
+                            whatsapp: "N/A",
+                            fecha: info.startStr.slice(0,16), 
+                            estado: 'Aceptada', 
+                            precio: 0 
+                        });
+                    } else {
+                        calendar.changeView('timeGridDay', info.start);
+                    }
+                    calendar.unselect();
                 }
             });
             calendar.render();
