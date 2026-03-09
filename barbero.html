@@ -9,10 +9,10 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <style>
         :root { --bg: #000; --card: #0d0d0d; --gold: #d4af37; --border: #1a1a1a; --green: #2ecc71; --red: #ff4d4d; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; scroll-behavior: smooth; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
         
         #login-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; align-items:center; justify-content:center; }
-        .login-box { width:320px; padding:40px; text-align:center; background:var(--card); border-radius:25px; border:1px solid var(--border); box-shadow: 0 10px 50px rgba(0,0,0,1); }
+        .login-box { width:320px; padding:40px; text-align:center; background:var(--card); border-radius:25px; border:1px solid var(--border); }
 
         #admin-content { display:none; width: 100%; max-width: 1200px; margin: 0 auto; }
         header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; }
@@ -22,43 +22,33 @@
         .main-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
         @media (max-width: 950px) { .main-grid { grid-template-columns: 1fr; } }
 
-        .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 25px; height: fit-content; border-top: 4px solid var(--gold); position: sticky; top: 10px; }
-        .stat-card { text-align: center; margin-bottom: 20px; }
+        .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 25px; border-top: 4px solid var(--gold); position: sticky; top: 10px; }
         .stat-val { font-size: 2rem; font-weight: 600; color: var(--green); display: block; }
-        .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #666; letter-spacing: 1px; margin-bottom: 5px; display: block; }
+        .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #666; letter-spacing: 1px; }
         
-        #servicios-stats { font-size: 0.75rem; color: #bbb; line-height: 1.8; margin: 15px 0; padding: 15px 0; border-top: 1px solid #1a1a1a; }
-        .total-highlight { background: rgba(46, 204, 113, 0.1); border: 1px solid var(--green); padding: 15px; border-radius: 12px; text-align: center; margin-top: 10px; }
+        #calendar-container { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); }
+        .fc { --fc-border-color: #1a1a1a; font-size: 0.85rem; }
 
-        #calendar-container { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; }
-        .fc { --fc-border-color: #1a1a1a; --fc-today-bg-color: rgba(212,175,55,0.05); font-size: 0.85rem; }
-        .fc-button { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; font-size: 0.6rem !important; text-transform: uppercase !important; }
-        .fc-button-active { background: var(--gold) !important; color: #000 !important; }
-        .fc-daygrid-day-number, .fc-col-header-cell-cushion { text-decoration: none !important; color: #fff !important; }
-
-        .citas-list { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; padding-bottom: 50px; }
+        .citas-list { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
         .card { background: #080808; border: 1px solid var(--border); padding: 20px; border-radius: 18px; position: relative; border-left: 4px solid var(--gold); }
-        .card h3 { margin: 0 0 5px 0; font-size: 0.95rem; }
-        .price-tag { position: absolute; top: 20px; right: 20px; color: var(--gold); font-weight: bold; font-size: 0.9rem; }
         .note-box { background: rgba(212,175,55,0.1); border-radius: 8px; padding: 10px; margin: 10px 0; font-size: 0.75rem; border: 1px dashed var(--gold); color: #ddd; }
         
         .btn { width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; font-size: 0.65rem; margin-top: 10px; text-transform: uppercase; }
         .btn-gold { background: var(--gold); color: #000; }
         .btn-red { background: transparent; border: 1px solid var(--red); color: var(--red); }
 
-        .modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter: blur(5px); }
-        .modal-content { background:var(--card); margin:10% auto; padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; }
-        input { background:#000; color:#fff; border:1px solid #222; padding:14px; border-radius:12px; width:100%; margin-bottom:15px; box-sizing:border-box; }
+        /* MODALES ELITE */
+        .modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:350px; border-radius:20px; text-align: center; margin: auto; }
+        input { background:#000; color:#fff; border:1px solid #222; padding:12px; border-radius:12px; width:100%; margin-bottom:10px; box-sizing:border-box; }
     </style>
 </head>
 <body>
 
     <div id="login-overlay">
         <div class="login-box">
-            <img src="logo.png" style="width: 70px; margin-bottom:15px;">
-            <h2 style="color:var(--gold); font-size:0.75rem; letter-spacing:2px; margin-bottom:25px;">INNOVATION BUSINESS</h2>
-            <button class="btn btn-gold" onclick="loginGoogle()" style="background:#fff;">Entrar con Google</button>
-            <button class="btn" onclick="registrarNuevoAdmin()" style="color:var(--gold); border:1px solid var(--gold); background:transparent; margin-top:15px;">Registrarse</button>
+            <h2 style="color:var(--gold); font-size:0.8rem; letter-spacing:2px;">INNOVATION ADMIN</h2>
+            <button class="btn btn-gold" onclick="loginGoogle()">Entrar al Panel</button>
         </div>
     </div>
 
@@ -73,12 +63,12 @@
             <aside class="sidebar-stats">
                 <div class="stat-card">
                     <span class="stat-label">Citas Finalizadas</span>
-                    <span class="stat-val" id="citas-count" style="color:var(--gold);">0</span>
+                    <span id="citas-count" class="stat-val" style="color:var(--gold);">0</span>
                 </div>
-                <div id="servicios-stats"></div>
-                <div class="total-highlight">
-                    <span class="stat-label" style="color:var(--green);">Ingresos del Mes</span>
-                    <span class="stat-val" id="ingreso-total">Q0.00</span>
+                <div id="servicios-stats" style="margin: 20px 0; font-size: 0.8rem;"></div>
+                <div style="background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 12px; text-align: center;">
+                    <span class="stat-label" style="color:var(--green);">Ingresos</span>
+                    <span id="ingreso-total" class="stat-val">Q0.00</span>
                 </div>
             </aside>
         </div>
@@ -92,19 +82,27 @@
                 <p id="pop-fecha" style="font-size:0.8rem; color:#888;"></p>
                 <div id="pop-nota" class="note-box" style="display:none;"></div>
                 <button class="btn btn-red" id="btn-eliminar-pop">ELIMINAR CITA</button>
-                <button class="btn" style="background:#222; color:#fff;" onclick="cerrarPop()">CERRAR</button>
+                <button class="btn" style="background:#222; color:#fff;" onclick="cerrarModal('modalEvento')">CERRAR</button>
+            </div>
+        </div>
+
+        <div id="modalAvisoAdmin" class="modal">
+            <div class="modal-content" style="border-color: var(--gold);">
+                <i id="avisoIcono" class="fas fa-info-circle" style="font-size: 3rem; color: var(--gold); margin-bottom: 15px;"></i>
+                <h3 id="avisoTitulo" style="color:var(--gold); margin:0;">AVISO</h3>
+                <p id="avisoTexto" style="color:#888; font-size: 0.85rem; margin: 15px 0;"></p>
+                <button class="btn btn-gold" onclick="cerrarModal('modalAvisoAdmin')">ENTENDIDO</button>
             </div>
         </div>
 
         <div id="modalConfig" class="modal">
             <div class="modal-content">
-                <h3 style="color:var(--gold); margin-top:0;">CONFIGURACIÓN</h3>
-                <input type="text" id="serv-n" placeholder="Nombre Servicio">
-                <input type="text" id="serv-p" placeholder="Precio (ej: 100)">
-                <button class="btn btn-gold" onclick="agregarServicio()">Añadir al Catálogo</button>
-                <div id="lista-servicios-admin" style="margin-top:20px; max-height:200px; overflow-y:auto; border-top: 1px solid #1a1a1a; padding-top:10px; text-align: left;"></div>
+                <h3 style="color:var(--gold); margin-top:0;">SERVICIOS</h3>
+                <input type="text" id="serv-n" placeholder="Nombre">
+                <input type="text" id="serv-p" placeholder="Precio">
+                <button class="btn btn-gold" onclick="agregarServicio()">Añadir</button>
+                <div id="lista-servicios-admin" style="margin-top:15px; max-height:150px; overflow-y:auto; text-align: left;"></div>
                 <button class="btn" style="background:#222; color:#fff;" onclick="toggleConfig()">CERRAR</button>
-                <button class="btn" style="background:transparent; color:red; border:1px solid red; margin-top:20px;" onclick="logout()">CERRAR SESIÓN</button>
             </div>
         </div>
     </div>
@@ -121,27 +119,18 @@
         const provider = new GoogleAuthProvider();
         let calendar;
 
-        const limpiarPrecio = (p) => String(p || 0).replace(/Q/g, '').trim();
-
         window.loginGoogle = () => signInWithPopup(auth, provider);
-        window.logout = () => signOut(auth).then(() => location.reload());
-        window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
+        window.cerrarModal = (id) => document.getElementById(id).style.display = 'none';
         window.toggleConfig = () => {
             const m = document.getElementById('modalConfig');
-            m.style.display = (m.style.display === 'block') ? 'none' : 'block';
+            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
         };
 
-        window.registrarNuevoAdmin = () => {
-            signInWithPopup(auth, provider).then((result) => {
-                const user = result.user;
-                get(ref(db, 'admins_autorizados')).then((snap) => {
-                    if (!snap.exists()) {
-                        set(ref(db, 'admins_autorizados/' + user.uid), { nombre: user.displayName, email: user.email, rol: 'Dueño' }).then(() => location.reload());
-                    } else {
-                        set(ref(db, 'solicitudes_acceso/' + user.uid), { nombre: user.displayName, email: user.email, fecha: new Date().toISOString() }).then(() => { alert("Solicitud de acceso enviada correctamente."); signOut(auth); });
-                    }
-                });
-            });
+        window.mostrarAviso = (titulo, texto, icono = "fa-info-circle") => {
+            document.getElementById('avisoTitulo').innerText = titulo;
+            document.getElementById('avisoTexto').innerText = texto;
+            document.getElementById('avisoIcono').className = `fas ${icono}`;
+            document.getElementById('modalAvisoAdmin').style.display = 'flex';
         };
 
         onAuthStateChanged(auth, (user) => {
@@ -158,35 +147,20 @@
 
         function initCalendar() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'dayGridMonth', locale: 'es', firstDay: 1,
-                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
-                buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
-                navLinks: true,
-                navLinkDayClick: (date) => {
-                    calendar.changeView('timeGridDay', date);
-                    document.getElementById('seccion-citas').scrollIntoView({ behavior: 'smooth' });
-                },
+                initialView: 'dayGridMonth', locale: 'es',
                 eventClick: (info) => {
                     const id = info.event.id;
                     const meta = info.event.extendedProps;
                     document.getElementById('pop-nombre').innerText = info.event.title;
                     document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString();
-                    
                     const pNota = document.getElementById('pop-nota');
-                    if(meta.nota) { pNota.innerText = "Nota: " + meta.nota; pNota.style.display = 'block'; }
-                    else { pNota.style.display = 'none'; }
-
-                    document.getElementById('modalEvento').style.display = 'block';
+                    pNota.style.display = meta.nota ? 'block' : 'none';
+                    pNota.innerText = meta.nota;
+                    document.getElementById('modalEvento').style.display = 'flex';
                     document.getElementById('btn-eliminar-pop').onclick = () => {
-                        if(confirm("¿Estás seguro de eliminar esta cita?")) { remove(ref(db, `citas/${id}`)); cerrarPop(); }
+                        remove(ref(db, `citas/${id}`));
+                        cerrarModal('modalEvento');
                     };
-                },
-                selectable: true,
-                select: (info) => {
-                    if (calendar.view.type !== 'dayGridMonth') {
-                        const n = prompt("Nombre Cliente (Cita Manual):");
-                        if(n) push(ref(db, 'citas'), { nombre: n + " (M)", servicio: "Manual", fecha: info.startStr.slice(0,16), estado: 'Aceptada', precio: 0 });
-                    }
                 }
             });
             calendar.render();
@@ -196,83 +170,53 @@
 
         function renderAdmin(data) {
             const lista = document.getElementById('lista-citas'); lista.innerHTML = '';
-            const eventos = []; let totalIngresos = 0; let contadorFinalizadas = 0;
-            const statsServicios = {}; const mesActual = new Date().getMonth();
-
+            const eventos = []; let total = 0; let finalizadas = 0;
             if(data) {
                 Object.keys(data).reverse().forEach(id => {
-                    const c = data[id]; const f = new Date(c.fecha);
-                    const pLimpio = limpiarPrecio(c.precio);
-                    
-                    if(c.estado === 'Finalizada' && f.getMonth() === mesActual) {
-                        totalIngresos += parseFloat(pLimpio) || 0;
-                        contadorFinalizadas++;
-                        statsServicios[c.servicio] = (statsServicios[c.servicio] || 0) + 1;
-                    }
-                    eventos.push({ 
-                        id: id, 
-                        title: c.nombre, 
-                        start: c.fecha, 
-                        backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : (c.estado === 'Finalizada' ? '#111' : '#333'), 
-                        borderColor: 'transparent',
-                        extendedProps: { nota: c.nota || "" }
-                    });
-                    
+                    const c = data[id];
+                    if(c.estado === 'Finalizada') { total += parseFloat(c.precio) || 0; finalizadas++; }
+                    eventos.push({ id: id, title: c.nombre, start: c.fecha, backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#333', extendedProps: { nota: c.nota } });
                     if(c.estado !== 'Finalizada') {
                         const card = document.createElement('div'); card.className = 'card';
-                        let notaHtml = c.nota ? `<div class="note-box"><i class="fas fa-sticky-note" style="color:var(--gold); margin-right:5px;"></i> ${c.nota}</div>` : "";
-                        
                         card.innerHTML = `
-                            <div class="price-tag">Q${pLimpio}</div>
-                            <div style="font-size:0.55rem; color:var(--gold);">${c.estado}</div>
+                            <div style="font-size:0.6rem; color:var(--gold);">${c.estado}</div>
                             <h3>${c.nombre}</h3>
-                            <p style="font-size:0.7rem; color:#888;">${c.servicio} | ${f.toLocaleString()}</p>
-                            ${notaHtml}
+                            <p style="font-size:0.75rem; color:#888;">${c.servicio} | Q${c.precio}</p>
+                            ${c.nota ? `<div class="note-box">${c.nota}</div>` : ""}
                             <button class="btn btn-gold" onclick="cambiarEstado('${id}', '${c.estado==='Pendiente'?'Aceptada':'Finalizada'}')">
-                                ${c.estado==='Pendiente'?'Aceptar Cita':'Finalizar y Cobrar'}
+                                ${c.estado==='Pendiente'?'Aceptar':'Finalizar'}
                             </button>`;
                         lista.appendChild(card);
                     }
                 });
             }
-            document.getElementById('ingreso-total').innerText = `Q${totalIngresos.toFixed(2)}`;
-            document.getElementById('citas-count').innerText = contadorFinalizadas;
-            const sDiv = document.getElementById('servicios-stats'); sDiv.innerHTML = '<strong>Servicios del Mes:</strong>';
-            for(let s in statsServicios) sDiv.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:0.7rem;"><span>${s}</span> <span>${statsServicios[s]}</span></div>`;
+            document.getElementById('ingreso-total').innerText = `Q${total.toFixed(2)}`;
+            document.getElementById('citas-count').innerText = finalizadas;
             if(calendar) { calendar.removeAllEvents(); calendar.addEventSource(eventos); }
         }
 
         window.cambiarEstado = (id, est) => {
-            get(ref(db, `citas/${id}`)).then(s => {
-                const c = s.val();
-                if(est === 'Aceptada' && c.whatsapp !== "N/A") {
-                    const fechaCita = new Date(c.fecha);
-                    const opciones = { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' };
-                    const fechaFormateada = fechaCita.toLocaleDateString('es-GT', opciones);
-                    const mensaje = `¡Hola ${c.nombre}! Tu cita en INNOVATION Barber Studio ha sido aceptada y agendada para el ${fechaFormateada}. ¡Te esperamos!`;
-                    window.open(`https://wa.me/${c.whatsapp}?text=${encodeURIComponent(mensaje)}`);
-                }
-                update(ref(db, `citas/${id}`), { estado: est });
+            update(ref(db, `citas/${id}`), { estado: est }).then(() => {
+                if(est === 'Aceptada') mostrarAviso("CITA ACEPTADA", "La cita se ha agendado con éxito.", "fa-check-circle");
             });
         };
 
         window.agregarServicio = () => {
             const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value;
-            if(n && p) { 
-                push(ref(db, 'servicios'), { nombre: n, precio: p }); 
-                document.getElementById('serv-n').value = ''; 
-                document.getElementById('serv-p').value = ''; 
-                alert("Servicio añadido al catálogo.");
+            if(n && p) {
+                push(ref(db, 'servicios'), { nombre: n, precio: p });
+                document.getElementById('serv-n').value = ''; document.getElementById('serv-p').value = '';
+                mostrarAviso("CATÁLOGO", "Servicio añadido correctamente.");
             }
         };
 
         function renderServicios(servs) {
             const div = document.getElementById('lista-servicios-admin'); div.innerHTML = '';
             if(servs) Object.keys(servs).forEach(id => {
-                div.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #1a1a1a; font-size: 0.75rem;"><span>${servs[id].nombre} (Q${limpiarPrecio(servs[id].precio)})</span><span style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"><i class="fas fa-trash"></i></span></div>`;
+                div.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:0.7rem; padding:5px 0;"><span>${servs[id].nombre}</span> <span style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')">X</span></div>`;
             });
         }
-        window.eliminarServicio = (id) => confirm('¿Borrar este servicio?') && remove(ref(db, `servicios/${id}`));
+        window.eliminarServicio = (id) => remove(ref(db, `servicios/${id}`));
     </script>
 </body>
 </html>
