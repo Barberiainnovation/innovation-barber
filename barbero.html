@@ -27,7 +27,13 @@
         .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #666; letter-spacing: 1px; }
         
         #calendar-container { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); }
-        .fc { --fc-border-color: #1a1a1a; font-size: 0.85rem; }
+        
+        /* Estilos para que los botones de FullCalendar se vean Premium */
+        .fc { --fc-border-color: #1a1a1a; --fc-today-bg-color: rgba(212, 175, 55, 0.1); font-size: 0.85rem; }
+        .fc-button-primary { background-color: transparent !important; border: 1px solid var(--gold) !important; color: var(--gold) !important; text-transform: uppercase !important; font-size: 0.65rem !important; font-weight: 600 !important; }
+        .fc-button-active { background-color: var(--gold) !important; color: #000 !important; }
+        .fc-toolbar-title { font-size: 1.1rem !important; font-weight: 600; color: var(--gold); }
+        .fc-list-day-side, .fc-list-day-text { color: var(--gold) !important; }
 
         .citas-list { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
         .card { background: #080808; border: 1px solid var(--border); padding: 20px; border-radius: 18px; position: relative; border-left: 4px solid var(--gold); }
@@ -37,7 +43,6 @@
         .btn-gold { background: var(--gold); color: #000; }
         .btn-red { background: transparent; border: 1px solid var(--red); color: var(--red); }
 
-        /* MODALES ELITE */
         .modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:350px; border-radius:20px; text-align: center; margin: auto; }
         input { background:#000; color:#fff; border:1px solid #222; padding:12px; border-radius:12px; width:100%; margin-bottom:10px; box-sizing:border-box; }
@@ -59,7 +64,9 @@
         </header>
 
         <div class="main-grid">
-            <div id="calendar-container"><div id="calendar"></div></div>
+            <div id="calendar-container">
+                <div id="calendar"></div>
+            </div>
             <aside class="sidebar-stats">
                 <div class="stat-card">
                     <span class="stat-label">Citas Finalizadas</span>
@@ -87,7 +94,7 @@
         </div>
 
         <div id="modalAvisoAdmin" class="modal">
-            <div class="modal-content" style="border-color: var(--gold);">
+            <div class="modal-content">
                 <i id="avisoIcono" class="fas fa-info-circle" style="font-size: 3rem; color: var(--gold); margin-bottom: 15px;"></i>
                 <h3 id="avisoTitulo" style="color:var(--gold); margin:0;">AVISO</h3>
                 <p id="avisoTexto" style="color:#888; font-size: 0.85rem; margin: 15px 0;"></p>
@@ -97,8 +104,8 @@
 
         <div id="modalConfig" class="modal">
             <div class="modal-content">
-                <h3 style="color:var(--gold); margin-top:0;">SERVICIOS</h3>
-                <input type="text" id="serv-n" placeholder="Nombre">
+                <h3 style="color:var(--gold); margin-top:0;">CONFIGURACIÓN</h3>
+                <input type="text" id="serv-n" placeholder="Nombre Servicio">
                 <input type="text" id="serv-p" placeholder="Precio">
                 <button class="btn btn-gold" onclick="agregarServicio()">Añadir</button>
                 <div id="lista-servicios-admin" style="margin-top:15px; max-height:150px; overflow-y:auto; text-align: left;"></div>
@@ -112,7 +119,12 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, set, get, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", authDomain: "innovation-barber-studio.firebaseapp.com", projectId: "innovation-barber-studio", databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", 
+            authDomain: "innovation-barber-studio.firebaseapp.com", 
+            projectId: "innovation-barber-studio", 
+            databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" 
+        };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
@@ -146,8 +158,25 @@
         });
 
         function initCalendar() {
-            calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'dayGridMonth', locale: 'es',
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'es', // Idioma español
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                },
+                slotMinTime: '07:00:00', // Horario laboral inicio
+                slotMaxTime: '22:00:00', // Horario laboral fin
+                allDaySlot: false,
+                buttonText: {
+                    today: 'Hoy',
+                    month: 'Mes',
+                    week: 'Semana',
+                    day: 'Día',
+                    list: 'Agenda'
+                },
                 eventClick: (info) => {
                     const id = info.event.id;
                     const meta = info.event.extendedProps;
@@ -175,14 +204,21 @@
                 Object.keys(data).reverse().forEach(id => {
                     const c = data[id];
                     if(c.estado === 'Finalizada') { total += parseFloat(c.precio) || 0; finalizadas++; }
-                    eventos.push({ id: id, title: c.nombre, start: c.fecha, backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#333', extendedProps: { nota: c.nota } });
+                    eventos.push({ 
+                        id: id, 
+                        title: c.nombre, 
+                        start: c.fecha, 
+                        backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : (c.estado === 'Finalizada' ? '#111' : '#333'), 
+                        borderColor: 'transparent',
+                        extendedProps: { nota: c.nota || "" } 
+                    });
                     if(c.estado !== 'Finalizada') {
                         const card = document.createElement('div'); card.className = 'card';
                         card.innerHTML = `
                             <div style="font-size:0.6rem; color:var(--gold);">${c.estado}</div>
                             <h3>${c.nombre}</h3>
                             <p style="font-size:0.75rem; color:#888;">${c.servicio} | Q${c.precio}</p>
-                            ${c.nota ? `<div class="note-box">${c.nota}</div>` : ""}
+                            ${c.nota ? `<div class="note-box"><i class="fas fa-sticky-note" style="color:var(--gold);"></i> ${c.nota}</div>` : ""}
                             <button class="btn btn-gold" onclick="cambiarEstado('${id}', '${c.estado==='Pendiente'?'Aceptada':'Finalizada'}')">
                                 ${c.estado==='Pendiente'?'Aceptar':'Finalizar'}
                             </button>`;
@@ -197,7 +233,7 @@
 
         window.cambiarEstado = (id, est) => {
             update(ref(db, `citas/${id}`), { estado: est }).then(() => {
-                if(est === 'Aceptada') mostrarAviso("CITA ACEPTADA", "La cita se ha agendado con éxito.", "fa-check-circle");
+                if(est === 'Aceptada') mostrarAviso("SISTEMA", "Cita confirmada en agenda.", "fa-check-circle");
             });
         };
 
@@ -206,14 +242,14 @@
             if(n && p) {
                 push(ref(db, 'servicios'), { nombre: n, precio: p });
                 document.getElementById('serv-n').value = ''; document.getElementById('serv-p').value = '';
-                mostrarAviso("CATÁLOGO", "Servicio añadido correctamente.");
+                mostrarAviso("CATÁLOGO", "Servicio actualizado.");
             }
         };
 
         function renderServicios(servs) {
             const div = document.getElementById('lista-servicios-admin'); div.innerHTML = '';
             if(servs) Object.keys(servs).forEach(id => {
-                div.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:0.7rem; padding:5px 0;"><span>${servs[id].nombre}</span> <span style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')">X</span></div>`;
+                div.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:0.75rem; padding:8px 0; border-bottom:1px solid #1a1a1a;"><span>${servs[id].nombre} (Q${servs[id].precio})</span> <span style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"><i class="fas fa-trash"></i></span></div>`;
             });
         }
         window.eliminarServicio = (id) => remove(ref(db, `servicios/${id}`));
