@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Innovation Admin | Pro Control</title>
+    <title>Innovation Admin | Final Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
@@ -28,16 +28,15 @@
         #calendar-container { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); }
         .fc-button { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; font-size: 0.6rem !important; }
         .fc-button-active { background: var(--gold) !important; color: #000 !important; }
+        .fc-daygrid-day-number, .fc-col-header-cell-cushion { text-decoration: none !important; color: #fff !important; }
 
         .citas-list { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; padding-bottom: 50px; }
-        .card { background: #080808; border: 1px solid var(--border); padding: 20px; border-radius: 18px; position: relative; border-left: 4px solid var(--gold); transition: 0.3s; }
-        .card:hover { border-color: var(--gold); }
+        .card { background: #080808; border: 1px solid var(--border); padding: 20px; border-radius: 18px; position: relative; border-left: 4px solid var(--gold); }
         
         .btn { width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; font-size: 0.65rem; margin-top: 10px; text-transform: uppercase; }
         .btn-gold { background: var(--gold); color: #000; }
-        .btn-outline-red { background: transparent; border: 1px solid var(--red); color: var(--red); }
+        .btn-red { background: transparent; border: 1px solid var(--red); color: var(--red); }
 
-        /* MODALES */
         .modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); backdrop-filter: blur(5px); }
         .modal-content { background:var(--card); margin:15% auto; padding:30px; border: 1px solid var(--border); width:90%; max-width:350px; border-radius:20px; text-align: center; }
     </style>
@@ -68,14 +67,14 @@
             </aside>
         </div>
 
-        <h2 id="seccion-citas" style="font-size: 0.8rem; color: var(--gold); margin-top: 40px;">GESTIÓN DE CITAS</h2>
+        <h2 id="seccion-citas" style="font-size: 0.8rem; color: var(--gold); margin-top: 40px; letter-spacing: 2px;">GESTIÓN DE CITAS</h2>
         <div class="citas-list" id="lista-citas"></div>
 
         <div id="modalEvento" class="modal">
             <div class="modal-content">
                 <h3 id="pop-nombre" style="margin-top:0; color:var(--gold);">Cliente</h3>
-                <p id="pop-servicio" style="font-size:0.8rem; color:#888;"></p>
-                <button class="btn btn-outline-red" id="btn-eliminar-pop">ELIMINAR CITA</button>
+                <p id="pop-fecha" style="font-size:0.8rem; color:#888;"></p>
+                <button class="btn btn-red" id="btn-eliminar-pop">ELIMINAR CITA</button>
                 <button class="btn" style="background:#222; color:#fff;" onclick="cerrarPop()">CERRAR</button>
             </div>
         </div>
@@ -114,28 +113,28 @@
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
                 buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
                 navLinks: true,
-                // AUTO-SCROLL al darle click a un día o cambiar vista
-                navLinkDayClick: (date) => {
+                // Al hacer clic en un día del mes, cambia a vista de día y hace scroll
+                navLinkDayClick: function(date, jsEvent) {
                     calendar.changeView('timeGridDay', date);
                     document.getElementById('seccion-citas').scrollIntoView({ behavior: 'smooth' });
                 },
-                // Abrir ventana de borrar al clicar un cliente en el calendario
+                // Pop-up para gestionar/eliminar
                 eventClick: (info) => {
                     const id = info.event.id;
                     document.getElementById('pop-nombre').innerText = info.event.title;
-                    document.getElementById('pop-servicio').innerText = "Gestión de cita programada";
+                    document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString();
                     document.getElementById('modalEvento').style.display = 'block';
                     document.getElementById('btn-eliminar-pop').onclick = () => {
-                        if(confirm("¿Eliminar cita de " + info.event.title + "?")) {
-                            remove(ref(db, `citas/${id}`));
-                            cerrarPop();
-                        }
+                        if(confirm("¿Eliminar cita?")) { remove(ref(db, `citas/${id}`)); cerrarPop(); }
                     };
                 },
                 selectable: true,
+                // Solo permite selección manual para agregar en vistas de Día/Semana
                 select: (info) => {
-                    const n = prompt("Nombre Cita Manual:");
-                    if(n) push(ref(db, 'citas'), { nombre: n + " (M)", servicio: "Manual", fecha: info.startStr.slice(0,16), estado: 'Aceptada', precio: 0 });
+                    if (calendar.view.type !== 'dayGridMonth') {
+                        const n = prompt("Nombre Cita Manual:");
+                        if(n) push(ref(db, 'citas'), { nombre: n + " (M)", servicio: "Manual", fecha: info.startStr.slice(0,16), estado: 'Aceptada', precio: 0 });
+                    }
                 }
             });
             calendar.render();
@@ -152,9 +151,7 @@
                     if(c.estado === 'Finalizada' && f.getMonth() === mesActual) totalIngresos += parseFloat(c.precio) || 0;
 
                     eventos.push({ 
-                        id: id,
-                        title: c.nombre, 
-                        start: c.fecha, 
+                        id: id, title: c.nombre, start: c.fecha, 
                         backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : (c.estado === 'Finalizada' ? '#111' : '#333'),
                         borderColor: 'transparent'
                     });
@@ -162,10 +159,10 @@
                     if(c.estado !== 'Finalizada') {
                         const card = document.createElement('div'); card.className = 'card';
                         card.innerHTML = `
-                            <div style="font-size:0.9rem; font-weight:bold;">${c.nombre}</div>
-                            <div style="font-size:0.7rem; color:#888;">${c.servicio} | Q${c.precio || 0}</div>
+                            <div style="font-size:0.9rem; font-weight:bold; color:var(--gold);">${c.nombre}</div>
+                            <div style="font-size:0.75rem; margin-bottom:10px;">${c.servicio} | Q${c.precio || 0}</div>
                             <button class="btn btn-gold" onclick="cambiarEstado('${id}', '${c.estado==='Pendiente'?'Aceptada':'Finalizada'}')">
-                                ${c.estado==='Pendiente'?'ACEPTAR':'FINALIZAR Y COBRAR'}
+                                ${c.estado==='Pendiente'?'ACEPTAR':'FINALIZAR'}
                             </button>`;
                         lista.appendChild(card);
                     }
