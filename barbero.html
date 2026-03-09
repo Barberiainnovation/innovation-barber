@@ -10,181 +10,75 @@
     <style>
         :root { --bg: #000; --card: #0d0d0d; --gold: #d4af37; --border: #1a1a1a; --text-dim: #888; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; }
-        
         header { display: flex; justify-content: space-between; align-items: center; max-width: 900px; margin: 10px auto 30px; }
         .logo { width: 60px; }
+        .btn-config { background: transparent; border: none; color: var(--gold); font-size: 1.5rem; cursor: pointer; }
+        #calendar-container { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid var(--border); max-width: 900px; margin: 0 auto 40px; }
         
-        /* BOTÓN CONFIGURACIÓN */
-        .btn-config { background: transparent; border: none; color: var(--gold); font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
-        .btn-config:hover { transform: rotate(45deg); }
-
-        /* MODAL DE SERVICIOS */
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px); }
-        .modal-content { background: var(--card); margin: 10% auto; padding: 30px; border: 1px solid var(--gold); width: 90%; max-width: 450px; border-radius: 20px; }
-        
-        /* CALENDARIO PREMIUM */
-        #calendar-container { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid var(--border); max-width: 900px; margin: 0 auto 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
-        .fc-col-header { background-color: #000 !important; }
-        .fc-col-header-cell-cushion { color: #fff !important; text-transform: capitalize !important; font-weight: 600; text-decoration: none !important; display: block !important; padding: 10px 0 !important; }
-        .fc-timegrid-slot-label-cushion { color: var(--text-dim) !important; font-size: 0.7rem !important; }
-        .fc-button { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; border-radius: 10px !important; text-transform: uppercase !important; font-size: 0.6rem !important; }
+        /* RESET CALENDARIO (SIN SUBRAYADOS) */
+        .fc-col-header-cell-cushion, .fc-daygrid-day-number, .fc-timegrid-slot-label-cushion { 
+            text-decoration: none !important; border-bottom: none !important; outline: none !important; color: #fff !important; 
+        }
+        .fc-button { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; text-transform: uppercase !important; font-size: 0.6rem !important; }
         .fc-button-active { background: var(--gold) !important; color: #000 !important; }
 
-        /* CITAS Y CARDS */
         .admin-box { max-width: 500px; margin: 0 auto; }
         .card { background: linear-gradient(145deg, #111, #080808); border: 1px solid var(--border); padding: 15px; border-radius: 18px; margin-bottom: 12px; border-left: 4px solid var(--gold); position: relative; }
-        .price-tag { position: absolute; top: 15px; right: 15px; color: var(--gold); font-weight: bold; font-size: 0.9rem; }
-        
+        .price-tag { position: absolute; top: 15px; right: 15px; color: var(--gold); font-weight: bold; }
+        .nota-cliente { background: rgba(212, 175, 55, 0.1); border: 1px dashed var(--gold); padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.75rem; display: block; }
         .btn { width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; text-transform: uppercase; cursor: pointer; border: none; font-size: 0.65rem; margin-top: 10px; }
         .btn-gold { background: var(--gold); color: #000; }
-        
-        input, select { background: #000; color: #fff; border: 1px solid #222; padding: 12px; border-radius: 8px; font-family: 'Poppins'; margin-bottom: 10px; }
-        #status-audio { position: fixed; bottom: 15px; left: 15px; font-size: 0.55rem; color: var(--text-dim); z-index: 1000; cursor: pointer; }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card); margin: 10% auto; padding: 30px; border: 1px solid var(--gold); width: 90%; max-width: 450px; border-radius: 20px; }
+        input { background: #000; color: #fff; border: 1px solid #222; padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
     </style>
 </head>
 <body>
-    <header>
-        <img src="logo.png" alt="Logo" class="logo">
-        <h2>Admin Panel</h2>
-        <button class="btn-config" onclick="toggleModal()"><i class="fas fa-cog"></i></button>
-    </header>
-    
+    <header><img src="logo.png" alt="Logo" class="logo"><h2>Admin Panel</h2><button class="btn-config" onclick="toggleModal()"><i class="fas fa-cog"></i></button></header>
     <div id="calendar-container"><div id="calendar"></div></div>
     <div class="admin-box"><div id="lista-citas"></div></div>
-
-    <div id="modalServicios" class="modal">
-        <div class="modal-content">
-            <h3 style="color:var(--gold); margin-top:0;">Configurar Servicios</h3>
-            <input type="text" id="serv-nombre" placeholder="Nombre (ej: Colorimetría)" style="width:100%; box-sizing:border-box;">
-            <input type="text" id="serv-precio" placeholder="Precio (ej: Q150)" style="width:100%; box-sizing:border-box;">
-            <button class="btn btn-gold" onclick="agregarServicio()">Añadir al Catálogo</button>
-            <div id="lista-servicios-admin" style="margin-top:20px; max-height:200px; overflow-y:auto;"></div>
-            <button class="btn" style="background:#222; color:#fff;" onclick="toggleModal()">Cerrar</button>
-        </div>
-    </div>
-
-    <div id="status-audio" onclick="activarAudio()">🔈 SONIDO OFF</div>
-    <audio id="notif-sound" preload="auto" crossorigin="anonymous"><source src="https://assets.mixkit.co/active_storage/sfx/2210/2210-preview.mp3" type="audio/mpeg"></audio>
-
+    <div id="modalServicios" class="modal"><div class="modal-content"><h3 style="color:var(--gold);">Servicios</h3><input type="text" id="serv-n" placeholder="Nombre"><input type="text" id="serv-p" placeholder="Precio (sin Q)"><button class="btn btn-gold" onclick="agregarServicio()">Añadir</button><div id="lista-servicios-admin" style="margin-top:15px; max-height:200px; overflow-y:auto;"></div><button class="btn" style="background:#222; color:#fff;" onclick="toggleModal()">Cerrar</button></div></div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, update, push, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I",
-            authDomain: "innovation-barber-studio.firebaseapp.com",
-            projectId: "innovation-barber-studio",
-            databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        let calendar;
-        let inicial = true;
-        const sound = document.getElementById('notif-sound');
-
-        window.toggleModal = () => {
-            const m = document.getElementById('modalServicios');
-            m.style.display = (m.style.display === 'block') ? 'none' : 'block';
-        };
-
-        window.activarAudio = () => {
-            sound.play().then(() => { sound.pause(); sound.currentTime = 0; document.getElementById('status-audio').innerText = "🔔 SONIDO ON"; });
-        };
+        const firebaseConfig = { apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", authDomain: "innovation-barber-studio.firebaseapp.com", projectId: "innovation-barber-studio", databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" };
+        const app = initializeApp(firebaseConfig); const db = getDatabase(app); let calendar;
 
         document.addEventListener('DOMContentLoaded', () => {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'timeGridDay', // Inicia en vista de día para ver horas
-                locale: 'es', height: 'auto',
-                slotMinTime: '06:00:00', slotMaxTime: '22:00:00',
+                initialView: 'timeGridDay', locale: 'es', slotMinTime: '06:00:00', slotMaxTime: '22:00:00',
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridDay' },
+                buttonText: { today: 'Hoy', month: 'Mes', day: 'Día' },
+                datesSet: (info) => { if(info.view.type === 'dayGridMonth') calendar.changeView('timeGridDay'); },
                 selectable: true,
-                // AGREGAR CITA MANUALMENTE AL HACER CLIC EN EL CALENDARIO
-                select: function(info) {
-                    const nombre = prompt("Nombre del cliente (Cita Manual):");
-                    if (nombre) {
-                        push(ref(db, 'citas'), {
-                            nombre: nombre + " (Manual)",
-                            whatsapp: "N/A",
-                            servicio: "Cita Manual",
-                            fecha: info.startStr.slice(0, 16),
-                            estado: 'Aceptada'
-                        });
-                    }
-                }
+                select: (info) => { const n = prompt("Nombre Cliente:"); if(n) push(ref(db, 'citas'), { nombre: n+" (Manual)", whatsapp: "N/A", servicio: "Manual", fecha: info.startStr.slice(0, 16), estado: 'Aceptada' }); }
             });
             calendar.render();
         });
 
-        onValue(ref(db, 'citas'), (snapshot) => {
-            const data = snapshot.val();
-            if(!inicial && data) sound.play().catch(() => {});
-            inicial = false;
-            renderCitas(data);
-        });
-
+        onValue(ref(db, 'citas'), (snap) => { renderCitas(snap.val()); });
         onValue(ref(db, 'servicios'), (snap) => {
-            const div = document.getElementById('lista-servicios-admin');
-            div.innerHTML = '';
-            const servs = snap.val();
-            if(servs) Object.keys(servs).forEach(id => {
-                div.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #111;">
-                    <span>${servs[id].nombre} (${servs[id].precio})</span>
-                    <span style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')">✕</span>
-                </div>`;
-            });
+            const div = document.getElementById('lista-servicios-admin'); div.innerHTML = ''; const servs = snap.val();
+            if(servs) Object.keys(servs).forEach(id => { div.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px;"><span>${servs[id].nombre} (Q${servs[id].precio})</span><span style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')">✕</span></div>`; });
         });
 
         function renderCitas(data) {
-            const lista = document.getElementById('lista-citas');
-            lista.innerHTML = '';
-            const eventos = [];
-            if (!data) return;
+            const lista = document.getElementById('lista-citas'); lista.innerHTML = ''; const eventos = []; if(!data) return;
             Object.keys(data).reverse().forEach(id => {
-                const c = data[id];
-                if (c.estado === 'Finalizada') return;
-                eventos.push({ title: c.nombre, start: c.fecha, backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#222' });
-                
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <div class="price-tag">${c.precio || ''}</div>
-                    <div style="font-size:0.6rem; color:var(--gold); text-transform:uppercase;">${c.estado}</div>
-                    <h3>${c.nombre}</h3>
-                    <p>💈 ${c.servicio}</p>
-                    <p>📅 ${new Date(c.fecha).toLocaleString([], {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})}</p>
-                    <button class="btn btn-gold" onclick="cambiarEstado('${id}', '${c.estado === 'Pendiente' ? 'Aceptada' : 'Finalizada'}')">
-                        ${c.estado === 'Pendiente' ? 'Aceptar' : 'Finalizar'}
-                    </button>
-                    <button class="btn" style="background:transparent; color:red; border:1px solid red; margin-top:5px;" onclick="eliminarCita('${id}')">Eliminar</button>
-                `;
+                const c = data[id]; if(c.estado === 'Finalizada') return;
+                eventos.push({ title: c.nombre, start: c.fecha, backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#222', borderColor: 'transparent' });
+                const card = document.createElement('div'); card.className = 'card';
+                card.innerHTML = `<div class="price-tag">${c.precio || ''}</div><div style="font-size:0.6rem; color:var(--gold);">${c.estado}</div><h3>${c.nombre}</h3><p>💈 ${c.servicio}</p><p>📅 ${new Date(c.fecha).toLocaleString('es-GT')}</p>${c.nota ? `<div class="nota-cliente"><strong>Nota:</strong> ${c.nota}</div>` : ''}<button class="btn btn-gold" onclick="cambiarEstado('${id}', '${c.estado === 'Pendiente' ? 'Aceptada' : 'Finalizada'}')">${c.estado === 'Pendiente' ? 'Aceptar' : 'Finalizar'}</button><button class="btn" style="background:transparent; color:red; border:1px solid red; margin-top:5px;" onclick="eliminarCita('${id}')">Eliminar</button>`;
                 lista.appendChild(card);
             });
             calendar.removeAllEvents(); calendar.addEventSource(eventos);
         }
 
-        window.agregarServicio = () => {
-            const n = document.getElementById('serv-nombre').value;
-            const p = document.getElementById('serv-precio').value;
-            if(n && p) {
-                push(ref(db, 'servicios'), { nombre: n, precio: p });
-                document.getElementById('serv-nombre').value = '';
-                document.getElementById('serv-precio').value = '';
-            }
-        };
-
-        window.eliminarServicio = (id) => { if(confirm('¿Borrar servicio?')) remove(ref(db, `servicios/${id}`)); };
-        window.eliminarCita = (id) => { if(confirm('¿Eliminar esta cita?')) remove(ref(db, `citas/${id}`)); };
-
-        window.cambiarEstado = (id, estado) => {
-            get(ref(db, `citas/${id}`)).then(snap => {
-                const c = snap.val();
-                if(c && estado === 'Aceptada' && c.whatsapp !== "N/A") {
-                    window.open(`https://wa.me/${c.whatsapp}?text=${encodeURIComponent('¡Hola '+c.nombre+'! Tu cita de '+c.servicio+' ha sido confirmada.')}`);
-                }
-                update(ref(db, `citas/${id}`), { estado });
-            });
-        };
+        window.toggleModal = () => { const m = document.getElementById('modalServicios'); m.style.display = (m.style.display === 'block') ? 'none' : 'block'; };
+        window.agregarServicio = () => { const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value; if(n && p) { push(ref(db, 'servicios'), { nombre: n, precio: p }); document.getElementById('serv-n').value = ''; document.getElementById('serv-p').value = ''; } };
+        window.eliminarServicio = (id) => { if(confirm('¿Borrar?')) remove(ref(db, `servicios/${id}`)); };
+        window.eliminarCita = (id) => { if(confirm('¿Eliminar?')) remove(ref(db, `citas/${id}`)); };
+        window.cambiarEstado = (id, est) => { get(ref(db, `citas/${id}`)).then(snap => { const c = snap.val(); if(c && est === 'Aceptada' && c.whatsapp !== "N/A") window.open(`https://wa.me/${c.whatsapp}?text=${encodeURIComponent('¡Hola '+c.nombre+'! Tu cita de '+c.servicio+' ha sido confirmada.')}`); update(ref(db, `citas/${id}`), { estado: est }); }); };
     </script>
 </body>
 </html>
