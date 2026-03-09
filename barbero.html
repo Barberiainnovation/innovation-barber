@@ -40,6 +40,7 @@
         .card { background: #080808; border: 1px solid var(--border); padding: 20px; border-radius: 18px; position: relative; border-left: 4px solid var(--gold); }
         .card h3 { margin: 0 0 5px 0; font-size: 0.95rem; }
         .price-tag { position: absolute; top: 20px; right: 20px; color: var(--gold); font-weight: bold; font-size: 0.9rem; }
+        .note-box { background: rgba(212,175,55,0.1); border-radius: 8px; padding: 10px; margin: 10px 0; font-size: 0.75rem; border: 1px dashed var(--gold); color: #ddd; }
         
         .btn { width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; font-size: 0.65rem; margin-top: 10px; text-transform: uppercase; }
         .btn-gold { background: var(--gold); color: #000; }
@@ -89,6 +90,7 @@
             <div class="modal-content">
                 <h3 id="pop-nombre" style="margin-top:0; color:var(--gold);">Cliente</h3>
                 <p id="pop-fecha" style="font-size:0.8rem; color:#888;"></p>
+                <div id="pop-nota" class="note-box" style="display:none;"></div>
                 <button class="btn btn-red" id="btn-eliminar-pop">ELIMINAR CITA</button>
                 <button class="btn" style="background:#222; color:#fff;" onclick="cerrarPop()">CERRAR</button>
             </div>
@@ -136,7 +138,7 @@
                     if (!snap.exists()) {
                         set(ref(db, 'admins_autorizados/' + user.uid), { nombre: user.displayName, email: user.email, rol: 'Dueño' }).then(() => location.reload());
                     } else {
-                        set(ref(db, 'solicitudes_acceso/' + user.uid), { nombre: user.displayName, email: user.email, fecha: new Date().toISOString() }).then(() => { alert("Solicitud enviada."); signOut(auth); });
+                        set(ref(db, 'solicitudes_acceso/' + user.uid), { nombre: user.displayName, email: user.email, fecha: new Date().toISOString() }).then(() => { alert("Solicitud de acceso enviada correctamente."); signOut(auth); });
                     }
                 });
             });
@@ -166,11 +168,17 @@
                 },
                 eventClick: (info) => {
                     const id = info.event.id;
+                    const meta = info.event.extendedProps;
                     document.getElementById('pop-nombre').innerText = info.event.title;
                     document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString();
+                    
+                    const pNota = document.getElementById('pop-nota');
+                    if(meta.nota) { pNota.innerText = "Nota: " + meta.nota; pNota.style.display = 'block'; }
+                    else { pNota.style.display = 'none'; }
+
                     document.getElementById('modalEvento').style.display = 'block';
                     document.getElementById('btn-eliminar-pop').onclick = () => {
-                        if(confirm("¿Eliminar cita?")) { remove(ref(db, `citas/${id}`)); cerrarPop(); }
+                        if(confirm("¿Estás seguro de eliminar esta cita?")) { remove(ref(db, `citas/${id}`)); cerrarPop(); }
                     };
                 },
                 selectable: true,
@@ -201,11 +209,28 @@
                         contadorFinalizadas++;
                         statsServicios[c.servicio] = (statsServicios[c.servicio] || 0) + 1;
                     }
-                    eventos.push({ id: id, title: c.nombre, start: c.fecha, backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : (c.estado === 'Finalizada' ? '#111' : '#333'), borderColor: 'transparent' });
+                    eventos.push({ 
+                        id: id, 
+                        title: c.nombre, 
+                        start: c.fecha, 
+                        backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : (c.estado === 'Finalizada' ? '#111' : '#333'), 
+                        borderColor: 'transparent',
+                        extendedProps: { nota: c.nota || "" }
+                    });
                     
                     if(c.estado !== 'Finalizada') {
                         const card = document.createElement('div'); card.className = 'card';
-                        card.innerHTML = `<div class="price-tag">Q${pLimpio}</div><div style="font-size:0.55rem; color:var(--gold);">${c.estado}</div><h3>${c.nombre}</h3><p style="font-size:0.7rem; color:#888;">${c.servicio} | ${f.toLocaleString()}</p><button class="btn btn-gold" onclick="cambiarEstado('${id}', '${c.estado==='Pendiente'?'Aceptada':'Finalizada'}')">${c.estado==='Pendiente'?'Aceptar':'Finalizar'}</button>`;
+                        let notaHtml = c.nota ? `<div class="note-box"><i class="fas fa-sticky-note" style="color:var(--gold); margin-right:5px;"></i> ${c.nota}</div>` : "";
+                        
+                        card.innerHTML = `
+                            <div class="price-tag">Q${pLimpio}</div>
+                            <div style="font-size:0.55rem; color:var(--gold);">${c.estado}</div>
+                            <h3>${c.nombre}</h3>
+                            <p style="font-size:0.7rem; color:#888;">${c.servicio} | ${f.toLocaleString()}</p>
+                            ${notaHtml}
+                            <button class="btn btn-gold" onclick="cambiarEstado('${id}', '${c.estado==='Pendiente'?'Aceptada':'Finalizada'}')">
+                                ${c.estado==='Pendiente'?'Aceptar Cita':'Finalizar y Cobrar'}
+                            </button>`;
                         lista.appendChild(card);
                     }
                 });
@@ -221,11 +246,9 @@
             get(ref(db, `citas/${id}`)).then(s => {
                 const c = s.val();
                 if(est === 'Aceptada' && c.whatsapp !== "N/A") {
-                    // Formatear la fecha para que sea amigable en WhatsApp
                     const fechaCita = new Date(c.fecha);
                     const opciones = { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' };
                     const fechaFormateada = fechaCita.toLocaleDateString('es-GT', opciones);
-                    
                     const mensaje = `¡Hola ${c.nombre}! Tu cita en INNOVATION Barber Studio ha sido aceptada y agendada para el ${fechaFormateada}. ¡Te esperamos!`;
                     window.open(`https://wa.me/${c.whatsapp}?text=${encodeURIComponent(mensaje)}`);
                 }
@@ -235,7 +258,12 @@
 
         window.agregarServicio = () => {
             const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value;
-            if(n && p) { push(ref(db, 'servicios'), { nombre: n, precio: p }); document.getElementById('serv-n').value = ''; document.getElementById('serv-p').value = ''; }
+            if(n && p) { 
+                push(ref(db, 'servicios'), { nombre: n, precio: p }); 
+                document.getElementById('serv-n').value = ''; 
+                document.getElementById('serv-p').value = ''; 
+                alert("Servicio añadido al catálogo.");
+            }
         };
 
         function renderServicios(servs) {
@@ -244,7 +272,7 @@
                 div.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #1a1a1a; font-size: 0.75rem;"><span>${servs[id].nombre} (Q${limpiarPrecio(servs[id].precio)})</span><span style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"><i class="fas fa-trash"></i></span></div>`;
             });
         }
-        window.eliminarServicio = (id) => confirm('¿Borrar?') && remove(ref(db, `servicios/${id}`));
+        window.eliminarServicio = (id) => confirm('¿Borrar este servicio?') && remove(ref(db, `servicios/${id}`));
     </script>
 </body>
 </html>
