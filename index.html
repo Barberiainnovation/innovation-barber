@@ -3,93 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Innovation Barber Studio</title>
+    <title>Innovation Barber Studio | Elite Booking</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --bg: #000; --card: #0d0d0d; --gold: #d4af37; --border: #1a1a1a; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
-        .container { max-width: 450px; margin: 0 auto; text-align: center; }
-        .logo { width: 90px; margin-bottom: 10px; }
-        
-        h1 { font-size: 1.4rem; letter-spacing: 4px; color: var(--gold); margin: 0; }
-        .subtitle { font-size: 0.75rem; color: #666; letter-spacing: 2px; margin-bottom: 30px; }
+        :root { 
+            --bg: #000; 
+            --gold: #d4af37; 
+            --gold-light: #f1d592;
+            --glass: rgba(20, 20, 20, 0.8);
+            --border: rgba(212, 175, 55, 0.3);
+        }
 
-        .form-group { text-align: left; margin-bottom: 18px; }
-        label { display: block; font-size: 0.7rem; color: var(--gold); margin-bottom: 8px; text-transform: uppercase; font-weight: 600; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: var(--bg); 
+            background-image: radial-gradient(circle at top right, #1a1a1a, #000);
+            color: #fff; 
+            margin: 0; 
+            padding: 20px; 
+            min-height: 100vh;
+        }
+
+        .container { 
+            max-width: 400px; 
+            margin: 0 auto; 
+            background: var(--glass);
+            padding: 30px;
+            border-radius: 30px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        header { text-align: center; margin-bottom: 30px; }
+        .logo { width: 80px; filter: drop-shadow(0 0 10px rgba(212,175,55,0.2)); }
         
-        input, select, textarea { 
-            width: 100%; background: var(--card); border: 1px solid var(--border); 
-            padding: 14px; border-radius: 12px; color: #fff; box-sizing: border-box; font-size: 0.9rem;
+        h1 { font-size: 1.6rem; letter-spacing: 6px; color: var(--gold); margin: 10px 0 0 0; font-weight: 600; }
+        .subtitle { font-size: 0.7rem; color: #888; letter-spacing: 4px; text-transform: uppercase; }
+
+        .form-group { text-align: left; margin-bottom: 22px; position: relative; }
+        label { 
+            display: block; font-size: 0.65rem; color: var(--gold); 
+            margin-bottom: 8px; text-transform: uppercase; font-weight: 600; 
+            letter-spacing: 1.5px; opacity: 0.9;
         }
         
-        /* Estilo para el grupo de teléfono con código de área */
-        .phone-input { display: flex; gap: 10px; }
-        .phone-input select { width: 100px; }
+        input, select, textarea { 
+            width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); 
+            padding: 14px 18px; border-radius: 15px; color: #fff; box-sizing: border-box; 
+            font-size: 0.9rem; transition: all 0.3s ease; outline: none;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--gold);
+            background: rgba(255,255,255,0.07);
+            box-shadow: 0 0 15px rgba(212,175,55,0.1);
+        }
+        
+        /* Contenedor de WhatsApp con Banderas */
+        .phone-container { display: flex; gap: 8px; }
+        .flag-select { width: 110px; font-size: 1.1rem; cursor: pointer; }
 
         textarea { height: 70px; resize: none; }
 
+        /* Botón Estilo Elite */
         .btn-reserva { 
-            background: var(--gold); color: #000; border: none; width: 100%; 
-            padding: 18px; border-radius: 15px; font-weight: bold; cursor: pointer; 
-            margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light)); 
+            color: #000; border: none; width: 100%; 
+            padding: 18px; border-radius: 18px; font-weight: 700; cursor: pointer; 
+            margin-top: 10px; text-transform: uppercase; letter-spacing: 2px;
+            box-shadow: 0 10px 20px rgba(212,175,55,0.2);
+            transition: all 0.3s ease;
         }
 
-        .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items: center; justify-content: center; }
-        .modal-content { background:var(--card); padding:35px; border: 1px solid var(--gold); width:80%; max-width:300px; border-radius:25px; text-align: center; margin: auto; }
+        .btn-reserva:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(212,175,55,0.3); }
+        .btn-reserva:active { transform: translateY(0); }
+
+        /* Modal Premium */
+        .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { 
+            background: #111; padding: 40px; border: 1px solid var(--gold); 
+            width: 85%; max-width: 320px; border-radius: 30px; text-align: center;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <img src="logo.png" class="logo">
-        <h1>INNOVATION</h1>
-        <div class="subtitle">BARBER STUDIO</div>
+        <header>
+            <img src="logo.png" class="logo">
+            <h1>INNOVATION</h1>
+            <div class="subtitle">Barber Studio</div>
+        </header>
 
         <div class="form-group">
-            <label>Nombre Completo</label>
-            <input type="text" id="nombre" placeholder="¿Cómo te llamas?">
+            <label><i class="fas fa-user"></i> Nombre Completo</label>
+            <input type="text" id="nombre" placeholder="Escribe tu nombre">
         </div>
 
         <div class="form-group">
-            <label>WhatsApp</label>
-            <div class="phone-input">
-                <select id="codigo-area">
-                    <option value="502">+502 (GT)</option>
-                    <option value="503">+503 (SV)</option>
-                    <option value="504">+504 (HN)</option>
-                    <option value="505">+505 (NI)</option>
-                    <option value="506">+506 (CR)</option>
-                    <option value="1">+1 (USA)</option>
+            <label><i class="fab fa-whatsapp"></i> WhatsApp</label>
+            <div class="phone-container">
+                <select id="codigo-area" class="flag-select">
+                    <option value="502">🇬🇹 +502</option>
+                    <option value="503">🇸🇻 +503</option>
+                    <option value="504">🇭🇳 +504</option>
+                    <option value="505">🇳🇮 +505</option>
+                    <option value="506">🇨🇷 +506</option>
+                    <option value="1">🇺🇸 +1</option>
                 </select>
-                <input type="tel" id="whatsapp" placeholder="Tu número">
+                <input type="tel" id="whatsapp" placeholder="Número">
             </div>
         </div>
 
         <div class="form-group">
-            <label>Servicio</label>
+            <label><i class="fas fa-cut"></i> Servicio Elite</label>
             <select id="servicio"></select>
         </div>
 
         <div class="form-group">
-            <label>¿Alguna nota o detalle?</label>
-            <textarea id="nota" placeholder="Ej: Diseño especial, barbas, etc."></textarea>
+            <label><i class="fas fa-pen"></i> Notas Especiales</label>
+            <textarea id="nota" placeholder="¿Algún detalle para tu servicio?"></textarea>
         </div>
 
         <div class="form-group">
-            <label>Fecha y Hora</label>
+            <label><i class="fas fa-calendar-alt"></i> Fecha y Hora</label>
             <input type="datetime-local" id="fecha-cita">
         </div>
 
-        <button class="btn-reserva" onclick="enviarCita()">Reservar Ahora</button>
+        <button class="btn-reserva" onclick="enviarCita()">Agendar Experiencia</button>
     </div>
 
     <div id="modalExito" class="modal">
         <div class="modal-content">
-            <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--gold); margin-bottom: 20px;"></i>
-            <h2 style="color:var(--gold); margin:0; font-size: 1.2rem;">¡Cita Enviada!</h2>
-            <p style="color:#ccc; font-size: 0.85rem; margin: 15px 0;">Hemos recibido tu solicitud. Te confirmaremos por WhatsApp pronto.</p>
-            <button class="btn-reserva" onclick="cerrarModal()">Entendido</button>
+            <div style="font-size: 4rem; color: var(--gold); margin-bottom: 20px;">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2 style="color:var(--gold); margin:0; letter-spacing: 2px;">CONFIRMADO</h2>
+            <p style="color:#888; font-size: 0.9rem; margin: 15px 0;">Tu solicitud ha sido enviada con éxito. Recibirás un mensaje en breve.</p>
+            <button class="btn-reserva" onclick="cerrarModal()">Finalizar</button>
         </div>
     </div>
 
@@ -106,10 +159,9 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Cargar Servicios del catálogo
         onValue(ref(db, 'servicios'), (snap) => {
             const select = document.getElementById('servicio');
-            select.innerHTML = '<option value="" disabled selected>Escoge un servicio</option>';
+            select.innerHTML = '<option value="" disabled selected>Selecciona tu servicio</option>';
             const data = snap.val();
             if(data) {
                 Object.values(data).forEach(s => {
@@ -127,7 +179,7 @@
             const fec = document.getElementById('fecha-cita').value;
 
             if(!nom || !num || !sel.value || !fec) {
-                alert("Por favor completa todos los campos.");
+                alert("Por favor completa los detalles de tu reservación.");
                 return;
             }
 
