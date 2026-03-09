@@ -119,7 +119,6 @@
         const provider = new GoogleAuthProvider();
         let calendar;
 
-        // Ayudante para limpiar la "Q" duplicada
         const limpiarPrecio = (p) => String(p || 0).replace(/Q/g, '').trim();
 
         window.loginGoogle = () => signInWithPopup(auth, provider);
@@ -221,7 +220,15 @@
         window.cambiarEstado = (id, est) => {
             get(ref(db, `citas/${id}`)).then(s => {
                 const c = s.val();
-                if(est === 'Aceptada' && c.whatsapp !== "N/A") window.open(`https://wa.me/${c.whatsapp}?text=Confirmada`);
+                if(est === 'Aceptada' && c.whatsapp !== "N/A") {
+                    // Formatear la fecha para que sea amigable en WhatsApp
+                    const fechaCita = new Date(c.fecha);
+                    const opciones = { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' };
+                    const fechaFormateada = fechaCita.toLocaleDateString('es-GT', opciones);
+                    
+                    const mensaje = `¡Hola ${c.nombre}! Tu cita en INNOVATION Barber Studio ha sido aceptada y agendada para el ${fechaFormateada}. ¡Te esperamos!`;
+                    window.open(`https://wa.me/${c.whatsapp}?text=${encodeURIComponent(mensaje)}`);
+                }
                 update(ref(db, `citas/${id}`), { estado: est });
             });
         };
