@@ -26,13 +26,14 @@
         .phone-input { width: 55%; border-radius: 12px; -moz-appearance: textfield; }
         .phone-input::-webkit-outer-spin-button, .phone-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-        input, select { 
+        input, select, textarea { 
             width: 100%; padding: 14px; margin-bottom: 20px; border-radius: 12px; 
             border: 1px solid var(--border); background: #000; color: #fff; 
             box-sizing: border-box; font-family: 'Poppins'; font-size: 0.9rem;
+            resize: none; /* Bloquea el redimensionado del cuadro de texto */
         }
         
-        input:focus, select:focus { border-color: var(--gold); outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: var(--gold); outline: none; }
         input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; }
         
         .btn-reserva { 
@@ -69,11 +70,14 @@
             <input type="number" id="whatsapp" class="phone-input" placeholder="Número">
         </div>
 
-        <label>Servicio</label>
-        <select id="servicio"><option value="">Cargando...</option></select>
+        <label>Servicio y Precio</label>
+        <select id="servicio"><option value="">Cargando catálogo...</option></select>
 
         <label>Fecha y Hora (6am - 10pm)</label>
         <input type="datetime-local" id="fecha">
+
+        <label>Nota Especial (Opcional)</label>
+        <textarea id="nota" rows="3" placeholder="Ej: Quiero un diseño específico en el lateral..."></textarea>
 
         <button class="btn-reserva" onclick="validarYEnviar()">Agendar Cita</button>
     </div>
@@ -95,13 +99,15 @@
         // Bloqueo de fechas pasadas
         document.getElementById('fecha').min = new Date().toISOString().slice(0, 16);
 
+        // Cargar servicios dinámicos con PRECIO
         onValue(ref(db, 'servicios'), (snap) => {
             const select = document.getElementById('servicio');
             select.innerHTML = '';
             const data = snap.val();
             if(data) {
                 Object.values(data).forEach(s => {
-                    select.innerHTML += `<option value="${s}">${s}</option>`;
+                    // Ahora guardamos el nombre y precio juntos en el valor del select
+                    select.innerHTML += `<option value="${s.nombre}" data-precio="${s.precio}">${s.nombre} - ${s.precio}</option>`;
                 });
             } else {
                 select.innerHTML = '<option>Corte de Cabello</option>';
@@ -110,14 +116,19 @@
 
         window.validarYEnviar = () => {
             const nombre = document.getElementById('nombre').value;
-            const whatsapp = document.getElementById('area-code').value + document.getElementById('whatsapp').value;
-            const servicio = document.getElementById('servicio').value;
+            const codArea = document.getElementById('area-code').value;
+            const numTel = document.getElementById('whatsapp').value;
+            const whatsapp = codArea + numTel;
+            const servicioSelect = document.getElementById('servicio');
+            const servicio = servicioSelect.value;
+            const precio = servicioSelect.options[servicioSelect.selectedIndex].getAttribute('data-precio') || "";
             const fechaInput = document.getElementById('fecha').value;
+            const nota = document.getElementById('nota').value;
 
-            if (!nombre || !document.getElementById('whatsapp').value || !fechaInput) return alert("Por favor, llena todos los campos.");
+            if (!nombre || !numTel || !fechaInput) return alert("Por favor, llena los campos obligatorios.");
             
             const fecha = new Date(fechaInput);
-            if (fecha.getHours() < 6 || fecha.getHours() >= 22) return alert("Horario de atención: 6 AM - 10 PM");
+            if (fecha.getHours() < 6 || fecha.getHours() >= 22) return alert("Atendemos de 6 AM a 10 PM");
 
             onValue(ref(db, 'citas'), (snap) => {
                 const data = snap.val();
@@ -125,8 +136,22 @@
                 if(data) Object.values(data).forEach(c => {
                     if(c.estado === 'Aceptada' && Math.abs(fecha.getTime() - new Date(c.fecha).getTime()) < 45*60*1000) ocupado = true;
                 });
-                if(ocupado) alert("Este horario ya está reservado. Por favor elige otro con 45 min de diferencia.");
-                else push(ref(db, 'citas'), { nombre, whatsapp, servicio, fecha: fechaInput, estado: 'Pendiente' }).then(() => { alert("¡Cita enviada con éxito!"); location.reload(); });
+                
+                if(ocupado) alert("Horario ocupado. Elige otro con 45 min de diferencia.");
+                else {
+                    push(ref(db, 'citas'), { 
+                        nombre, 
+                        whatsapp, 
+                        servicio, 
+                        precio, 
+                        fecha: fechaInput, 
+                        nota, 
+                        estado: 'Pendiente' 
+                    }).then(() => { 
+                        alert("¡Cita enviada! Espera nuestra confirmación."); 
+                        location.reload(); 
+                    });
+                }
             }, { onlyOnce: true });
         };
     </script>
