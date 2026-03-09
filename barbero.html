@@ -6,6 +6,9 @@
     <title>Innovation Admin | Business Intelligence</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
+    
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <style>
         :root { --bg: #000; --card: #0d0d0d; --gold: #d4af37; --border: #1a1a1a; --green: #2ecc71; --red: #ff4d4d; }
@@ -47,7 +50,14 @@
 
         .modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
         .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; margin: auto; }
+        
+        /* Estilos Inputs y Selectores */
         input, select { background:#000; color:#fff; border:1px solid #222; padding:14px; border-radius:12px; width:100%; margin-bottom:15px; box-sizing:border-box; font-family: 'Poppins', sans-serif; }
+        
+        /* Ajuste para el Intl-Tel-Input */
+        .iti { width: 100%; margin-bottom: 15px; text-align: left; }
+        .iti__country-list { background: #0d0d0d; border: 1px solid var(--border); color: #fff; }
+        .iti__country:hover { background: #1a1a1a; }
     </style>
 </head>
 <body>
@@ -89,7 +99,6 @@
             <div class="modal-content">
                 <h3 id="pop-nombre" style="margin-top:0; color:var(--gold);">Cliente</h3>
                 <p id="pop-fecha" style="font-size:0.8rem; color:#888;"></p>
-                <div id="pop-nota" class="note-box" style="display:none;"></div>
                 <button class="btn btn-red" id="btn-eliminar-pop">ELIMINAR CITA</button>
                 <button class="btn" style="background:#222; color:#fff;" onclick="cerrarPop()">CERRAR</button>
             </div>
@@ -101,10 +110,10 @@
                 <p id="manual-fecha-texto" style="font-size:0.7rem; color:#888; margin-bottom:15px;"></p>
                 
                 <input type="text" id="manual-nombre" placeholder="Nombre del Cliente">
-                <input type="number" id="manual-whatsapp" placeholder="WhatsApp (Ej: 50212345678)">
                 
-                <select id="manual-servicio">
-                    </select>
+                <input type="tel" id="manual-whatsapp" placeholder="Número de WhatsApp">
+                
+                <select id="manual-servicio"></select>
 
                 <button class="btn btn-gold" id="btn-guardar-manual">GUARDAR Y CONFIRMAR</button>
                 <button class="btn" style="background:#222; color:#fff;" onclick="document.getElementById('modalManual').style.display='none'">CANCELAR</button>
@@ -119,19 +128,11 @@
                 <button class="btn btn-gold" onclick="agregarServicio()">Añadir al Catálogo</button>
                 <div id="lista-servicios-admin" style="margin-top:20px; max-height:200px; overflow-y:auto; border-top: 1px solid #1a1a1a; padding-top:10px; text-align: left;"></div>
                 <button class="btn" style="background:#222; color:#fff;" onclick="toggleConfig()">CERRAR</button>
-                <button class="btn" style="background:transparent; color:red; border:1px solid red; margin-top:20px;" onclick="logout()">CERRAR SESIÓN</button>
-            </div>
-        </div>
-
-        <div id="modalAvisoAdmin" class="modal">
-            <div class="modal-content">
-                <i id="avisoIcono" class="fas fa-info-circle" style="font-size: 3rem; color: var(--gold); margin-bottom: 15px;"></i>
-                <h3 id="avisoTitulo" style="color:var(--gold); margin:0;">SISTEMA</h3>
-                <p id="avisoTexto" style="color:#888; font-size: 0.85rem; margin: 15px 0;"></p>
-                <button class="btn btn-gold" onclick="document.getElementById('modalAvisoAdmin').style.display='none'">ENTENDIDO</button>
             </div>
         </div>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -147,6 +148,16 @@
         let calendar;
         let selectedInfoManual = null;
         let serviciosActuales = {};
+        let iti; // Instancia del selector de países
+
+        // Inicializar Intl-Tel-Input al cargar
+        const inputTel = document.querySelector("#manual-whatsapp");
+        iti = window.intlTelInput(inputTel, {
+            initialCountry: "gt",
+            preferredCountries: ["gt", "mx", "us"],
+            separateDialCode: true,
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+        });
 
         const limpiarPrecio = (p) => String(p || 0).replace(/Q/g, '').trim();
 
@@ -191,7 +202,6 @@
                         selectedInfoManual = info;
                         document.getElementById('manual-fecha-texto').innerText = new Date(info.startStr).toLocaleString();
                         
-                        // Llenar el selector de servicios con lo que hay en la BD
                         const selectS = document.getElementById('manual-servicio');
                         selectS.innerHTML = '';
                         Object.keys(serviciosActuales).forEach(id => {
@@ -215,10 +225,9 @@
             });
         }
 
-        // GUARDAR CITA MANUAL Y ENVIAR WHATSAPP
         document.getElementById('btn-guardar-manual').onclick = () => {
             const nombre = document.getElementById('manual-nombre').value;
-            const whatsapp = document.getElementById('manual-whatsapp').value;
+            const fullWhatsapp = iti.getNumber(); // Obtiene el número con el código de área (+502...)
             const servicioKey = document.getElementById('manual-servicio').value;
             const serv = serviciosActuales[servicioKey];
 
@@ -226,7 +235,7 @@
                 const nuevaCita = { 
                     nombre: nombre + " (M)", 
                     servicio: serv.nombre, 
-                    whatsapp: whatsapp || "N/A",
+                    whatsapp: fullWhatsapp.replace('+', '') || "N/A", 
                     fecha: selectedInfoManual.startStr.slice(0,16), 
                     estado: 'Aceptada', 
                     precio: serv.precio 
@@ -234,17 +243,13 @@
 
                 push(ref(db, 'citas'), nuevaCita).then(() => {
                     document.getElementById('modalManual').style.display = 'none';
-                    
-                    // Si hay WhatsApp, abrirlo con el mismo texto de confirmación
-                    if(whatsapp && whatsapp !== "N/A") {
+                    if(fullWhatsapp) {
                         const fechaCita = new Date(nuevaCita.fecha);
                         const opciones = { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' };
                         const mensaje = `¡Hola ${nombre}! Tu cita en INNOVATION Barber Studio ha sido aceptada para el ${fechaCita.toLocaleDateString('es-GT', opciones)}. ¡Te esperamos!`;
-                        window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(mensaje)}`);
+                        window.open(`https://wa.me/${fullWhatsapp.replace('+', '')}?text=${encodeURIComponent(mensaje)}`);
                     }
                 });
-            } else {
-                alert("Por favor completa el nombre y selecciona un servicio.");
             }
         };
 
