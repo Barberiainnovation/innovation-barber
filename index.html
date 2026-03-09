@@ -19,35 +19,22 @@
             font-family: 'Poppins', sans-serif; 
             background: var(--bg); 
             background-image: radial-gradient(circle at top right, #1a1a1a, #000);
-            color: #fff; 
-            margin: 0; 
-            padding: 20px; 
-            min-height: 100vh;
+            color: #fff; margin: 0; padding: 20px; min-height: 100vh;
         }
 
         .container { 
-            max-width: 400px; 
-            margin: 0 auto; 
-            background: var(--glass);
-            padding: 30px;
-            border-radius: 30px;
-            border: 1px solid var(--border);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            max-width: 400px; margin: 0 auto; background: var(--glass);
+            padding: 30px; border-radius: 30px; border: 1px solid var(--border);
+            backdrop-filter: blur(10px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         }
 
         header { text-align: center; margin-bottom: 30px; }
         .logo { width: 80px; filter: drop-shadow(0 0 10px rgba(212,175,55,0.2)); }
-        
         h1 { font-size: 1.6rem; letter-spacing: 6px; color: var(--gold); margin: 10px 0 0 0; font-weight: 600; }
         .subtitle { font-size: 0.7rem; color: #888; letter-spacing: 4px; text-transform: uppercase; }
 
         .form-group { text-align: left; margin-bottom: 22px; position: relative; }
-        label { 
-            display: block; font-size: 0.65rem; color: var(--gold); 
-            margin-bottom: 8px; text-transform: uppercase; font-weight: 600; 
-            letter-spacing: 1.5px; opacity: 0.9;
-        }
+        label { display: block; font-size: 0.65rem; color: var(--gold); margin-bottom: 8px; text-transform: uppercase; font-weight: 600; letter-spacing: 1.5px; opacity: 0.9; }
         
         input, select, textarea { 
             width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); 
@@ -55,32 +42,21 @@
             font-size: 0.9rem; transition: all 0.3s ease; outline: none;
         }
 
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--gold);
-            background: rgba(255,255,255,0.07);
-            box-shadow: 0 0 15px rgba(212,175,55,0.1);
-        }
+        input:focus, select:focus, textarea:focus { border-color: var(--gold); background: rgba(255,255,255,0.07); box-shadow: 0 0 15px rgba(212,175,55,0.1); }
         
-        /* Contenedor de WhatsApp con Banderas */
         .phone-container { display: flex; gap: 8px; }
         .flag-select { width: 110px; font-size: 1.1rem; cursor: pointer; }
-
         textarea { height: 70px; resize: none; }
 
-        /* Botón Estilo Elite */
         .btn-reserva { 
             background: linear-gradient(135deg, var(--gold), var(--gold-light)); 
             color: #000; border: none; width: 100%; 
             padding: 18px; border-radius: 18px; font-weight: 700; cursor: pointer; 
             margin-top: 10px; text-transform: uppercase; letter-spacing: 2px;
-            box-shadow: 0 10px 20px rgba(212,175,55,0.2);
-            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(212,175,55,0.2); transition: all 0.3s ease;
         }
 
-        .btn-reserva:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(212,175,55,0.3); }
-        .btn-reserva:active { transform: translateY(0); }
-
-        /* Modal Premium */
+        /* MODALES */
         .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-content { 
             background: #111; padding: 40px; border: 1px solid var(--gold); 
@@ -137,12 +113,19 @@
 
     <div id="modalExito" class="modal">
         <div class="modal-content">
-            <div style="font-size: 4rem; color: var(--gold); margin-bottom: 20px;">
-                <i class="fas fa-check-circle"></i>
-            </div>
+            <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--gold); margin-bottom: 20px;"></i>
             <h2 style="color:var(--gold); margin:0; letter-spacing: 2px;">CONFIRMADO</h2>
             <p style="color:#888; font-size: 0.9rem; margin: 15px 0;">Tu solicitud ha sido enviada con éxito. Recibirás un mensaje en breve.</p>
-            <button class="btn-reserva" onclick="cerrarModal()">Finalizar</button>
+            <button class="btn-reserva" onclick="cerrarModal('modalExito', true)">Finalizar</button>
+        </div>
+    </div>
+
+    <div id="modalAviso" class="modal">
+        <div class="modal-content" style="border-color: #ff4d4d;">
+            <i class="fas fa-exclamation-circle" style="font-size: 4rem; color: #ff4d4d; margin-bottom: 20px;"></i>
+            <h2 style="color:#ff4d4d; margin:0; letter-spacing: 2px;">ATENCIÓN</h2>
+            <p id="avisoTexto" style="color:#888; font-size: 0.9rem; margin: 15px 0;"></p>
+            <button class="btn-reserva" style="background: #ff4d4d;" onclick="cerrarModal('modalAviso', false)">Corregir</button>
         </div>
     </div>
 
@@ -170,16 +153,20 @@
             }
         });
 
+        window.mostrarAviso = (mensaje) => {
+            document.getElementById('avisoTexto').innerText = mensaje;
+            document.getElementById('modalAviso').style.display = 'flex';
+        };
+
         window.enviarCita = () => {
             const nom = document.getElementById('nombre').value;
             const cod = document.getElementById('codigo-area').value;
             const num = document.getElementById('whatsapp').value;
             const sel = document.getElementById('servicio');
-            const nota = document.getElementById('nota').value;
             const fec = document.getElementById('fecha-cita').value;
 
             if(!nom || !num || !sel.value || !fec) {
-                alert("Por favor completa los detalles de tu reservación.");
+                mostrarAviso("Por favor completa todos los detalles de tu reservación.");
                 return;
             }
 
@@ -188,7 +175,7 @@
                 whatsapp: cod + num,
                 servicio: sel.value,
                 precio: sel.options[sel.selectedIndex].getAttribute('data-precio'),
-                nota: nota,
+                nota: document.getElementById('nota').value,
                 fecha: fec,
                 estado: 'Pendiente'
             }).then(() => {
@@ -196,7 +183,10 @@
             });
         };
 
-        window.cerrarModal = () => { location.reload(); };
+        window.cerrarModal = (id, recargar) => {
+            document.getElementById(id).style.display = 'none';
+            if(recargar) location.reload();
+        };
     </script>
 </body>
 </html>
