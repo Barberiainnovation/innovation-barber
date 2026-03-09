@@ -1,53 +1,97 @@
-<script type="module">
-    // ... (Importaciones y Config iguales) ...
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva | Innovation Barber Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #d4af37; --bg: #000; --card: #0d0d0d; --border: #1a1a1a; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 380px; background: var(--card); padding: 35px; border-radius: 25px; border: 1px solid var(--border); text-align: center; box-shadow: 0 15px 50px rgba(0,0,0,0.8); }
+        .logo { width: 100px; margin-bottom: 10px; filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.2)); }
+        h1 { color: var(--gold); margin-bottom: 30px; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 3px; font-weight: 300; }
+        label { display: block; margin-bottom: 8px; color: var(--gold); font-size: 0.7rem; text-align: left; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .phone-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .area-code { width: 45%; border-radius: 12px; }
+        .phone-input { width: 55%; border-radius: 12px; -moz-appearance: textfield; }
+        .phone-input::-webkit-outer-spin-button, .phone-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input, select, textarea { width: 100%; padding: 14px; margin-bottom: 20px; border-radius: 12px; border: 1px solid var(--border); background: #000; color: #fff; box-sizing: border-box; font-family: 'Poppins'; font-size: 0.9rem; resize: none; }
+        input:focus, select:focus, textarea:focus { border-color: var(--gold); outline: none; }
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; }
+        .btn-reserva { width: 100%; padding: 18px; background: var(--gold); color: #000; border: none; border-radius: 12px; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.3s; letter-spacing: 1px; font-size: 0.8rem; box-shadow: 0 5px 15px rgba(212, 175, 55, 0.2); }
+        .btn-reserva:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(212, 175, 55, 0.4); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="logo.png" alt="Logo" class="logo">
+        <h1>Innovation Barber Studio</h1>
+        <label>Nombre Completo</label>
+        <input type="text" id="nombre" placeholder="Tu nombre">
+        <label>WhatsApp</label>
+        <div class="phone-group">
+            <select id="area-code" class="area-code">
+                <option value="502">🇬🇹 +502</option><option value="1">🇺🇸 +1</option><option value="52">🇲🇽 +52</option>
+                <option value="503">🇸🇻 +503</option><option value="504">🇭🇳 +504</option><option value="505">🇳🇮 +505</option>
+                <option value="506">🇨🇷 +506</option><option value="507">🇵🇦 +507</option><option value="57">🇨🇴 +57</option><option value="34">🇪🇸 +34</option>
+            </select>
+            <input type="number" id="whatsapp" class="phone-input" placeholder="Número">
+        </div>
+        <label>Servicio y Precio</label>
+        <select id="servicio"><option value="">Cargando catálogo...</option></select>
+        <label>Fecha y Hora (6am - 10pm)</label>
+        <input type="datetime-local" id="fecha">
+        <label>Nota Especial (Opcional)</label>
+        <textarea id="nota" rows="3" placeholder="Ej: Quiero un diseño específico..."></textarea>
+        <button class="btn-reserva" onclick="validarYEnviar()">Agendar Cita</button>
+    </div>
 
-    // Cargar servicios con la "Q" de Quetzales
-    onValue(ref(db, 'servicios'), (snap) => {
-        const select = document.getElementById('servicio');
-        select.innerHTML = '';
-        const data = snap.val();
-        if(data) {
-            Object.values(data).forEach(s => {
-                // Se agrega la Q visualmente en el menú
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", authDomain: "innovation-barber-studio.firebaseapp.com", projectId: "innovation-barber-studio", databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        document.getElementById('fecha').min = new Date().toISOString().slice(0, 16);
+
+        onValue(ref(db, 'servicios'), (snap) => {
+            const select = document.getElementById('servicio');
+            select.innerHTML = '';
+            const data = snap.val();
+            if(data) Object.values(data).forEach(s => {
                 select.innerHTML += `<option value="${s.nombre}" data-precio="Q${s.precio}">${s.nombre} - Q${s.precio}</option>`;
             });
-        }
-    });
+        });
 
-    window.validarYEnviar = () => {
-        const nombre = document.getElementById('nombre').value;
-        const numTel = document.getElementById('whatsapp').value;
-        const codArea = document.getElementById('area-code').value;
-        const whatsapp = codArea + numTel;
-        const servicioSelect = document.getElementById('servicio');
-        const servicio = servicioSelect.value;
-        const precio = servicioSelect.options[servicioSelect.selectedIndex].getAttribute('data-precio') || "";
-        const fechaInput = document.getElementById('fecha').value;
-        const nota = document.getElementById('nota').value;
+        window.validarYEnviar = () => {
+            const nombre = document.getElementById('nombre').value;
+            const numTel = document.getElementById('whatsapp').value;
+            const whatsapp = document.getElementById('area-code').value + numTel;
+            const servicioSelect = document.getElementById('servicio');
+            const fechaInput = document.getElementById('fecha').value;
 
-        // VALIDACIÓN PERSONALIZADA DE TELÉFONO
-        if (!numTel) {
-            alert("Es necesario que ingreses tu número de whatsapp para que tu cita sea confirmada una vez que el barbero la acepte.");
-            return;
-        }
-
-        if (!nombre || !fechaInput) return alert("Por favor, llena los campos obligatorios.");
-        
-        const fecha = new Date(fechaInput);
-        if (fecha.getHours() < 6 || fecha.getHours() >= 22) return alert("Atendemos de 6 AM a 10 PM");
-
-        onValue(ref(db, 'citas'), (snap) => {
-            const data = snap.val();
-            let ocupado = false;
-            if(data) Object.values(data).forEach(c => {
-                if(c.estado === 'Aceptada' && Math.abs(fecha.getTime() - new Date(c.fecha).getTime()) < 45*60*1000) ocupado = true;
-            });
-            
-            if(ocupado) alert("Horario ocupado.");
-            else {
-                push(ref(db, 'citas'), { nombre, whatsapp, servicio, precio, fecha: fechaInput, nota, estado: 'Pendiente' })
-                .then(() => { alert("¡Cita enviada!"); location.reload(); });
+            if (!numTel) {
+                alert("Es necesario que ingreses tu número de whatsapp para que tu cita sea confirmada una vez que el barbero la acepte.");
+                return;
             }
-        }, { onlyOnce: true });
-    };
-</script>
+            if (!nombre || !fechaInput) return alert("Por favor, llena los campos obligatorios.");
+            
+            const fecha = new Date(fechaInput);
+            if (fecha.getHours() < 6 || fecha.getHours() >= 22) return alert("Atendemos de 6 AM a 10 PM");
+
+            onValue(ref(db, 'citas'), (snap) => {
+                const data = snap.val();
+                let ocupado = false;
+                if(data) Object.values(data).forEach(c => {
+                    if(c.estado === 'Aceptada' && Math.abs(fecha.getTime() - new Date(c.fecha).getTime()) < 45*60*1000) ocupado = true;
+                });
+                if(ocupado) alert("Horario ocupado.");
+                else push(ref(db, 'citas'), { nombre, whatsapp, servicio: servicioSelect.value, precio: servicioSelect.options[servicioSelect.selectedIndex].getAttribute('data-precio'), fecha: fechaInput, nota: document.getElementById('nota').value, estado: 'Pendiente' }).then(() => { alert("¡Cita enviada!"); location.reload(); });
+            }, { onlyOnce: true });
+        };
+    </script>
+</body>
+</html>
