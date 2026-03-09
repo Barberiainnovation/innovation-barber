@@ -6,39 +6,37 @@
     <title>Innovation Barber Studio</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <style>
         :root { --bg: #000; --card: #0d0d0d; --gold: #d4af37; --border: #1a1a1a; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; text-align: center; }
-        .logo { width: 100px; margin-bottom: 20px; }
+        .container { max-width: 450px; margin: 0 auto; text-align: center; }
+        .logo { width: 90px; margin-bottom: 10px; }
         
-        h1 { font-size: 1.5rem; letter-spacing: 4px; color: var(--gold); margin-bottom: 5px; }
-        .subtitle { font-size: 0.8rem; color: #666; margin-bottom: 40px; }
+        h1 { font-size: 1.4rem; letter-spacing: 4px; color: var(--gold); margin: 0; }
+        .subtitle { font-size: 0.75rem; color: #666; letter-spacing: 2px; margin-bottom: 30px; }
 
-        .form-group { text-align: left; margin-bottom: 20px; }
-        label { display: block; font-size: 0.75rem; color: var(--gold); margin-bottom: 8px; text-transform: uppercase; font-weight: 600; }
+        .form-group { text-align: left; margin-bottom: 18px; }
+        label { display: block; font-size: 0.7rem; color: var(--gold); margin-bottom: 8px; text-transform: uppercase; font-weight: 600; }
         
         input, select, textarea { 
             width: 100%; background: var(--card); border: 1px solid var(--border); 
-            padding: 15px; border-radius: 12px; color: #fff; box-sizing: border-box; 
+            padding: 14px; border-radius: 12px; color: #fff; box-sizing: border-box; font-size: 0.9rem;
         }
-        textarea { height: 80px; resize: none; }
+        
+        /* Estilo para el grupo de teléfono con código de área */
+        .phone-input { display: flex; gap: 10px; }
+        .phone-input select { width: 100px; }
 
-        #calendar { background: var(--card); padding: 10px; border-radius: 15px; border: 1px solid var(--border); margin-top: 10px; }
-        .fc { font-size: 0.8rem; }
-        .fc-toolbar-title { font-size: 0.9rem !important; color: var(--gold); }
-        .fc-button { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; }
+        textarea { height: 70px; resize: none; }
 
         .btn-reserva { 
             background: var(--gold); color: #000; border: none; width: 100%; 
-            padding: 20px; border-radius: 15px; font-weight: bold; cursor: pointer; 
-            margin-top: 30px; text-transform: uppercase; letter-spacing: 1px;
+            padding: 18px; border-radius: 15px; font-weight: bold; cursor: pointer; 
+            margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;
         }
 
-        /* Modal amigable */
-        .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; }
-        .modal-content { background:var(--card); padding:40px; border: 1px solid var(--gold); width:80%; max-width:320px; border-radius:25px; text-align: center; }
+        .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items: center; justify-content: center; }
+        .modal-content { background:var(--card); padding:35px; border: 1px solid var(--gold); width:80%; max-width:300px; border-radius:25px; text-align: center; margin: auto; }
     </style>
 </head>
 <body>
@@ -50,37 +48,47 @@
 
         <div class="form-group">
             <label>Nombre Completo</label>
-            <input type="text" id="nombre" placeholder="¿A nombre de quién la cita?">
+            <input type="text" id="nombre" placeholder="¿Cómo te llamas?">
         </div>
 
         <div class="form-group">
             <label>WhatsApp</label>
-            <input type="tel" id="whatsapp" placeholder="Tu número de contacto">
+            <div class="phone-input">
+                <select id="codigo-area">
+                    <option value="502">+502 (GT)</option>
+                    <option value="503">+503 (SV)</option>
+                    <option value="504">+504 (HN)</option>
+                    <option value="505">+505 (NI)</option>
+                    <option value="506">+506 (CR)</option>
+                    <option value="1">+1 (USA)</option>
+                </select>
+                <input type="tel" id="whatsapp" placeholder="Tu número">
+            </div>
         </div>
 
         <div class="form-group">
-            <label>Servicio deseado</label>
+            <label>Servicio</label>
             <select id="servicio"></select>
         </div>
 
         <div class="form-group">
-            <label>¿Algo más que debamos saber?</label>
-            <textarea id="nota" placeholder="Ej: Es para un niño, diseño especial, etc."></textarea>
+            <label>¿Alguna nota o detalle?</label>
+            <textarea id="nota" placeholder="Ej: Diseño especial, barbas, etc."></textarea>
         </div>
 
         <div class="form-group">
-            <label>Selecciona tu horario</label>
-            <div id="calendar"></div>
+            <label>Fecha y Hora</label>
+            <input type="datetime-local" id="fecha-cita">
         </div>
 
-        <button class="btn-reserva" onclick="enviarCita()">Confirmar Reservación</button>
+        <button class="btn-reserva" onclick="enviarCita()">Reservar Ahora</button>
     </div>
 
-    <div id="modalExito" class="modal" style="display: none;">
+    <div id="modalExito" class="modal">
         <div class="modal-content">
             <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--gold); margin-bottom: 20px;"></i>
-            <h2 style="color:var(--gold); margin:0;">¡Excelente!</h2>
-            <p style="color:#ccc; font-size: 0.9rem; margin: 15px 0;">Tu solicitud ha sido enviada. Te contactaremos por WhatsApp para confirmar.</p>
+            <h2 style="color:var(--gold); margin:0; font-size: 1.2rem;">¡Cita Enviada!</h2>
+            <p style="color:#ccc; font-size: 0.85rem; margin: 15px 0;">Hemos recibido tu solicitud. Te confirmaremos por WhatsApp pronto.</p>
             <button class="btn-reserva" onclick="cerrarModal()">Entendido</button>
         </div>
     </div>
@@ -98,10 +106,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let fechaSeleccionada = null;
-        let calendar;
-
-        // Cargar Catálogo
+        // Cargar Servicios del catálogo
         onValue(ref(db, 'servicios'), (snap) => {
             const select = document.getElementById('servicio');
             select.innerHTML = '<option value="" disabled selected>Escoge un servicio</option>';
@@ -113,39 +118,26 @@
             }
         });
 
-        // Calendario
-        document.addEventListener('DOMContentLoaded', function() {
-            calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'timeGridDay',
-                locale: 'es',
-                slotMinTime: '06:00:00',
-                slotMaxTime: '22:00:00',
-                allDaySlot: false,
-                selectable: true,
-                headerToolbar: { left: 'prev,next', center: 'title', right: 'today' },
-                select: (info) => { fechaSeleccionada = info.startStr; }
-            });
-            calendar.render();
-        });
-
         window.enviarCita = () => {
             const nom = document.getElementById('nombre').value;
-            const wa = document.getElementById('whatsapp').value;
+            const cod = document.getElementById('codigo-area').value;
+            const num = document.getElementById('whatsapp').value;
             const sel = document.getElementById('servicio');
             const nota = document.getElementById('nota').value;
+            const fec = document.getElementById('fecha-cita').value;
 
-            if(!nom || !wa || !sel.value || !fechaSeleccionada) {
-                alert("Por favor completa los datos y elige una hora.");
+            if(!nom || !num || !sel.value || !fec) {
+                alert("Por favor completa todos los campos.");
                 return;
             }
 
             push(ref(db, 'citas'), {
                 nombre: nom,
-                whatsapp: wa,
+                whatsapp: cod + num,
                 servicio: sel.value,
                 precio: sel.options[sel.selectedIndex].getAttribute('data-precio'),
                 nota: nota,
-                fecha: fechaSeleccionada,
+                fecha: fec,
                 estado: 'Pendiente'
             }).then(() => {
                 document.getElementById('modalExito').style.display = 'flex';
