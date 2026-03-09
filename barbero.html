@@ -150,6 +150,23 @@
         const limpiarPrecio = (p) => String(p || 0).replace(/Q/g, '').trim();
 
         window.loginGoogle = () => signInWithPopup(auth, provider);
+        
+        // FUNCIÓN REGISTRAR NUEVO ADMIN (REQUERIDA PARA EL BOTÓN)
+        window.registrarNuevoAdmin = () => {
+            signInWithPopup(auth, provider).then((result) => {
+                const user = result.user;
+                set(ref(db, 'solicitudes_acceso/' + user.uid), {
+                    nombre: user.displayName,
+                    correo: user.email,
+                    fecha: new Date().toLocaleString(),
+                    estado: 'pendiente'
+                }).then(() => {
+                    alert("Solicitud enviada. Contacta al dueño para que autorice tu acceso.");
+                    signOut(auth).then(() => location.reload());
+                });
+            }).catch((error) => alert("Error: " + error.message));
+        };
+
         window.logout = () => signOut(auth).then(() => location.reload());
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
         window.toggleConfig = () => {
@@ -209,24 +226,14 @@
             });
         }
 
-        // GESTIÓN DE BOTONES: OTRO HORARIO Y RECHAZAR
         window.gestionarCita = (id, accion) => {
             get(ref(db, `citas/${id}`)).then(s => {
                 const c = s.val();
                 if (!c) return;
-
-                let msg = "";
-                if(accion === 'cancelar') {
-                    msg = "Tu cita no ha sido aceptada, agenda llena";
-                } else if(accion === 'otro') {
-                    msg = "Este horario ya ha sido ocupado, ¿gustas agendar en otro horario?";
-                }
-
+                let msg = accion === 'cancelar' ? "Tu cita no ha sido aceptada, agenda llena" : "Este horario ya ha sido ocupado, ¿gustas agendar en otro horario?";
                 if(c.whatsapp && c.whatsapp !== "N/A") {
                     window.open(`https://wa.me/${c.whatsapp.replace('+', '')}?text=${encodeURIComponent(msg)}`);
                 }
-                
-                // SE ELIMINA LA NOTIFICACIÓN Y DEL CALENDARIO AL INSTANTE
                 remove(ref(db, `citas/${id}`));
             });
         };
