@@ -60,14 +60,13 @@
             box-shadow: 0 10px 20px rgba(212,175,55,0.2); transition: all 0.3s ease;
         }
 
-        /* MODALES */
         .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-content { 
             background: #111; padding: 40px; border: 1px solid var(--gold); 
             width: 85%; max-width: 320px; border-radius: 30px; text-align: center;
         }
 
-        /* Estilo del calendario Flatpickr personalizado */
+        /* Estilo Flatpickr */
         .flatpickr-calendar { background: #111 !important; border: 1px solid var(--gold) !important; color: #fff !important; }
         .flatpickr-day.selected { background: var(--gold) !important; border-color: var(--gold) !important; color: #000 !important; }
         .flatpickr-day.disabled { color: rgba(255,255,255,0.1) !important; }
@@ -93,9 +92,6 @@
                 <select id="codigo-area" class="flag-select">
                     <option value="502">🇬🇹 +502</option>
                     <option value="503">🇸🇻 +503</option>
-                    <option value="504">🇭🇳 +504</option>
-                    <option value="505">🇳🇮 +505</option>
-                    <option value="506">🇨🇷 +506</option>
                     <option value="1">🇺🇸 +1</option>
                 </select>
                 <input type="tel" id="whatsapp" placeholder="Número">
@@ -113,7 +109,7 @@
         </div>
 
         <div class="form-group">
-            <label><i class="fas fa-calendar-alt"></i> Fecha y Hora (Ver Disponibilidad)</label>
+            <label><i class="fas fa-calendar-alt"></i> Fecha y Hora (Citas cada hora)</label>
             <input type="text" id="fecha-cita" placeholder="Toca para elegir horario">
         </div>
 
@@ -124,17 +120,8 @@
         <div class="modal-content">
             <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--gold); margin-bottom: 20px;"></i>
             <h2 style="color:var(--gold); margin:0; letter-spacing: 2px;">CONFIRMADO</h2>
-            <p style="color:#888; font-size: 0.9rem; margin: 15px 0;">Tu solicitud ha sido enviada con éxito. El barbero te enviará un mensaje de confirmación en breve.</p>
+            <p style="color:#888; font-size: 0.9rem; margin: 15px 0;">Tu solicitud ha sido enviada con éxito. El barbero te confirmará en breve.</p>
             <button class="btn-reserva" onclick="cerrarModal('modalExito', true)">Finalizar</button>
-        </div>
-    </div>
-
-    <div id="modalAviso" class="modal">
-        <div class="modal-content" style="border-color: #ff4d4d;">
-            <i class="fas fa-exclamation-circle" style="font-size: 4rem; color: #ff4d4d; margin-bottom: 20px;"></i>
-            <h2 style="color:#ff4d4d; margin:0; letter-spacing: 2px;">ATENCIÓN</h2>
-            <p id="avisoTexto" style="color:#888; font-size: 0.9rem; margin: 15px 0;"></p>
-            <button class="btn-reserva" style="background: #ff4d4d;" onclick="cerrarModal('modalAviso', false)">Corregir</button>
         </div>
     </div>
 
@@ -152,7 +139,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- 1. Lógica del Calendario Visual ---
+        // --- Lógica del Calendario con Horas Exactas ---
         onValue(ref(db, 'citas'), (snapshot) => {
             const ocupados = [];
             snapshot.forEach(child => {
@@ -163,33 +150,26 @@
                 enableTime: true,
                 dateFormat: "Y-m-d H:i",
                 minDate: "today",
-                disable: ocupados, // AQUÍ SE BLOQUEAN LOS ESPACIOS OCUPADOS
+                minTime: "07:00",
+                maxTime: "22:00",
+                disable: ocupados, 
                 time_24hr: false,
-                minuteIncrement: 30,
-                onOpen: function(selectedDates, dateStr, instance) {
-                    // Refrescar disponibilidad al abrir
+                minuteIncrement: 60, // ESTO HACE QUE SOLO SE ELIJAN HORAS EN PUNTO
+                locale: {
+                    firstDayOfWeek: 1
                 }
             });
         });
 
-        // --- 2. Carga de Servicios ---
         onValue(ref(db, 'servicios'), (snap) => {
             const select = document.getElementById('servicio');
             select.innerHTML = '<option value="" disabled selected>Selecciona tu servicio</option>';
-            const data = snap.val();
-            if(data) {
-                Object.values(data).forEach(s => {
-                    select.innerHTML += `<option value="${s.nombre}" data-precio="${s.precio}">${s.nombre} - Q${s.precio}</option>`;
-                });
-            }
+            snap.forEach(s => {
+                const data = s.val();
+                select.innerHTML += `<option value="${data.nombre}" data-precio="${data.precio}">${data.nombre}</option>`;
+            });
         });
 
-        window.mostrarAviso = (mensaje) => {
-            document.getElementById('avisoTexto').innerText = mensaje;
-            document.getElementById('modalAviso').style.display = 'flex';
-        };
-
-        // --- 3. Envío de Cita ---
         window.enviarCita = () => {
             const nom = document.getElementById('nombre').value;
             const cod = document.getElementById('codigo-area').value;
@@ -198,7 +178,7 @@
             const fec = document.getElementById('fecha-cita').value;
 
             if(!nom || !num || !sel.value || !fec) {
-                mostrarAviso("Por favor completa todos los detalles de tu reservación.");
+                alert("Completa todos los campos");
                 return;
             }
 
@@ -207,7 +187,7 @@
                 whatsapp: cod + num,
                 servicio: sel.value,
                 precio: sel.options[sel.selectedIndex].getAttribute('data-precio'),
-                nota: document.getElementById('nota').value || "Sin notas",
+                nota: document.getElementById('nota').value || "",
                 fecha: fec,
                 estado: 'Pendiente'
             }).then(() => {
