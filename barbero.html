@@ -6,119 +6,106 @@
     <title>Innovation Admin | Elite Control</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
     <style>
         :root { --bg: #000; --gold: #d4af37; --gold-l: #f1d592; --card: #111; --border: rgba(212, 175, 55, 0.2); }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 0; overflow-x: hidden; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 0; }
         
-        /* Header y Navegación */
-        header { padding: 20px; text-align: center; border-bottom: 1px solid var(--border); position: relative; }
+        header { padding: 20px; text-align: center; border-bottom: 1px solid var(--border); position: relative; background: #000; }
         .config-icon { position: absolute; right: 20px; top: 25px; font-size: 1.5rem; color: var(--gold); cursor: pointer; }
         
-        .tabs { display: flex; justify-content: space-around; background: #0a0a0a; padding: 10px 0; border-bottom: 1px solid var(--border); }
-        .tab { color: #888; font-size: 0.8rem; text-transform: uppercase; font-weight: 600; cursor: pointer; padding: 10px; }
-        .tab.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
+        .tabs { display: flex; justify-content: space-around; background: #0a0a0a; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .tab { color: #888; font-size: 0.75rem; text-transform: uppercase; font-weight: 600; cursor: pointer; padding: 15px 5px; flex: 1; text-align: center; }
+        .tab.active { color: var(--gold); border-bottom: 3px solid var(--gold); background: rgba(212,175,55,0.05); }
 
         .container { padding: 20px; max-width: 600px; margin: 0 auto; }
 
         /* Stats */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 20px; text-align: center; }
-        .stat-val { font-size: 1.2rem; font-weight: 600; color: #fff; display: block; }
-        .stat-label { font-size: 0.6rem; color: var(--gold); text-transform: uppercase; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); padding: 12px; border-radius: 15px; text-align: center; }
+        .stat-val { font-size: 1.1rem; font-weight: 600; color: #fff; display: block; }
+        .stat-label { font-size: 0.55rem; color: var(--gold); text-transform: uppercase; }
 
-        /* Vistas */
         .view { display: none; }
         .view.active { display: block; }
 
-        /* Tarjetas de Citas */
-        .cita-card { background: var(--card); border-left: 4px solid var(--gold); padding: 15px; border-radius: 15px; margin-bottom: 15px; }
-        .btn-finish { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--gold), var(--gold-l)); border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; }
-
-        /* Modal Configuración */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-        .modal-content { background: #111; border: 1px solid var(--gold); padding: 20px; border-radius: 25px; max-width: 500px; margin: auto; }
+        /* Calendario Custom */
+        .flatpickr-calendar { background: #111 !important; border: 1px solid var(--gold) !important; margin: 0 auto 20px auto; }
         
-        input, select, textarea { width: 100%; background: #000; border: 1px solid #333; padding: 12px; border-radius: 12px; color: #fff; margin-bottom: 10px; outline: none; }
-        label { font-size: 0.7rem; color: var(--gold); display: block; margin-bottom: 5px; }
+        /* Citas */
+        .cita-card { background: var(--card); border-left: 4px solid var(--gold); padding: 15px; border-radius: 15px; margin-bottom: 12px; }
+        .btn-finish { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--gold), var(--gold-l)); border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; color: #000; text-transform: uppercase; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: #111; border: 1px solid var(--gold); padding: 25px; border-radius: 25px; max-width: 450px; margin: auto; }
+        input, select, textarea { width: 100%; background: #000; border: 1px solid #333; padding: 12px; border-radius: 12px; color: #fff; margin-bottom: 15px; outline: none; }
     </style>
 </head>
 <body>
 
 <header>
-    <span style="letter-spacing: 3px; font-weight: 600; color: var(--gold);">INNOVATION ADMIN</span>
+    <span style="letter-spacing: 3px; font-weight: 600; color: var(--gold);">INNOVATION ELITE</span>
     <i class="fas fa-cog config-icon" onclick="toggleModal('modalConfig', true)"></i>
 </header>
 
 <div class="tabs">
-    <div class="tab active" onclick="switchTab('citas')">Citas</div>
-    <div class="tab" onclick="switchTab('finanzas')">Finanzas</div>
-    <div class="tab" onclick="switchTab('servicios')">Servicios</div>
+    <div class="tab active" onclick="switchTab('agenda')"><i class="fas fa-calendar-alt"></i> Agenda</div>
+    <div class="tab" onclick="switchTab('finanzas')"><i class="fas fa-wallet"></i> Ingresos</div>
+    <div class="tab" onclick="switchTab('servicios')"><i class="fas fa-cut"></i> Servicios</div>
 </div>
 
 <div class="container">
     <div class="stats-grid">
-        <div class="stat-card">
-            <span class="stat-val" id="ingresos-total">Q0.00</span>
-            <span class="stat-label">Ingresos</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-val" id="citas-count">0</span>
-            <span class="stat-label">Citas Hoy</span>
-        </div>
+        <div class="stat-card"><span class="stat-val" id="ingresos-total">Q0.00</span><span class="stat-label">Ganancia Mes</span></div>
+        <div class="stat-card"><span class="stat-val" id="citas-count">0</span><span class="stat-label">Citas Pendientes</span></div>
     </div>
 
-    <div id="view-citas" class="view active">
+    <div id="view-agenda" class="view active">
+        <div id="calendar-admin"></div> <h3 id="fecha-titulo" style="color:var(--gold); font-size:0.8rem; text-align:center; margin-bottom:15px;">CITAS PROGRAMADAS</h3>
         <div id="grid-citas"></div>
     </div>
 
     <div id="view-finanzas" class="view">
-        <h3 style="color:var(--gold); font-size: 0.9rem;">HISTORIAL DE COBROS</h3>
+        <h3 style="color:var(--gold); font-size:0.9rem;">MOVIMIENTOS RECIENTES</h3>
         <div id="lista-finanzas"></div>
     </div>
 
     <div id="view-servicios" class="view">
-        <h3 style="color:var(--gold); font-size: 0.9rem;">CATÁLOGO ACTIVO</h3>
+        <h3 style="color:var(--gold); font-size:0.9rem;">CATÁLOGO ACTUAL</h3>
         <div id="lista-servicios-view"></div>
     </div>
 </div>
 
 <div id="modalConfig" class="modal">
     <div class="modal-content">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h3 style="margin:0; color:var(--gold);">CONFIGURACIÓN</h3>
-            <i class="fas fa-times" onclick="toggleModal('modalConfig', false)" style="cursor:pointer;"></i>
-        </div>
-
-        <label>HORARIO DE APERTURA</label>
-        <select id="apertura-admin"></select>
-
-        <label>HORARIO DE CIERRE</label>
-        <select id="cierre-admin"></select>
-
+        <h3 style="color:var(--gold); text-align:center;">AJUSTES</h3>
+        <label>HORA DE INICIO</label><select id="apertura-admin"></select>
+        <label>HORA DE CIERRE</label><select id="cierre-admin"></select>
         <button class="btn-finish" onclick="guardarHorario()">ACTUALIZAR HORARIO</button>
-
-        <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
-
+        <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
         <label>NUEVO SERVICIO</label>
         <input type="text" id="serv-nombre" placeholder="Nombre">
         <input type="number" id="serv-precio" placeholder="Precio (Q)">
-        <textarea id="serv-detalle" placeholder="Detalles..."></textarea>
-        <button class="btn-finish" onclick="agregarServicio()">AÑADIR SERVICIO</button>
+        <textarea id="serv-detalle" placeholder="¿Qué incluye?"></textarea>
+        <button class="btn-finish" onclick="agregarServicio()">GUARDAR SERVICIO</button>
+        <button onclick="toggleModal('modalConfig', false)" style="background:none; border:none; color:#888; width:100%; margin-top:15px; cursor:pointer;">Cerrar</button>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = { 
-        apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", 
-        authDomain: "innovation-barber-studio.firebaseapp.com", 
-        projectId: "innovation-barber-studio", 
-        databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" 
-    };
+    const firebaseConfig = { apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", authDomain: "innovation-barber-studio.firebaseapp.com", projectId: "innovation-barber-studio", databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+
+    let citasGlobal = [];
+    let fechaFiltro = new Date().toISOString().split('T')[0];
 
     // --- NAVEGACIÓN ---
     window.switchTab = (tab) => {
@@ -127,10 +114,17 @@
         document.getElementById(`view-${tab}`).classList.add('active');
         event.currentTarget.classList.add('active');
     };
+    window.toggleModal = (id, show) => { document.getElementById(id).style.display = show ? 'flex' : 'none'; };
 
-    window.toggleModal = (id, show) => {
-        document.getElementById(id).style.display = show ? 'flex' : 'none';
-    };
+    // --- CALENDARIO ---
+    flatpickr("#calendar-admin", {
+        inline: true, "locale": "es", dateFormat: "Y-m-d", defaultDate: "today",
+        onChange: (selectedDates, dateStr) => { 
+            fechaFiltro = dateStr; 
+            document.getElementById('fecha-titulo').innerText = `CITAS PARA: ${dateStr}`;
+            renderCitas(); 
+        }
+    });
 
     // --- LLENAR HORAS ---
     const ap = document.getElementById('apertura-admin');
@@ -141,7 +135,44 @@
         ap.innerHTML += opt; ci.innerHTML += opt;
     }
 
-    // --- REALTIME: INGRESOS ---
+    // --- REALTIME: CITAS ---
+    onValue(ref(db, 'citas'), (snap) => {
+        citasGlobal = [];
+        snap.forEach(c => { 
+            let data = c.val();
+            data.id = c.key;
+            citasGlobal.push(data);
+        });
+        renderCitas();
+    });
+
+    function renderCitas() {
+        const grid = document.getElementById('grid-citas');
+        grid.innerHTML = "";
+        let filtradas = citasGlobal.filter(c => c.fecha.includes(fechaFiltro));
+        document.getElementById('citas-count').innerText = filtradas.length;
+
+        if(filtradas.length === 0) grid.innerHTML = "<p style='text-align:center; color:#555;'>No hay citas para este día.</p>";
+
+        filtradas.forEach(c => {
+            grid.innerHTML += `<div class="cita-card">
+                <div style="font-weight:600; color:var(--gold);">${c.fecha.split(' ')[1]} - ${c.nombre}</div>
+                <div style="font-size:0.75rem; color:#aaa; margin-bottom:10px;">
+                    ${c.servicio} | Q${c.precio}<br><i class="fab fa-whatsapp"></i> ${c.whatsapp}
+                </div>
+                <button class="btn-finish" onclick="finalizarCobrar('${c.id}', ${c.precio}, '${c.servicio}')">COBRAR Y FINALIZAR</button>
+            </div>`;
+        });
+    }
+
+    window.finalizarCobrar = (id, monto, serv) => {
+        if(confirm(`¿Registrar cobro de Q${monto}?`)){
+            push(ref(db, 'finanzas'), { monto: monto, servicio: serv, fecha: new Date().toISOString() });
+            remove(ref(db, `citas/${id}`));
+        }
+    };
+
+    // --- FINANZAS E INGRESOS ---
     onValue(ref(db, 'finanzas'), (snap) => {
         let total = 0;
         const hist = document.getElementById('lista-finanzas');
@@ -149,79 +180,33 @@
         snap.forEach(f => {
             const val = f.val();
             total += parseFloat(val.monto || 0);
-            hist.innerHTML += `<div style="padding:10px; border-bottom:1px solid #222; font-size:0.8rem;">
-                <span style="color:var(--gold)">+ Q${val.monto}</span> | ${val.servicio}
+            hist.innerHTML += `<div style="padding:10px; border-bottom:1px solid #222; font-size:0.8rem; display:flex; justify-content:space-between;">
+                <span>${val.servicio}</span><span style="color:var(--gold)">+ Q${val.monto}</span>
             </div>`;
         });
         document.getElementById('ingresos-total').innerText = `Q${total.toFixed(2)}`;
     });
-
-    // --- REALTIME: CITAS ---
-    onValue(ref(db, 'citas'), (snap) => {
-        const grid = document.getElementById('grid-citas');
-        grid.innerHTML = "";
-        let count = 0;
-        snap.forEach(child => {
-            const c = child.val();
-            count++;
-            grid.innerHTML += `
-                <div class="cita-card">
-                    <div style="font-weight:600;">${c.nombre}</div>
-                    <div style="font-size:0.75rem; color:#aaa; margin-bottom:10px;">
-                        ${c.servicio} | ${c.fecha}<br>
-                        <i class="fab fa-whatsapp"></i> ${c.whatsapp}
-                    </div>
-                    <button class="btn-finish" onclick="finalizarCobrar('${child.key}', ${c.precio}, '${c.servicio}')">
-                        FINALIZAR (Q${c.precio})
-                    </button>
-                </div>`;
-        });
-        document.getElementById('citas-count').innerText = count;
-    });
-
-    window.finalizarCobrar = (id, monto, serv) => {
-        if(confirm(`¿Finalizar cobro de Q${monto}?`)){
-            push(ref(db, 'finanzas'), { monto: monto, servicio: serv, fecha: new Date().toISOString() });
-            remove(ref(db, `citas/${id}`));
-        }
-    };
 
     // --- SERVICIOS ---
     onValue(ref(db, 'servicios'), snap => {
         const list = document.getElementById('lista-servicios-view');
         list.innerHTML = "";
         snap.forEach(s => {
-            const d = s.val();
-            list.innerHTML += `<div style="padding:15px; background:#111; margin-bottom:10px; border-radius:10px; display:flex; justify-content:space-between;">
-                <span>${d.nombre} (Q${d.precio})</span>
-                <i class="fas fa-trash" onclick="eliminarServicio('${s.key}')" style="color:#ff4444;"></i>
+            list.innerHTML += `<div style="padding:12px; background:#111; margin-bottom:8px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.8rem;"><b>${s.val().nombre}</b> (Q${s.val().precio})</span>
+                <i class="fas fa-trash" onclick="eliminarServicio('${s.key}')" style="color:#ff4444; cursor:pointer;"></i>
             </div>`;
         });
     });
 
     // --- CONFIGS ---
-    onValue(ref(db, 'configuracion_horario'), s => {
-        if(s.val()){
-            ap.value = s.val().apertura;
-            ci.value = s.val().cierre;
-        }
-    });
-
-    window.guardarHorario = () => {
-        set(ref(db, 'configuracion_horario'), { apertura: ap.value, cierre: ci.value })
-        .then(() => { alert("Horario actualizado"); toggleModal('modalConfig', false); });
-    };
-
+    onValue(ref(db, 'configuracion_horario'), s => { if(s.val()){ ap.value = s.val().apertura; ci.value = s.val().cierre; } });
+    window.guardarHorario = () => { set(ref(db, 'configuracion_horario'), { apertura: ap.value, cierre: ci.value }).then(() => alert("Horario guardado")); };
     window.agregarServicio = () => {
-        const n = document.getElementById('serv-nombre').value;
-        const p = document.getElementById('serv-precio').value;
-        const d = document.getElementById('serv-detalle').value;
-        if(n && p) push(ref(db, 'servicios'), { nombre: n, precio: p, descripcion: d }).then(() => {
-            alert("Servicio añadido");
-            toggleModal('modalConfig', false);
-        });
+        const n = document.getElementById('serv-nombre').value; const p = document.getElementById('serv-precio').value;
+        if(n && p) push(ref(db, 'servicios'), { nombre: n, precio: p, descripcion: document.getElementById('serv-detalle').value })
+        .then(() => { alert("Servicio añadido"); toggleModal('modalConfig', false); });
     };
-
     window.eliminarServicio = id => { if(confirm("¿Eliminar?")) remove(ref(db, `servicios/${id}`)); };
 </script>
 </body>
