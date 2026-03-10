@@ -60,6 +60,9 @@
         .serv-item-admin { display:flex; justify-content:space-between; padding:10px; font-size:0.7rem; border-bottom:1px solid #1a1a1a; align-items:center; }
         #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 14px 40px; border-radius: 50px; font-weight: 700; z-index: 11000; transition: 0.6s; }
         #toast.show { bottom: 40px; }
+        
+        /* Estilos específicos para bloqueos */
+        .block-item { background: rgba(255, 77, 77, 0.1); padding: 8px 12px; border-radius: 12px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; border: 1px solid rgba(255, 77, 77, 0.2); }
     </style>
 </head>
 <body>
@@ -100,16 +103,20 @@
 
             <p style="font-size: 0.7rem; color: #555; margin-top: 15px;">HORARIO DE ALMUERZO (LUNCH)</p>
             <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <select id="lunch-inicio">
-                    <option value="">Sin lunch</option>
-                </select>
-                <select id="lunch-fin">
-                    <option value="">Sin lunch</option>
-                </select>
+                <select id="lunch-inicio"><option value="">Sin lunch</option></select>
+                <select id="lunch-fin"><option value="">Sin lunch</option></select>
             </div>
             
             <button class="btn btn-gold" id="btn-save-hours">GUARDAR HORARIO</button>
             
+            <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
+            <p style="font-size: 0.7rem; color: #555;">BLOQUEAR DÍAS ESPECÍFICOS</p>
+            <div style="display:flex; gap:10px;">
+                <input type="date" id="input-block-date" style="margin-bottom:0;">
+                <button class="btn btn-gold" id="btn-add-block" style="width:80px; padding:10px;">OK</button>
+            </div>
+            <div id="lista-bloqueos-admin" style="margin-top:10px; text-align: left;"></div>
+
             <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
             <p style="font-size: 0.7rem; color: #555;">GESTIÓN DE SERVICIOS</p>
             <input type="text" id="serv-n" placeholder="Nombre Servicio">
@@ -179,15 +186,12 @@
                     const id = info.event.id, meta = info.event.extendedProps;
                     const nombre = info.event.title;
                     const fTxt = info.event.start.toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
-                    
                     document.getElementById('pop-nombre').innerText = nombre;
                     document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString('es-GT');
-                    
                     document.getElementById('pop-whatsapp').onclick = () => {
                         const msg = encodeURIComponent(`Hola ${nombre}, te saludamos de Innovation Barber Studio. Te recordamos tu cita para el día ${fTxt}. ¡Te esperamos!`);
                         window.open(`https://wa.me/${meta.whatsapp.replace(/\D/g,'')}?text=${msg}`);
                     };
-
                     document.getElementById('modalEvento').style.display = 'flex';
                     document.getElementById('btn-eliminar-pop').onclick = () => confirmarAccion("¿Eliminar cita?", () => remove(ref(db, `citas/${id}`)).then(cerrarPop));
                 }
@@ -207,45 +211,34 @@
             });
             onValue(ref(db, 'citas'), snap => renderAdmin(snap.val()));
             onValue(ref(db, 'servicios'), snap => renderServicios(snap.val() || {}));
+            
+            // Listener para días bloqueados
+            onValue(ref(db, 'dias_bloqueados'), snap => {
+                const list = document.getElementById('lista-bloqueos-admin');
+                list.innerHTML = '';
+                const bloqueos = snap.val() || {};
+                Object.keys(bloqueos).forEach(fecha => {
+                    list.innerHTML += `<div class="block-item"><span>${fecha}</span><i class="fas fa-times" style="cursor:pointer; color:var(--red);" onclick="window.eliminarBloqueo('${fecha}')"></i></div>`;
+                });
+            });
         }
 
         function renderAdmin(data) {
-            const lista = document.getElementById('lista-citas'); 
-            const citasCountEl = document.getElementById('citas-count');
-            const ingresoTotalEl = document.getElementById('ingreso-total');
-            lista.innerHTML = '';
-            
-            let totalServiciosMes = 0, totalIngresosMes = 0;
-            const eventos = [], ahora = new Date();
-            const mesActual = ahora.getMonth(), añoActual = ahora.getFullYear();
+            const lista = document.getElementById('lista-citas'), cCount = document.getElementById('citas-count'), iTotal = document.getElementById('ingreso-total');
+            lista.innerHTML = ''; let tMes = 0, iMes = 0, eventos = [], ahora = new Date(), mesActual = ahora.getMonth(), añoActual = ahora.getFullYear();
 
             if(data){
                 Object.keys(data).sort((a,b) => new Date(data[a].fecha) - new Date(data[b].fecha)).forEach(id => {
-                    const c = data[id], fCita = new Date(c.fecha);
-                    const isFinalizada = c.estado === 'Finalizada';
-                    
-                    if(isFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) {
-                        totalServiciosMes++;
-                        totalIngresosMes += parseFloat(c.precio || 0);
-                    }
-
-                    eventos.push({ 
-                        id, 
-                        title: c.nombre, 
-                        start: c.fecha, 
-                        backgroundColor: isFinalizada ? '#333333' : '#d4af37', 
-                        textColor: isFinalizada ? '#777777' : '#000000',
-                        extendedProps: { whatsapp: c.whatsapp } 
-                    });
-
+                    const c = data[id], fCita = new Date(c.fecha), isFinalizada = c.estado === 'Finalizada';
+                    if(isFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) { tMes++; iMes += parseFloat(c.precio || 0); }
+                    eventos.push({ id, title: c.nombre, start: c.fecha, backgroundColor: isFinalizada ? '#333333' : '#d4af37', textColor: isFinalizada ? '#777777' : '#000000', extendedProps: { whatsapp: c.whatsapp } });
                     const div = document.createElement('div');
                     div.className = `card ${isFinalizada ? 'finalizada' : ''}`;
                     div.innerHTML = `<h4>${c.nombre}</h4><button class="btn btn-gold btn-mini" onclick="cambiarEstado('${id}','Finalizada')">FINALIZAR</button>`;
                     lista.appendChild(div);
                 });
             }
-            citasCountEl.innerText = totalServiciosMes;
-            ingresoTotalEl.innerText = `Q${totalIngresosMes.toFixed(2)}`;
+            cCount.innerText = tMes; iTotal.innerText = `Q${iMes.toFixed(2)}`;
             calendar.removeAllEvents(); calendar.addEventSource(eventos);
         }
 
@@ -253,19 +246,18 @@
         window.cerrarModalAdd = () => document.getElementById('modalAddCita').style.display = 'none';
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
         
+        // Funciones de Bloqueo
+        document.getElementById('btn-add-block').onclick = () => {
+            const fecha = document.getElementById('input-block-date').value;
+            if(fecha) set(ref(db, `dias_bloqueados/${fecha}`), true).then(() => showToast("DÍA BLOQUEADO"));
+        };
+        window.eliminarBloqueo = (f) => remove(ref(db, `dias_bloqueados/${f}`)).then(() => showToast("BLOQUEO ELIMINADO"));
+
         document.getElementById('btn-save-cita-calendar').onclick = () => {
             const nom = document.getElementById('add-nombre').value, wa = iti.getNumber(), sKey = document.getElementById('add-servicio-select').value;
             if(!nom || !sKey) return showToast("FALTAN DATOS");
             const s = catalogoGlobal[sKey];
-            push(ref(db, 'citas'), { 
-                nombre: nom, 
-                whatsapp: wa, 
-                servicio: s.nombre, 
-                precio: s.precio, 
-                fecha: selectedDateTime, 
-                estado: "Pendiente",
-                nota: "Agendado por Admin" 
-            }).then(cerrarModalAdd);
+            push(ref(db, 'citas'), { nombre: nom, whatsapp: wa, servicio: s.nombre, precio: s.precio, fecha: selectedDateTime, estado: "Pendiente", nota: "Admin" }).then(cerrarModalAdd);
         };
 
         document.getElementById('btn-add-serv').onclick = () => {
@@ -276,14 +268,8 @@
             });
         };
 
-        // GUARDADO DE CONFIGURACIÓN CON LUNCH
         document.getElementById('btn-save-hours').onclick = () => {
-            set(ref(db, 'configuracion_horario'), { 
-                apertura: apS.value, 
-                cierre: ciS.value,
-                lunch_inicio: lIn.value,
-                lunch_fin: lFi.value
-            }).then(() => showToast("HORARIO Y LUNCH GUARDADOS"));
+            set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value, lunch_inicio: lIn.value, lunch_fin: lFi.value }).then(() => showToast("HORARIO Y LUNCH GUARDADOS"));
         };
 
         function renderServicios(servs){
