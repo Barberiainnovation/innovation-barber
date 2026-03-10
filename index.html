@@ -6,6 +6,8 @@
     <title>Innovation Barber Studio | Elite Booking</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
     <style>
         :root { 
             --bg: #000; 
@@ -56,7 +58,11 @@
             box-shadow: 0 10px 20px rgba(212,175,55,0.2); transition: all 0.3s ease;
         }
 
-        /* MODALES */
+        /* Estilo para el calendario dentro del diseño */
+        .flatpickr-calendar { background: #111 !important; border: 1px solid var(--gold) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important; }
+        .flatpickr-day.selected { background: var(--gold) !important; border-color: var(--gold) !important; color: #000 !important; }
+        .flatpickr-day.disabled { color: rgba(255,255,255,0.1) !important; }
+
         .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-content { 
             background: #111; padding: 40px; border: 1px solid var(--gold); 
@@ -84,9 +90,6 @@
                 <select id="codigo-area" class="flag-select">
                     <option value="502">🇬🇹 +502</option>
                     <option value="503">🇸🇻 +503</option>
-                    <option value="504">🇭🇳 +504</option>
-                    <option value="505">🇳🇮 +505</option>
-                    <option value="506">🇨🇷 +506</option>
                     <option value="1">🇺🇸 +1</option>
                 </select>
                 <input type="tel" id="whatsapp" placeholder="Número">
@@ -99,24 +102,24 @@
         </div>
 
         <div class="form-group">
+            <label><i class="fas fa-calendar-alt"></i> Fecha y Hora Disponible</label>
+            <input type="text" id="fecha-cita" placeholder="Toca para elegir horario">
+        </div>
+
+        <div class="form-group">
             <label><i class="fas fa-pen"></i> Notas Especiales</label>
             <textarea id="nota" placeholder="¿Algún detalle para tu servicio?"></textarea>
         </div>
 
-        <div class="form-group">
-            <label><i class="fas fa-calendar-alt"></i> Fecha y Hora</label>
-            <input type="datetime-local" id="fecha-cita">
-        </div>
-
-        <button class="btn-reserva" onclick="enviarCita()">Agendar Experiencia</button>
+        <button class="btn-reserva" id="btnMain" onclick="enviarCita()">Agendar Experiencia</button>
     </div>
 
     <div id="modalExito" class="modal">
         <div class="modal-content">
             <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--gold); margin-bottom: 20px;"></i>
-            <h2 style="color:var(--gold); margin:0; letter-spacing: 2px;">CONFIRMADO</h2>
-            <p style="color:#888; font-size: 0.9rem; margin: 15px 0;">Tu solicitud ha sido enviada con éxito. Recibirás un mensaje en breve.</p>
-            <button class="btn-reserva" onclick="cerrarModal('modalExito', true)">Finalizar</button>
+            <h2 style="color:var(--gold); margin:0; letter-spacing: 2px;">¡LISTO!</h2>
+            <p style="color:#888; font-size: 0.9rem; margin: 15px 0;">Tu espacio ha sido bloqueado con éxito. Envía el comprobante por WhatsApp.</p>
+            <button class="btn-reserva" id="btnWaFinal">Enviar por WhatsApp</button>
         </div>
     </div>
 
@@ -129,9 +132,10 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", 
@@ -142,6 +146,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        // 1. Cargar servicios dinámicamente
         onValue(ref(db, 'servicios'), (snap) => {
             const select = document.getElementById('servicio');
             select.innerHTML = '<option value="" disabled selected>Selecciona tu servicio</option>';
@@ -153,10 +158,22 @@
             }
         });
 
-        window.mostrarAviso = (mensaje) => {
-            document.getElementById('avisoTexto').innerText = mensaje;
-            document.getElementById('modalAviso').style.display = 'flex';
-        };
+        // 2. Control del Calendario (Bloquea citas ocupadas)
+        onValue(ref(db, 'citas'), (snapshot) => {
+            const fechasOcupadas = [];
+            snapshot.forEach(child => {
+                if(child.val().fecha) fechasOcupadas.push(child.val().fecha);
+            });
+
+            flatpickr("#fecha-cita", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                minDate: "today",
+                disable: fechasOcupadas, // AQUÍ SE BLOQUEAN LOS HORARIOS
+                time_24hr: false,
+                minuteIncrement: 30
+            });
+        });
 
         window.enviarCita = () => {
             const nom = document.getElementById('nombre').value;
@@ -166,20 +183,28 @@
             const fec = document.getElementById('fecha-cita').value;
 
             if(!nom || !num || !sel.value || !fec) {
-                mostrarAviso("Por favor completa todos los detalles de tu reservación.");
+                document.getElementById('avisoTexto').innerText = "Por favor completa todos los campos.";
+                document.getElementById('modalAviso').style.display = 'flex';
                 return;
             }
 
-            push(ref(db, 'citas'), {
+            const citaData = {
                 nombre: nom,
                 whatsapp: cod + num,
                 servicio: sel.value,
                 precio: sel.options[sel.selectedIndex].getAttribute('data-precio'),
-                nota: document.getElementById('nota').value,
+                nota: document.getElementById('nota').value || "Sin notas",
                 fecha: fec,
-                estado: 'Pendiente'
-            }).then(() => {
+                estado: 'Confirmado'
+            };
+
+            push(ref(db, 'citas'), citaData).then(() => {
                 document.getElementById('modalExito').style.display = 'flex';
+                document.getElementById('btnWaFinal').onclick = () => {
+                    const mensaje = `*RESERVA CONFIRMADA*%0A👤 *Cliente:* ${nom}%0A✂️ *Servicio:* ${sel.value}%0A📅 *Fecha:* ${fec}`;
+                    window.open(`https://wa.me/50242444391?text=${mensaje}`);
+                    location.reload();
+                };
             });
         };
 
