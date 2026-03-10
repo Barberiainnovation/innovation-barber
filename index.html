@@ -100,7 +100,24 @@
         let horaApertura = 7; 
         let horaCierre = 21;
 
-        // --- CARGAR SERVICIOS PRIMERO ---
+        // 1. Obtener Horario Dinámico del Admin
+        onValue(ref(db, 'configuracion_horario'), (snapshot) => {
+            const config = snapshot.val();
+            if (config) {
+                horaApertura = parseInt(config.apertura);
+                horaCierre = parseInt(config.cierre);
+                window.renderSlots(); 
+            }
+        });
+
+        // 2. Obtener Citas Ocupadas
+        onValue(ref(db, 'citas'), (snap) => {
+            ocupados = [];
+            snap.forEach(c => { if(c.val().fecha) ocupados.push(c.val().fecha); });
+            window.renderSlots(); 
+        });
+
+        // 3. Cargar Servicios (Asegurado al final para no interrumpir)
         onValue(ref(db, 'servicios'), (snap) => {
             const sel = document.getElementById('servicio');
             sel.innerHTML = '<option value="" disabled selected>Elige un servicio...</option>';
@@ -110,36 +127,12 @@
             });
         });
 
-        // --- ESCUCHAR HORARIO LABORAL ---
-        onValue(ref(db, 'configuracion_horario'), (snapshot) => {
-            const config = snapshot.val();
-            if (config) {
-                horaApertura = parseInt(config.apertura);
-                horaCierre = parseInt(config.cierre);
-                renderSlots();
-            }
-        });
-
-        // --- ESCUCHAR CITAS OCUPADAS ---
-        onValue(ref(db, 'citas'), (snap) => {
-            ocupados = [];
-            snap.forEach(c => {
-                const dataCita = c.val();
-                if(dataCita.fecha && dataCita.estado !== 'Cancelada') {
-                    ocupados.push(dataCita.fecha);
-                }
-            });
-            renderSlots();
-        });
-
         const fp = flatpickr("#calendar-inline", {
             inline: true, minDate: "today", dateFormat: "Y-m-d", "locale": "es",
-            onChange: (selectedDates, dateStr) => { 
-                fechaSeleccionada = dateStr; 
-                renderSlots(); 
-            }
+            onChange: (selectedDates, dateStr) => { fechaSeleccionada = dateStr; window.renderSlots(); }
         });
 
+        // Función global para que Firebase pueda llamarla
         window.renderSlots = () => {
             const container = document.getElementById('slots-container');
             container.innerHTML = "";
@@ -152,9 +145,7 @@
 
                 const div = document.createElement('div');
                 div.className = `slot ${isOccupied ? 'occupied' : ''}`;
-                
-                const label = h > 12 ? `${h-12}:00 PM` : (h === 12 ? `12:00 PM` : `${h}:00 AM`);
-                div.innerText = label;
+                div.innerText = h > 12 ? `${h-12}:00 PM` : (h === 12 ? `12:00 PM` : `${h}:00 AM`);
                 
                 if (!isOccupied) {
                     div.onclick = () => {
@@ -187,9 +178,7 @@
                 nota: document.getElementById('nota').value || "Sin notas",
                 fecha: `${fechaSeleccionada} ${horaSeleccionada}`,
                 estado: 'Pendiente'
-            }).then(() => {
-                document.getElementById('modalExito').style.display = 'flex';
-            });
+            }).then(() => document.getElementById('modalExito').style.display = 'flex');
         };
     </script>
 </body>
