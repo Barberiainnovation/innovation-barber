@@ -15,43 +15,32 @@
     
     <style>
         :root { --bg: #000; --card: #0a0a0a; --gold: #d4af37; --gold-dark: #aa8c2c; --border: #1a1a1a; --green: #2ecc71; --red: #ff4d4d; --glass: rgba(10, 10, 10, 0.98); }
-        
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; overflow-x: hidden; }
-
         #login-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; align-items:center; justify-content:center; }
         .login-box { width:320px; padding:45px; text-align:center; background:var(--card); border-radius:35px; border: 1px solid var(--border); box-shadow: 0 0 40px rgba(212,175,55,0.05); }
         .logo-main { width: 80px; margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(212,175,55,0.2)); }
-
         #admin-content { display:none; max-width: 1300px; margin: 0 auto; }
         .main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 25px; margin-top: 10px; }
         @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
-
         #calendar-container { background: var(--card); padding: 25px; border-radius: 35px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-        
         .fc { --fc-border-color: #161616; --fc-today-bg-color: rgba(212,175,55,0.03); font-size: 0.85rem; }
         .fc .fc-toolbar-title { font-size: 1.1rem !important; text-transform: uppercase; letter-spacing: 3px; color: var(--gold); font-weight: 600; }
         .fc .fc-button { background: #0f0f0f !important; border: 1px solid #222 !important; color: #777 !important; border-radius: 12px !important; text-transform: uppercase !important; font-weight: 600 !important; font-size: 0.65rem !important; transition: 0.3s; }
         .fc .fc-button-active { background: var(--gold) !important; color: #000 !important; border-color: var(--gold) !important; }
         .fc .fc-v-event { background: linear-gradient(135deg, var(--gold), var(--gold-dark)) !important; border: none !important; border-radius: 8px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.3); color: #000 !important; font-weight: 600; padding: 4px; }
         .fc-timegrid-slot { height: 4em !important; border-bottom: 1px solid #111 !important; }
-
         .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 35px; padding: 30px; border-top: 5px solid var(--gold); position: sticky; top: 15px; height: fit-content; }
         .stat-val { font-size: 2.2rem; font-weight: 600; color: var(--gold); }
         .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #555; letter-spacing: 2px; }
-        
         .citas-list { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding-bottom: 100px; }
         .card { background: #060606; border: 1px solid var(--border); padding: 25px; border-radius: 25px; border-left: 4px solid var(--gold); position: relative; transition: 0.3s; }
-        
         .modal { display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.94); backdrop-filter: blur(12px); align-items: center; justify-content: center; z-index: 10000; }
         .modal-content { background: var(--glass); padding:40px; border: 1px solid var(--gold); width:90%; max-width:380px; border-radius:40px; text-align: center; }
-        
         input, select, textarea { background: rgba(255,255,255,0.03); color:#fff; border:1px solid #1a1a1a; padding:15px; border-radius:18px; width:100%; margin-bottom:15px; outline: none; font-family: 'Poppins'; box-sizing: border-box; }
-
         .btn { width: 100%; padding: 16px; border-radius: 18px; font-weight: 700; cursor: pointer; border: none; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; }
         .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #000; }
         .btn-outline { background: transparent; border: 1px solid #333; color: #777; margin-top: 10px; }
         .btn-red { background: rgba(255, 77, 77, 0.1); border: 1px solid var(--red); color: var(--red); }
-        
         .btn-config-float { position: fixed; bottom: 30px; right: 30px; background: var(--gold); color: #000; width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; z-index: 5000; border:none; cursor:pointer; }
         #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 14px 40px; border-radius: 50px; font-weight: 700; z-index: 11000; transition: 0.6s; }
         #toast.show { bottom: 40px; }
@@ -70,7 +59,6 @@
 
     <div id="admin-content">
         <button class="btn-config-float" onclick="toggleConfig()"><i class="fas fa-cog"></i></button>
-
         <div class="main-grid">
             <div id="calendar-container"><div id="calendar"></div></div>
             <aside class="sidebar-stats">
@@ -80,7 +68,6 @@
                 <div style="background: rgba(46, 204, 113, 0.05); padding: 20px; border-radius: 20px;"><span class="stat-label" style="color:var(--green);">Ingresos</span><br><span class="stat-val" id="ingreso-total" style="color:var(--green);">Q0.00</span></div>
             </aside>
         </div>
-
         <div class="citas-list" id="lista-citas"></div>
 
         <div id="modalAddCita" class="modal">
@@ -124,7 +111,6 @@
                 <button class="btn btn-outline" onclick="toggleConfig()">SALIR</button>
             </div>
         </div>
-        
         <div id="modalConfirm" class="modal"><div class="modal-content"><p id="confirm-text"></p><button class="btn btn-red" id="confirm-yes">SÍ</button><button class="btn btn-outline" onclick="document.getElementById('modalConfirm').style.display='none'">NO</button></div></div>
     </div>
 
@@ -144,7 +130,6 @@
         let calendar, selectedDateTime = null, catalogoGlobal = {}, iti;
 
         iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { initialCountry: "gt", separateDialCode: true });
-
         window.showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
         window.confirmarAccion = (t, cb) => { document.getElementById('confirm-text').innerText = t; document.getElementById('modalConfirm').style.display = 'flex'; document.getElementById('confirm-yes').onclick = () => { cb(); document.getElementById('modalConfirm').style.display = 'none'; }; };
 
@@ -158,20 +143,24 @@
 
         function initDashboard() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'timeGridDay', locale: 'es', allDaySlot: false,
-                slotLabelFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
+                initialView: 'timeGridDay',
+                locale: 'es', // <--- IDIOMA ESPAÑOL
+                firstDay: 1,  // Lunes inicia la semana
+                allDaySlot: false,
+                buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
                 selectable: true,
                 select: (info) => {
                     if(info.view.type !== 'dayGridMonth'){
                         let f = new Date(info.start); f.setMinutes(0,0,0);
                         selectedDateTime = `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}-${String(f.getDate()).padStart(2,'0')}T${String(f.getHours()).padStart(2,'0')}:00`;
-                        document.getElementById('add-fecha-display').innerText = f.toLocaleString();
+                        document.getElementById('add-fecha-display').innerText = f.toLocaleString('es-GT');
                         document.getElementById('modalAddCita').style.display = 'flex';
                     }
                 },
                 eventClick: (info) => {
                     const id = info.event.id, meta = info.event.extendedProps;
+                    // Formato de fecha para el mensaje
                     const fTxt = info.event.start.toLocaleString('es-GT', { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' });
                     document.getElementById('pop-nombre').innerText = info.event.title;
                     document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString('es-GT');
@@ -181,6 +170,7 @@
                         btnWa.style.display = 'block';
                         btnWa.onclick = () => {
                             const n = meta.whatsapp.replace(/\D/g,'');
+                            // EL MENSAJE SOLICITADO
                             const m = encodeURIComponent(`Te recordamos que tienes una cita en INNOVATION Barber Studio el día ${fTxt}, te esperamos.`);
                             window.open(`https://wa.me/${n}?text=${m}`);
                         };
@@ -199,15 +189,15 @@
 
         window.renderAdmin = (data) => {
             const lista = document.getElementById('lista-citas'); lista.innerHTML = '';
-            const eventos = []; let total = 0, cont = 0, mesA = new Date().getMonth(); const stats = {};
+            const eventos = []; let total = 0, cont = 0, mesA = new Date().getMonth();
             if(data){
                 Object.keys(data).forEach(id => {
                     const c = data[id], fISO = c.fecha.replace(" ","T"), f = new Date(fISO), p = parseFloat(String(c.precio||0).replace('Q',''));
-                    if(c.estado === 'Finalizada' && f.getMonth() === mesA){ total += p; cont++; stats[c.servicio] = (stats[c.servicio]||0)+1; }
+                    if(c.estado === 'Finalizada' && f.getMonth() === mesA){ total += p; cont++; }
                     eventos.push({ id, title: c.nombre, start: fISO, backgroundColor: c.estado==='Finalizada'?'#111':'#d4af37', extendedProps: { whatsapp: c.whatsapp, nota: c.nota } });
                     if(c.estado === 'Pendiente'){
                         const div = document.createElement('div'); div.className = 'card';
-                        div.innerHTML = `<h4 style="margin:0;">${c.nombre}</h4><p style="font-size:0.7rem; color:#555;">${f.toLocaleString()}</p><button class="btn btn-gold" style="padding:10px; font-size:0.5rem;" onclick="cambiarEstado('${id}','Finalizada')">FINALIZAR</button>`;
+                        div.innerHTML = `<h4 style="margin:0;">${c.nombre}</h4><p style="font-size:0.7rem; color:#555;">${f.toLocaleString('es-GT')}</p><button class="btn btn-gold" style="padding:10px; font-size:0.5rem;" onclick="cambiarEstado('${id}','Finalizada')">FINALIZAR</button>`;
                         lista.appendChild(div);
                     }
                 });
@@ -220,14 +210,12 @@
         window.cambiarEstado = (id, est) => update(ref(db, `citas/${id}`), { estado: est }).then(() => showToast("FINALIZADA"));
         window.cerrarModalAdd = () => document.getElementById('modalAddCita').style.display = 'none';
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
-        
         document.getElementById('btn-save-cita-calendar').onclick = () => {
             const nom = document.getElementById('add-nombre').value, wa = iti.getNumber(), sKey = document.getElementById('add-servicio-select').value;
             if(!nom || !wa || !sKey) return showToast("FALTAN DATOS");
             const s = catalogoGlobal[sKey];
             push(ref(db, 'citas'), { nombre: nom, whatsapp: wa, servicio: s.nombre, precio: s.precio, fecha: selectedDateTime, estado: "Pendiente" }).then(() => { cerrarModalAdd(); showToast("OK"); });
         };
-
         document.getElementById('btn-save-hours').onclick = () => set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value }).then(() => showToast("ACTUALIZADO"));
         document.getElementById('btn-add-serv').onclick = () => { const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value; if(n && p){ push(ref(db, 'servicios'), { nombre: n, precio: p }).then(() => { showToast("AGREGADO"); }); } };
 
