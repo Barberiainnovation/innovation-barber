@@ -100,20 +100,25 @@
         let horaApertura = 7; 
         let horaCierre = 21;
 
-        // 1. Obtener Horario Dinámico del Admin
+        // --- 1. Obtener Horario Dinámico del Admin ---
         onValue(ref(db, 'configuracion_horario'), (snapshot) => {
             const config = snapshot.val();
             if (config) {
                 horaApertura = parseInt(config.apertura);
                 horaCierre = parseInt(config.cierre);
-                renderSlots();
+                renderSlots(); // Re-renderiza si el admin cambia el horario mientras el usuario ve la página
             }
         });
 
         // 2. Obtener Citas Ocupadas
         onValue(ref(db, 'citas'), (snap) => {
             ocupados = [];
-            snap.forEach(c => { if(c.val().fecha) ocupados.push(c.val().fecha); });
+            snap.forEach(c => { 
+                const cita = c.val();
+                if(cita.fecha && cita.estado !== 'Cancelada') { // Filtro básico por si cancelas citas
+                    ocupados.push(cita.fecha); 
+                }
+            });
             renderSlots();
         });
 
@@ -127,6 +132,7 @@
             container.innerHTML = "";
             if (!fechaSeleccionada) return;
 
+            // El bucle ahora usa las variables dinámicas del Admin
             for (let h = horaApertura; h <= horaCierre; h++) {
                 const horaStr = `${h.toString().padStart(2, '0')}:00`;
                 const fullDateTime = `${fechaSeleccionada} ${horaStr}`;
@@ -134,7 +140,11 @@
 
                 const div = document.createElement('div');
                 div.className = `slot ${isOccupied ? 'occupied' : ''}`;
-                div.innerText = h > 12 ? `${h-12}:00 PM` : (h === 12 ? `12:00 PM` : `${h}:00 AM`);
+                
+                // Formato de hora legible
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                const hora12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+                div.innerText = `${hora12}:00 ${ampm}`;
                 
                 if (!isOccupied) {
                     div.onclick = () => {
