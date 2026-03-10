@@ -109,7 +109,7 @@
         </div>
 
         <div class="form-group">
-            <label><i class="fas fa-calendar-alt"></i> Fecha y Hora (Citas cada hora)</label>
+            <label><i class="fas fa-calendar-alt"></i> Fecha y Hora (7am - 10pm)</label>
             <input type="text" id="fecha-cita" placeholder="Toca para elegir horario">
         </div>
 
@@ -139,11 +139,24 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- Lógica del Calendario con Horas Exactas ---
+        let citasOcupadas = [];
+
+        // Función para formatear fecha como la guardamos en Firebase: YYYY-MM-DD HH:mm
+        const formatFP = (date) => {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = ("0" + (d.getMonth() + 1)).slice(-2);
+            const day = ("0" + d.getDate()).slice(-2);
+            const hour = ("0" + d.getHours()).slice(-2);
+            const min = ("0" + d.getMinutes()).slice(-2);
+            return `${year}-${month}-${day} ${hour}:${min}`;
+        };
+
+        // Escuchar citas en tiempo real
         onValue(ref(db, 'citas'), (snapshot) => {
-            const ocupados = [];
+            citasOcupadas = [];
             snapshot.forEach(child => {
-                if(child.val().fecha) ocupados.push(child.val().fecha);
+                if(child.val().fecha) citasOcupadas.push(child.val().fecha);
             });
 
             flatpickr("#fecha-cita", {
@@ -152,15 +165,35 @@
                 minDate: "today",
                 minTime: "07:00",
                 maxTime: "22:00",
-                disable: ocupados, 
                 time_24hr: false,
-                minuteIncrement: 60, // ESTO HACE QUE SOLO SE ELIJAN HORAS EN PUNTO
-                locale: {
-                    firstDayOfWeek: 1
-                }
+                minuteIncrement: 60,
+                // LÓGICA DE BLOQUEO POR HORA:
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (citasOcupadas.includes(dateStr)) {
+                        alert("Esta hora ya está ocupada. Por favor elige otra.");
+                        instance.clear();
+                    }
+                },
+                // Deshabilitar visualmente solo las horas que coincidan exactamente
+                disable: [
+                    function(date) {
+                        // Esta función puede deshabilitar días completos si retornamos true.
+                        // Para bloquear solo horas, usaremos el evento onChange arriba para validar,
+                        // pero aquí podemos añadir lógica para deshabilitar días si todos sus slots (7am-10pm) están llenos.
+                        const fechaBase = date.toISOString().split('T')[0];
+                        let slotsOcupadosEnDia = 0;
+                        for(let h=7; h<=22; h++) {
+                            const horaStr = ("0" + h).slice(-2) + ":00";
+                            if(citasOcupadas.includes(`${fechaBase} ${horaStr}`)) slotsOcupadosEnDia++;
+                        }
+                        return slotsOcupadosEnDia >= 16; // 16 es el total de horas de 7am a 10pm
+                    }
+                ],
+                locale: { firstDayOfWeek: 1 }
             });
         });
 
+        // Cargar servicios
         onValue(ref(db, 'servicios'), (snap) => {
             const select = document.getElementById('servicio');
             select.innerHTML = '<option value="" disabled selected>Selecciona tu servicio</option>';
