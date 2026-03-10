@@ -8,81 +8,102 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --bg: #000; --gold: #d4af37; --gold-l: #f1d592; --card: #111; --border: rgba(212, 175, 55, 0.2); }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; }
-        .container { max-width: 900px; margin: 0 auto; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 0; overflow-x: hidden; }
         
-        /* Stats */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 20px; text-align: center; }
-        .stat-card i { color: var(--gold); font-size: 1.5rem; margin-bottom: 10px; }
-        .stat-val { font-size: 1.4rem; font-weight: 600; display: block; }
-        .stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; }
+        /* Header y Navegación */
+        header { padding: 20px; text-align: center; border-bottom: 1px solid var(--border); position: relative; }
+        .config-icon { position: absolute; right: 20px; top: 25px; font-size: 1.5rem; color: var(--gold); cursor: pointer; }
+        
+        .tabs { display: flex; justify-content: space-around; background: #0a0a0a; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .tab { color: #888; font-size: 0.8rem; text-transform: uppercase; font-weight: 600; cursor: pointer; padding: 10px; }
+        .tab.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
 
-        /* Estructura */
-        .admin-card { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 25px; margin-bottom: 25px; }
-        h3 { color: var(--gold); font-size: 1rem; margin-top: 0; letter-spacing: 1px; text-transform: uppercase; }
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; }
+
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 20px; text-align: center; }
+        .stat-val { font-size: 1.2rem; font-weight: 600; color: #fff; display: block; }
+        .stat-label { font-size: 0.6rem; color: var(--gold); text-transform: uppercase; }
+
+        /* Vistas */
+        .view { display: none; }
+        .view.active { display: block; }
+
+        /* Tarjetas de Citas */
+        .cita-card { background: var(--card); border-left: 4px solid var(--gold); padding: 15px; border-radius: 15px; margin-bottom: 15px; }
+        .btn-finish { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--gold), var(--gold-l)); border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+
+        /* Modal Configuración */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .modal-content { background: #111; border: 1px solid var(--gold); padding: 20px; border-radius: 25px; max-width: 500px; margin: auto; }
         
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.65rem; color: var(--gold); margin-bottom: 5px; font-weight: 600; }
-        input, select, textarea { width: 100%; background: #000; border: 1px solid #333; padding: 12px; border-radius: 12px; color: #fff; outline: none; box-sizing: border-box; }
-        
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; margin-top: 10px; }
-        .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-l)); color: #000; }
-        
-        /* Citas */
-        .citas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
-        .cita-card { background: #1a1a1a; border-left: 4px solid var(--gold); padding: 15px; border-radius: 15px; }
-        .cita-info { font-size: 0.85rem; margin-bottom: 10px; line-height: 1.4; }
-        .service-tag { background: rgba(212,175,55,0.1); color: var(--gold); padding: 2px 8px; border-radius: 5px; font-size: 0.7rem; }
+        input, select, textarea { width: 100%; background: #000; border: 1px solid #333; padding: 12px; border-radius: 12px; color: #fff; margin-bottom: 10px; outline: none; }
+        label { font-size: 0.7rem; color: var(--gold); display: block; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2 style="text-align:center; letter-spacing:4px; color:var(--gold);">INNOVATION ADMIN</h2>
+<header>
+    <span style="letter-spacing: 3px; font-weight: 600; color: var(--gold);">INNOVATION ADMIN</span>
+    <i class="fas fa-cog config-icon" onclick="toggleModal('modalConfig', true)"></i>
+</header>
 
+<div class="tabs">
+    <div class="tab active" onclick="switchTab('citas')">Citas</div>
+    <div class="tab" onclick="switchTab('finanzas')">Finanzas</div>
+    <div class="tab" onclick="switchTab('servicios')">Servicios</div>
+</div>
+
+<div class="container">
     <div class="stats-grid">
         <div class="stat-card">
-            <i class="fas fa-wallet"></i>
             <span class="stat-val" id="ingresos-total">Q0.00</span>
-            <span class="stat-label">Ingresos del Mes</span>
+            <span class="stat-label">Ingresos</span>
         </div>
         <div class="stat-card">
-            <i class="fas fa-calendar-check"></i>
             <span class="stat-val" id="citas-count">0</span>
             <span class="stat-label">Citas Hoy</span>
         </div>
     </div>
 
-    <div class="admin-card">
-        <h3><i class="fas fa-clock"></i> Horario Laboral</h3>
-        <div style="display: flex; gap: 10px; margin-bottom:10px;">
-            <div style="flex:1">
-                <label>Apertura</label>
-                <select id="apertura-admin"></select>
-            </div>
-            <div style="flex:1">
-                <label>Cierre</label>
-                <select id="cierre-admin"></select>
-            </div>
-        </div>
-        <button class="btn btn-gold" onclick="guardarHorario()">Actualizar Horario</button>
+    <div id="view-citas" class="view active">
+        <div id="grid-citas"></div>
     </div>
 
-    <div class="admin-card">
-        <h3><i class="fas fa-list"></i> Gestión de Citas</h3>
-        <div id="grid-citas" class="citas-grid"></div>
+    <div id="view-finanzas" class="view">
+        <h3 style="color:var(--gold); font-size: 0.9rem;">HISTORIAL DE COBROS</h3>
+        <div id="lista-finanzas"></div>
     </div>
 
-    <div class="admin-card">
-        <h3><i class="fas fa-cut"></i> Catálogo de Servicios</h3>
-        <div class="form-group">
-            <input type="text" id="serv-nombre" placeholder="Nombre (Ej: Fade + Barba)">
-            <input type="number" id="serv-precio" placeholder="Precio (Ej: 125)" style="margin-top:10px;">
-            <textarea id="serv-detalle" placeholder="¿Qué incluye?" style="margin-top:10px;"></textarea>
-            <button class="btn btn-gold" onclick="agregarServicio()">Añadir Servicio</button>
+    <div id="view-servicios" class="view">
+        <h3 style="color:var(--gold); font-size: 0.9rem;">CATÁLOGO ACTIVO</h3>
+        <div id="lista-servicios-view"></div>
+    </div>
+</div>
+
+<div id="modalConfig" class="modal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="margin:0; color:var(--gold);">CONFIGURACIÓN</h3>
+            <i class="fas fa-times" onclick="toggleModal('modalConfig', false)" style="cursor:pointer;"></i>
         </div>
-        <div id="lista-servicios"></div>
+
+        <label>HORARIO DE APERTURA</label>
+        <select id="apertura-admin"></select>
+
+        <label>HORARIO DE CIERRE</label>
+        <select id="cierre-admin"></select>
+
+        <button class="btn-finish" onclick="guardarHorario()">ACTUALIZAR HORARIO</button>
+
+        <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+
+        <label>NUEVO SERVICIO</label>
+        <input type="text" id="serv-nombre" placeholder="Nombre">
+        <input type="number" id="serv-precio" placeholder="Precio (Q)">
+        <textarea id="serv-detalle" placeholder="Detalles..."></textarea>
+        <button class="btn-finish" onclick="agregarServicio()">AÑADIR SERVICIO</button>
     </div>
 </div>
 
@@ -99,26 +120,43 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // --- 1. LLENAR HORAS ---
-    const fillHours = () => {
-        const ap = document.getElementById('apertura-admin');
-        const ci = document.getElementById('cierre-admin');
-        for(let h=0; h<=23; h++){
-            let lbl = h === 0 ? "12 AM" : h === 12 ? "12 PM" : h > 12 ? `${h-12} PM` : `${h} AM`;
-            let opt = `<option value="${h}">${lbl}</option>`;
-            ap.innerHTML += opt; ci.innerHTML += opt;
-        }
-    }
-    fillHours();
+    // --- NAVEGACIÓN ---
+    window.switchTab = (tab) => {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(`view-${tab}`).classList.add('active');
+        event.currentTarget.classList.add('active');
+    };
 
-    // --- 2. FINANZAS (CALCULAR INGRESOS) ---
+    window.toggleModal = (id, show) => {
+        document.getElementById(id).style.display = show ? 'flex' : 'none';
+    };
+
+    // --- LLENAR HORAS ---
+    const ap = document.getElementById('apertura-admin');
+    const ci = document.getElementById('cierre-admin');
+    for(let h=0; h<=23; h++){
+        let lbl = h === 0 ? "12 AM" : h === 12 ? "12 PM" : h > 12 ? `${h-12} PM` : `${h} AM`;
+        let opt = `<option value="${h}">${lbl}</option>`;
+        ap.innerHTML += opt; ci.innerHTML += opt;
+    }
+
+    // --- REALTIME: INGRESOS ---
     onValue(ref(db, 'finanzas'), (snap) => {
         let total = 0;
-        snap.forEach(f => { total += parseFloat(f.val().monto || 0); });
+        const hist = document.getElementById('lista-finanzas');
+        hist.innerHTML = "";
+        snap.forEach(f => {
+            const val = f.val();
+            total += parseFloat(val.monto || 0);
+            hist.innerHTML += `<div style="padding:10px; border-bottom:1px solid #222; font-size:0.8rem;">
+                <span style="color:var(--gold)">+ Q${val.monto}</span> | ${val.servicio}
+            </div>`;
+        });
         document.getElementById('ingresos-total').innerText = `Q${total.toFixed(2)}`;
     });
 
-    // --- 3. GESTIÓN DE CITAS (CON COBRO) ---
+    // --- REALTIME: CITAS ---
     onValue(ref(db, 'citas'), (snap) => {
         const grid = document.getElementById('grid-citas');
         grid.innerHTML = "";
@@ -128,42 +166,50 @@
             count++;
             grid.innerHTML += `
                 <div class="cita-card">
-                    <div style="font-weight:600; font-size:1rem; margin-bottom:5px;">${c.nombre}</div>
-                    <div class="cita-info">
-                        <span class="service-tag">${c.servicio}</span><br>
-                        <small><i class="fas fa-clock"></i> ${c.fecha}</small><br>
-                        <small><i class="fab fa-whatsapp"></i> ${c.whatsapp}</small>
+                    <div style="font-weight:600;">${c.nombre}</div>
+                    <div style="font-size:0.75rem; color:#aaa; margin-bottom:10px;">
+                        ${c.servicio} | ${c.fecha}<br>
+                        <i class="fab fa-whatsapp"></i> ${c.whatsapp}
                     </div>
-                    <button class="btn btn-gold" onclick="finalizarCobrar('${child.key}', ${c.precio})">
-                        Finalizar (Q${c.precio})
+                    <button class="btn-finish" onclick="finalizarCobrar('${child.key}', ${c.precio}, '${c.servicio}')">
+                        FINALIZAR (Q${c.precio})
                     </button>
                 </div>`;
         });
         document.getElementById('citas-count').innerText = count;
     });
 
-    window.finalizarCobrar = (id, monto) => {
-        if(confirm(`¿Finalizar y registrar cobro de Q${monto}?`)){
-            // Guardar en finanzas
-            push(ref(db, 'finanzas'), { monto: monto, fecha: new Date().toISOString() });
-            // Borrar de citas
+    window.finalizarCobrar = (id, monto, serv) => {
+        if(confirm(`¿Finalizar cobro de Q${monto}?`)){
+            push(ref(db, 'finanzas'), { monto: monto, servicio: serv, fecha: new Date().toISOString() });
             remove(ref(db, `citas/${id}`));
         }
     };
 
-    // --- 4. CONFIGURACIONES (HORARIO Y SERVICIOS) ---
+    // --- SERVICIOS ---
+    onValue(ref(db, 'servicios'), snap => {
+        const list = document.getElementById('lista-servicios-view');
+        list.innerHTML = "";
+        snap.forEach(s => {
+            const d = s.val();
+            list.innerHTML += `<div style="padding:15px; background:#111; margin-bottom:10px; border-radius:10px; display:flex; justify-content:space-between;">
+                <span>${d.nombre} (Q${d.precio})</span>
+                <i class="fas fa-trash" onclick="eliminarServicio('${s.key}')" style="color:#ff4444;"></i>
+            </div>`;
+        });
+    });
+
+    // --- CONFIGS ---
     onValue(ref(db, 'configuracion_horario'), s => {
         if(s.val()){
-            document.getElementById('apertura-admin').value = s.val().apertura;
-            document.getElementById('cierre-admin').value = s.val().cierre;
+            ap.value = s.val().apertura;
+            ci.value = s.val().cierre;
         }
     });
 
     window.guardarHorario = () => {
-        set(ref(db, 'configuracion_horario'), {
-            apertura: document.getElementById('apertura-admin').value,
-            cierre: document.getElementById('cierre-admin').value
-        }).then(() => alert("Horario actualizado"));
+        set(ref(db, 'configuracion_horario'), { apertura: ap.value, cierre: ci.value })
+        .then(() => { alert("Horario actualizado"); toggleModal('modalConfig', false); });
     };
 
     window.agregarServicio = () => {
@@ -171,23 +217,10 @@
         const p = document.getElementById('serv-precio').value;
         const d = document.getElementById('serv-detalle').value;
         if(n && p) push(ref(db, 'servicios'), { nombre: n, precio: p, descripcion: d }).then(() => {
-            document.getElementById('serv-nombre').value = "";
-            document.getElementById('serv-precio').value = "";
-            document.getElementById('serv-detalle').value = "";
+            alert("Servicio añadido");
+            toggleModal('modalConfig', false);
         });
     };
-
-    onValue(ref(db, 'servicios'), snap => {
-        const list = document.getElementById('lista-servicios');
-        list.innerHTML = "";
-        snap.forEach(s => {
-            const d = s.val();
-            list.innerHTML += `<div style="padding:10px; border-bottom:1px solid #222; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:0.8rem;"><b>${d.nombre}</b> (Q${d.precio})</span>
-                <button onclick="eliminarServicio('${s.key}')" style="background:none; border:none; color:red; cursor:pointer;"><i class="fas fa-trash"></i></button>
-            </div>`;
-        });
-    });
 
     window.eliminarServicio = id => { if(confirm("¿Eliminar?")) remove(ref(db, `servicios/${id}`)); };
 </script>
