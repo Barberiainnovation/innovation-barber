@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Innovation Admin | Management</title>
     
@@ -53,7 +54,6 @@
         .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; }
         input, select, textarea { background:#000; color:#fff; border:1px solid #222; padding:14px; border-radius:12px; width:100%; margin-bottom:15px; outline: none; }
 
-        /* Notificación Elegante */
         #toast { 
             position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
             background: var(--gold); color: #000; padding: 15px 30px;
@@ -109,6 +109,16 @@
             </div>
         </div>
 
+        <div id="modalConfirm" class="modal">
+            <div class="modal-content" style="border-color: var(--red);">
+                <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:var(--red); margin-bottom:15px;"></i>
+                <h3 style="color:#fff; margin:0;">¿ESTÁS SEGURO?</h3>
+                <p id="confirm-text" style="color:#888; font-size:0.8rem; margin:15px 0;"></p>
+                <button class="btn btn-red" id="confirm-yes">SÍ, ELIMINAR</button>
+                <button class="btn btn-outline" onclick="document.getElementById('modalConfirm').style.display='none'">CANCELAR</button>
+            </div>
+        </div>
+
         <div id="modalConfig" class="modal">
             <div class="modal-content">
                 <h3 style="color:var(--gold); margin-top:0;">CONFIGURACIÓN</h3>
@@ -154,6 +164,16 @@
             setTimeout(() => t.classList.remove('show'), 3000);
         }
 
+        // Función de confirmación elegante
+        window.confirmarAccion = (texto, callback) => {
+            document.getElementById('confirm-text').innerText = texto;
+            document.getElementById('modalConfirm').style.display = 'flex';
+            document.getElementById('confirm-yes').onclick = () => {
+                callback();
+                document.getElementById('modalConfirm').style.display = 'none';
+            };
+        };
+
         const apS = document.getElementById('config-apertura'), ciS = document.getElementById('config-cierre');
         for(let h=0; h<=23; h++){
             let lbl = h === 0 ? "12 AM" : h === 12 ? "12 PM" : h > 12 ? `${h-12} PM` : `${h} AM`;
@@ -177,18 +197,28 @@
 
         function initDashboard() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'dayGridMonth', locale: 'es', firstDay: 1,
+                initialView: 'dayGridMonth', 
+                locale: 'es', // CAMBIO: Forzar Español
+                firstDay: 1,
+                buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' }, // Traducir botones
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
                 eventClick: (info) => {
                     const id = info.event.id;
                     const meta = info.event.extendedProps;
                     document.getElementById('pop-nombre').innerText = info.event.title;
-                    document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString();
+                    document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString('es-GT');
                     document.getElementById('pop-whatsapp').innerHTML = meta.whatsapp ? `<i class="fab fa-whatsapp"></i> ${meta.whatsapp}` : 'N/A';
                     document.getElementById('pop-whatsapp').onclick = () => { if(meta.whatsapp) window.open(`https://wa.me/${meta.whatsapp.replace(/\D/g,'')}`); };
                     document.getElementById('pop-nota').innerText = meta.nota ? `Nota: ${meta.nota}` : 'Sin notas';
                     document.getElementById('modalEvento').style.display = 'flex';
-                    document.getElementById('btn-eliminar-pop').onclick = () => { if(confirm("¿Borrar cita?")) { remove(ref(db, `citas/${id}`)); cerrarPop(); } };
+                    
+                    document.getElementById('btn-eliminar-pop').onclick = () => { 
+                        confirmarAccion("Esta cita se borrará permanentemente.", () => {
+                            remove(ref(db, `citas/${id}`)); 
+                            cerrarPop();
+                            showToast("CITA ELIMINADA");
+                        });
+                    };
                 }
             });
             calendar.render();
@@ -201,7 +231,6 @@
             onValue(ref(db, 'servicios'), snap => renderServicios(snap.val() || {}));
         }
 
-        // Guardar Horario con Notificación Elegante
         document.getElementById('btn-save-hours').addEventListener('click', () => {
             set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value })
             .then(() => showToast("✅ HORARIO ACTUALIZADO"));
@@ -209,10 +238,18 @@
 
         document.getElementById('btn-add-serv').onclick = () => {
             const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value, d = document.getElementById('serv-d').value;
-            if(n && p) { push(ref(db, 'servicios'), { nombre: n, precio: p, descripcion: d }); document.getElementById('serv-n').value=''; document.getElementById('serv-p').value=''; document.getElementById('serv-d').value=''; }
+            if(n && p) { 
+                push(ref(db, 'servicios'), { nombre: n, precio: p, descripcion: d }); 
+                document.getElementById('serv-n').value=''; 
+                document.getElementById('serv-p').value=''; 
+                document.getElementById('serv-d').value='';
+                showToast("SERVICIO AÑADIDO");
+            }
         };
 
-        window.cambiarEstado = (id, est) => update(ref(db, `citas/${id}`), { estado: est });
+        window.cambiarEstado = (id, est) => {
+            update(ref(db, `citas/${id}`), { estado: est }).then(() => showToast("CITA FINALIZADA ✅"));
+        };
 
         function renderAdmin(data) {
             const lista = document.getElementById('lista-citas'); lista.innerHTML = '';
@@ -231,7 +268,7 @@
 
                     eventos.push({ id: id, title: c.nombre, start: c.fecha, backgroundColor: c.estado === 'Finalizada' ? '#111' : '#d4af37', extendedProps: { nota: c.nota || '', whatsapp: c.whatsapp || '' } });
 
-                    if(c.estado !== 'Finalizada') {
+                    if(c.estado !== 'Finalizada' && c.estado !== 'Cancelada') {
                         const card = document.createElement('div'); card.className = 'card';
                         card.innerHTML = `
                             <div class="price-tag">Q${p}</div>
@@ -239,7 +276,7 @@
                             <div style="font-size:0.75rem; color:var(--green); margin-bottom:10px; cursor:pointer;" onclick="window.open('https://wa.me/${(c.whatsapp||'').replace(/\D/g,'')}')">
                                 <i class="fab fa-whatsapp"></i> ${c.whatsapp || 'WhatsApp N/A'}
                             </div>
-                            <p style="font-size:0.7rem; color:#888;">${c.servicio} | ${f.toLocaleString()}</p>
+                            <p style="font-size:0.7rem; color:#888;">${c.servicio} | ${f.toLocaleString('es-GT')}</p>
                             ${c.nota ? `<div class="note-box">${c.nota}</div>` : ''}
                             <button class="btn btn-gold" onclick="cambiarEstado('${id}', 'Finalizada')">FINALIZAR CITA</button>
                         `;
@@ -249,7 +286,7 @@
             }
             document.getElementById('ingreso-total').innerText = `Q${totalIn.toFixed(2)}`;
             document.getElementById('citas-count').innerText = contFin;
-            const sDiv = document.getElementById('servicios-stats'); sDiv.innerHTML = '<strong>Servicios:</strong>';
+            const sDiv = document.getElementById('servicios-stats'); sDiv.innerHTML = '<strong>Servicios del Mes:</strong>';
             for(let s in statsS) sDiv.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:0.7rem;"><span>${s}</span> <span>${statsS[s]}</span></div>`;
             if(calendar) { calendar.removeAllEvents(); calendar.addEventSource(eventos); }
         }
@@ -257,10 +294,19 @@
         function renderServicios(servs) {
             const div = document.getElementById('lista-servicios-admin'); div.innerHTML = '';
             Object.keys(servs).forEach(id => {
-                div.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #1a1a1a; font-size: 0.7rem;"><span>${servs[id].nombre}</span><i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"></i></div>`;
+                const sRow = document.createElement('div');
+                sRow.style = "display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #1a1a1a; font-size: 0.7rem;";
+                sRow.innerHTML = `<span>${servs[id].nombre}</span><i class="fas fa-trash" style="color:red; cursor:pointer;"></i>`;
+                sRow.querySelector('i').onclick = () => {
+                    confirmarAccion(`¿Eliminar ${servs[id].nombre} del catálogo?`, () => {
+                        remove(ref(db, `servicios/${id}`));
+                        showToast("SERVICIO ELIMINADO");
+                    });
+                };
+                div.appendChild(sRow);
             });
         }
-        window.eliminarServicio = (id) => { if(confirm("¿Eliminar?")) remove(ref(db, `servicios/${id}`)); };
+
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
     </script>
 </body>
