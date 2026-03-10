@@ -58,10 +58,7 @@
             box-shadow: 0 10px 20px rgba(212,175,55,0.2); transition: all 0.3s ease;
         }
 
-        /* Estilo para el calendario dentro del diseño */
-        .flatpickr-calendar { background: #111 !important; border: 1px solid var(--gold) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important; }
-        .flatpickr-day.selected { background: var(--gold) !important; border-color: var(--gold) !important; color: #000 !important; }
-        .flatpickr-day.disabled { color: rgba(255,255,255,0.1) !important; }
+        .flatpickr-calendar { background: #111 !important; border: 1px solid var(--gold) !important; }
 
         .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-content { 
@@ -108,34 +105,25 @@
 
         <div class="form-group">
             <label><i class="fas fa-pen"></i> Notas Especiales</label>
-            <textarea id="nota" placeholder="¿Algún detalle para tu servicio?"></textarea>
+            <textarea id="nota" placeholder="¿Algún detalle?"></textarea>
         </div>
 
-        <button class="btn-reserva" id="btnMain" onclick="enviarCita()">Agendar Experiencia</button>
+        <button class="btn-reserva" onclick="enviarCita()">Confirmar Reserva</button>
     </div>
 
     <div id="modalExito" class="modal">
         <div class="modal-content">
             <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--gold); margin-bottom: 20px;"></i>
-            <h2 style="color:var(--gold); margin:0; letter-spacing: 2px;">¡LISTO!</h2>
-            <p style="color:#888; font-size: 0.9rem; margin: 15px 0;">Tu espacio ha sido bloqueado con éxito. Envía el comprobante por WhatsApp.</p>
-            <button class="btn-reserva" id="btnWaFinal">Enviar por WhatsApp</button>
-        </div>
-    </div>
-
-    <div id="modalAviso" class="modal">
-        <div class="modal-content" style="border-color: #ff4d4d;">
-            <i class="fas fa-exclamation-circle" style="font-size: 4rem; color: #ff4d4d; margin-bottom: 20px;"></i>
-            <h2 style="color:#ff4d4d; margin:0; letter-spacing: 2px;">ATENCIÓN</h2>
-            <p id="avisoTexto" style="color:#888; font-size: 0.9rem; margin: 15px 0;"></p>
-            <button class="btn-reserva" style="background: #ff4d4d;" onclick="cerrarModal('modalAviso', false)">Corregir</button>
+            <h2 style="color:var(--gold); margin:0; letter-spacing: 2px;">¡LOGRADO!</h2>
+            <p style="color:#888; font-size: 0.9rem; margin: 15px 0;">Tu cita ha sido agendada con éxito. Te esperamos.</p>
+            <button class="btn-reserva" onclick="location.reload()">Entendido</button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", 
@@ -146,71 +134,40 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // 1. Cargar servicios dinámicamente
+        // Bloqueo de fechas
+        onValue(ref(db, 'citas'), (snapshot) => {
+            const ocupados = [];
+            snapshot.forEach(child => { if(child.val().fecha) ocupados.push(child.val().fecha); });
+            flatpickr("#fecha-cita", {
+                enableTime: true, dateFormat: "Y-m-d H:i", minDate: "today",
+                disable: ocupados, time_24hr: false, minuteIncrement: 30
+            });
+        });
+
+        // Cargar Servicios
         onValue(ref(db, 'servicios'), (snap) => {
             const select = document.getElementById('servicio');
             select.innerHTML = '<option value="" disabled selected>Selecciona tu servicio</option>';
-            const data = snap.val();
-            if(data) {
-                Object.values(data).forEach(s => {
-                    select.innerHTML += `<option value="${s.nombre}" data-precio="${s.precio}">${s.nombre} - Q${s.precio}</option>`;
-                });
-            }
-        });
-
-        // 2. Control del Calendario (Bloquea citas ocupadas)
-        onValue(ref(db, 'citas'), (snapshot) => {
-            const fechasOcupadas = [];
-            snapshot.forEach(child => {
-                if(child.val().fecha) fechasOcupadas.push(child.val().fecha);
-            });
-
-            flatpickr("#fecha-cita", {
-                enableTime: true,
-                dateFormat: "Y-m-d H:i",
-                minDate: "today",
-                disable: fechasOcupadas, // AQUÍ SE BLOQUEAN LOS HORARIOS
-                time_24hr: false,
-                minuteIncrement: 30
+            snap.forEach(s => {
+                select.innerHTML += `<option value="${s.val().nombre}" data-precio="${s.val().precio}">${s.val().nombre}</option>`;
             });
         });
 
         window.enviarCita = () => {
             const nom = document.getElementById('nombre').value;
-            const cod = document.getElementById('codigo-area').value;
-            const num = document.getElementById('whatsapp').value;
-            const sel = document.getElementById('servicio');
             const fec = document.getElementById('fecha-cita').value;
+            if(!nom || !fec) return alert("Llena los campos");
 
-            if(!nom || !num || !sel.value || !fec) {
-                document.getElementById('avisoTexto').innerText = "Por favor completa todos los campos.";
-                document.getElementById('modalAviso').style.display = 'flex';
-                return;
-            }
-
-            const citaData = {
+            push(ref(db, 'citas'), {
                 nombre: nom,
-                whatsapp: cod + num,
-                servicio: sel.value,
-                precio: sel.options[sel.selectedIndex].getAttribute('data-precio'),
-                nota: document.getElementById('nota').value || "Sin notas",
+                whatsapp: document.getElementById('codigo-area').value + document.getElementById('whatsapp').value,
+                servicio: document.getElementById('servicio').value,
                 fecha: fec,
+                nota: document.getElementById('nota').value || "",
                 estado: 'Confirmado'
-            };
-
-            push(ref(db, 'citas'), citaData).then(() => {
+            }).then(() => {
                 document.getElementById('modalExito').style.display = 'flex';
-                document.getElementById('btnWaFinal').onclick = () => {
-                    const mensaje = `*RESERVA CONFIRMADA*%0A👤 *Cliente:* ${nom}%0A✂️ *Servicio:* ${sel.value}%0A📅 *Fecha:* ${fec}`;
-                    window.open(`https://wa.me/50242444391?text=${mensaje}`);
-                    location.reload();
-                };
             });
-        };
-
-        window.cerrarModal = (id, recargar) => {
-            document.getElementById(id).style.display = 'none';
-            if(recargar) location.reload();
         };
     </script>
 </body>
