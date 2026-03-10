@@ -144,15 +144,14 @@
             minDate: "today",
             dateFormat: "Y-m-d",
             "locale": "es",
-            disable: [], // Se llenará con dias_bloqueados de Firebase
+            disableMobile: true, // Forzar diseño web en móviles para respetar bloqueos
+            disable: [], 
             onChange: (selectedDates, dateStr) => {
                 fechaSeleccionada = dateStr;
-                horaSeleccionada = ""; // Resetear hora al cambiar de día
                 window.renderSlots();
             }
         });
 
-        // Renderizar Horas Disponibles
         window.renderSlots = () => {
             const container = document.getElementById('slots-container');
             container.innerHTML = "";
@@ -189,17 +188,12 @@
             }
         };
 
-        // Guardar Cita
         window.enviarCita = () => {
-            const nom = document.getElementById('nombre').value;
-            const num = document.getElementById('whatsapp').value;
-            const sel = document.getElementById('servicio');
-
+            const nom = document.getElementById('nombre').value, num = document.getElementById('whatsapp').value, sel = document.getElementById('servicio');
             if(!nom || !num || !sel.value || !horaSeleccionada || !fechaSeleccionada) {
                 document.getElementById('modalError').style.display = 'flex';
                 return;
             }
-
             push(ref(db, 'citas'), {
                 nombre: nom,
                 whatsapp: document.getElementById('codigo-area').value + num,
@@ -208,31 +202,22 @@
                 nota: document.getElementById('nota').value || "Sin notas",
                 fecha: `${fechaSeleccionada}T${horaSeleccionada}`, 
                 estado: 'Pendiente'
-            })
-            .then(() => { 
-                document.getElementById('modalExito').style.display = 'flex'; 
-            })
-            .catch(err => {
-                console.error(err);
-                alert("Error al agendar. Intente de nuevo.");
-            });
+            }).then(() => { document.getElementById('modalExito').style.display = 'flex'; });
         };
 
-        // --- LISTENERS DE FIREBASE (TIEMPO REAL) ---
-
-        // 1. Escuchar días bloqueados
+        // ESCUCHAR DÍAS BLOQUEADOS
         onValue(ref(db, 'dias_bloqueados'), (snapshot) => {
             const bloqueos = snapshot.val() || {};
             const diasADeshabilitar = Object.keys(bloqueos);
             fp.set("disable", diasADeshabilitar);
-            // Si el día seleccionado fue bloqueado mientras el usuario lo veía, limpiar slots
+            fp.redraw(); // Forzar actualización visual en móviles
+            
             if(diasADeshabilitar.includes(fechaSeleccionada)) {
                 fechaSeleccionada = "";
                 window.renderSlots();
             }
         });
 
-        // 2. Escuchar configuración de horario
         onValue(ref(db, 'configuracion_horario'), (snapshot) => {
             const config = snapshot.val();
             if (config) { 
@@ -244,7 +229,6 @@
             }
         });
 
-        // 3. Escuchar citas ocupadas
         onValue(ref(db, 'citas'), (snap) => {
             ocupados = [];
             snap.forEach(c => { 
@@ -254,14 +238,12 @@
             window.renderSlots(); 
         });
 
-        // 4. Escuchar lista de servicios
         onValue(ref(db, 'servicios'), (snap) => {
             const sel = document.getElementById('servicio');
             sel.innerHTML = '<option value="" disabled selected>Elige un servicio...</option>';
             snap.forEach(s => {
                 const d = s.val(), option = document.createElement('option');
-                option.value = d.nombre; 
-                option.text = `${d.nombre} - Q${d.precio}`;
+                option.value = d.nombre; option.text = `${d.nombre} - Q${d.precio}`;
                 option.setAttribute('data-precio', d.precio);
                 option.setAttribute('data-desc', d.detalle || 'Servicio de alta calidad');
                 sel.appendChild(option);
