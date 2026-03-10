@@ -18,7 +18,6 @@
         
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; overflow-x: hidden; }
 
-        /* --- LOGIN --- */
         #login-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; align-items:center; justify-content:center; }
         .login-box { width:320px; padding:45px; text-align:center; background:var(--card); border-radius:35px; border: 1px solid var(--border); box-shadow: 0 0 40px rgba(212,175,55,0.05); }
         .logo-main { width: 80px; margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(212,175,55,0.2)); }
@@ -27,7 +26,6 @@
         .main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 25px; margin-top: 10px; }
         @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
 
-        /* --- CALENDARIO PREMIUM --- */
         #calendar-container { background: var(--card); padding: 25px; border-radius: 35px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         
         .fc { --fc-border-color: #161616; --fc-today-bg-color: rgba(212,175,55,0.03); font-size: 0.85rem; }
@@ -37,31 +35,25 @@
         .fc .fc-v-event { background: linear-gradient(135deg, var(--gold), var(--gold-dark)) !important; border: none !important; border-radius: 8px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.3); color: #000 !important; font-weight: 600; padding: 4px; }
         .fc-timegrid-slot { height: 4em !important; border-bottom: 1px solid #111 !important; }
 
-        /* --- SIDEBAR & STATS --- */
         .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 35px; padding: 30px; border-top: 5px solid var(--gold); position: sticky; top: 15px; height: fit-content; }
         .stat-val { font-size: 2.2rem; font-weight: 600; color: var(--gold); }
         .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #555; letter-spacing: 2px; }
         
-        /* --- CARDS LISTA --- */
         .citas-list { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding-bottom: 100px; }
         .card { background: #060606; border: 1px solid var(--border); padding: 25px; border-radius: 25px; border-left: 4px solid var(--gold); position: relative; transition: 0.3s; }
-        .card:hover { border-color: var(--gold); transform: translateY(-5px); }
         
-        /* --- MODALES & BOTONES --- */
         .modal { display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.94); backdrop-filter: blur(12px); align-items: center; justify-content: center; z-index: 10000; }
-        .modal-content { background: var(--glass); padding:40px; border: 1px solid var(--gold); width:90%; max-width:380px; border-radius:40px; text-align: center; box-shadow: 0 0 50px rgba(212,175,55,0.1); }
+        .modal-content { background: var(--glass); padding:40px; border: 1px solid var(--gold); width:90%; max-width:380px; border-radius:40px; text-align: center; }
         
-        input, select, textarea { background: rgba(255,255,255,0.03); color:#fff; border:1px solid #1a1a1a; padding:15px; border-radius:18px; width:100%; margin-bottom:15px; outline: none; font-family: 'Poppins'; box-sizing: border-box; font-size: 15px; }
-        input:focus { border-color: var(--gold); }
+        input, select, textarea { background: rgba(255,255,255,0.03); color:#fff; border:1px solid #1a1a1a; padding:15px; border-radius:18px; width:100%; margin-bottom:15px; outline: none; font-family: 'Poppins'; box-sizing: border-box; }
 
-        .btn { width: 100%; padding: 16px; border-radius: 18px; font-weight: 700; cursor: pointer; border: none; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; }
+        .btn { width: 100%; padding: 16px; border-radius: 18px; font-weight: 700; cursor: pointer; border: none; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; }
         .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #000; }
         .btn-outline { background: transparent; border: 1px solid #333; color: #777; margin-top: 10px; }
         .btn-red { background: rgba(255, 77, 77, 0.1); border: 1px solid var(--red); color: var(--red); }
         
-        .btn-config-float { position: fixed; bottom: 30px; right: 30px; background: var(--gold); color: #000; width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; z-index: 5000; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border:none; cursor:pointer; }
-
-        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 14px 40px; border-radius: 50px; font-weight: 700; font-size: 0.8rem; z-index: 11000; transition: 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        .btn-config-float { position: fixed; bottom: 30px; right: 30px; background: var(--gold); color: #000; width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; z-index: 5000; border:none; cursor:pointer; }
+        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 14px 40px; border-radius: 50px; font-weight: 700; z-index: 11000; transition: 0.6s; }
         #toast.show { bottom: 40px; }
     </style>
 </head>
@@ -72,8 +64,7 @@
     <div id="login-overlay">
         <div class="login-box">
             <img src="logo.png" class="logo-main">
-            <h2 style="color:var(--gold); font-size:0.7rem; letter-spacing:4px; font-weight:300; margin-bottom:30px;">ELITE ACCESS</h2>
-            <button class="btn btn-gold" onclick="loginGoogle()" style="font-size:0.6rem;"><i class="fab fa-google" style="margin-right:10px;"></i> Entrar al Sistema</button>
+            <button class="btn btn-gold" onclick="loginGoogle()">Entrar al Sistema</button>
         </div>
     </div>
 
@@ -82,88 +73,61 @@
 
         <div class="main-grid">
             <div id="calendar-container"><div id="calendar"></div></div>
-            
             <aside class="sidebar-stats">
-                <header style="text-align: center; margin-bottom:30px;">
-                    <img src="logo.png" style="width: 50px;">
-                    <h2 style="font-size: 0.6rem; letter-spacing: 3px; color: var(--gold); margin-top: 10px;">DASHBOARD</h2>
-                </header>
-                <div style="margin-bottom:30px;">
-                    <span class="stat-label">Citas Finalizadas</span><br>
-                    <span class="stat-val" id="citas-count">0</span>
-                </div>
+                <header style="text-align: center; margin-bottom:30px;"><img src="logo.png" style="width: 50px;"></header>
+                <div style="margin-bottom:30px;"><span class="stat-label">Citas Mes</span><br><span class="stat-val" id="citas-count">0</span></div>
                 <div id="servicios-stats" style="margin-bottom: 30px; border-top: 1px solid #1a1a1a; padding-top: 20px;"></div>
-                <div style="background: rgba(46, 204, 113, 0.05); padding: 20px; border-radius: 20px; border: 1px solid rgba(46, 204, 113, 0.1);">
-                    <span class="stat-label" style="color:var(--green);">Ingresos Brutos</span><br>
-                    <span class="stat-val" id="ingreso-total" style="color:var(--green); font-size: 1.8rem;">Q0.00</span>
-                </div>
+                <div style="background: rgba(46, 204, 113, 0.05); padding: 20px; border-radius: 20px;"><span class="stat-label" style="color:var(--green);">Ingresos</span><br><span class="stat-val" id="ingreso-total" style="color:var(--green);">Q0.00</span></div>
             </aside>
         </div>
 
-        <h2 style="font-size: 0.7rem; letter-spacing: 5px; color: var(--gold); margin: 60px 0 25px 5px; text-transform: uppercase;">Sesiones en Espera</h2>
         <div class="citas-list" id="lista-citas"></div>
 
         <div id="modalAddCita" class="modal">
             <div class="modal-content">
-                <h3 style="color:var(--gold); margin:0 0 10px 0; letter-spacing:2px;">NUEVA CITA</h3>
-                <p id="add-fecha-display" style="font-size: 0.8rem; color: #666; margin-bottom: 25px;"></p>
-                <input type="text" id="add-nombre" placeholder="Nombre del cliente">
+                <h3 style="color:var(--gold);">NUEVA CITA</h3>
+                <p id="add-fecha-display" style="font-size: 0.8rem; color: #666;"></p>
+                <input type="text" id="add-nombre" placeholder="Nombre">
                 <input type="tel" id="add-whatsapp-input">
                 <select id="add-servicio-select"></select>
-                <textarea id="add-nota" placeholder="Notas especiales..." style="height:80px;"></textarea>
-                <button class="btn btn-gold" id="btn-save-cita-calendar">AGENDAR Y NOTIFICAR</button>
-                <button class="btn btn-outline" style="border:none;" onclick="cerrarModalAdd()">CANCELAR</button>
+                <button class="btn btn-gold" id="btn-save-cita-calendar">AGENDAR</button>
+                <button class="btn btn-outline" onclick="cerrarModalAdd()">CANCELAR</button>
             </div>
         </div>
 
         <div id="modalEvento" class="modal">
             <div class="modal-content">
-                <h3 id="pop-nombre" style="margin:0; color:var(--gold); font-size:1.5rem;">Cita</h3>
-                <p id="pop-fecha" style="font-size:0.8rem; color:#555; margin-bottom:25px;"></p>
-                <div id="pop-whatsapp" style="font-size:0.9rem; color:var(--green); font-weight:600; cursor:pointer; background:rgba(46, 204, 113, 0.05); padding:18px; border-radius:20px; border: 1px solid rgba(46, 204, 113, 0.1); margin-bottom:20px;">
+                <h3 id="pop-nombre" style="color:var(--gold);">Cita</h3>
+                <p id="pop-fecha" style="font-size:0.8rem; color:#555;"></p>
+                <div id="pop-whatsapp" style="font-size:0.9rem; color:var(--green); font-weight:600; cursor:pointer; background:rgba(46, 204, 113, 0.05); padding:18px; border-radius:20px; margin-bottom:20px;">
                     <i class="fab fa-whatsapp"></i> ENVIAR MENSAJE
                 </div>
-                <div id="pop-nota" style="font-size:0.75rem; color:#888; background:#050505; padding:15px; border-radius:15px; margin-bottom:25px; font-style:italic;"></div>
+                <div id="pop-nota" style="font-size:0.75rem; color:#888; background:#050505; padding:15px; border-radius:15px; margin-bottom:25px;"></div>
                 <div style="display:flex; gap:12px;">
-                    <button class="btn btn-red" id="btn-eliminar-pop" style="flex:1;">ELIMINAR</button>
+                    <button class="btn btn-red" id="btn-eliminar-pop" style="flex:1;">BORRAR</button>
                     <button class="btn btn-outline" onclick="cerrarPop()" style="flex:1; margin:0;">CERRAR</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="modalConfirm" class="modal">
-            <div class="modal-content" style="border-color: var(--red);">
-                <h3 style="color:#fff; margin:0 0 10px 0;">¿ESTÁS SEGURO?</h3>
-                <p id="confirm-text" style="color:#666; font-size:0.8rem; margin-bottom:25px;"></p>
-                <div style="display: flex; gap: 12px;">
-                    <button class="btn btn-red" id="confirm-yes" style="flex:1;">CONFIRMAR</button>
-                    <button class="btn btn-outline" onclick="document.getElementById('modalConfirm').style.display='none'" style="flex:1; margin:0;">ATRÁS</button>
                 </div>
             </div>
         </div>
 
         <div id="modalConfig" class="modal">
             <div class="modal-content">
-                <h3 style="color:var(--gold); margin:0 0 25px 0; letter-spacing:2px;">CONFIGURACIÓN</h3>
-                <div style="text-align:left; background: #050505; padding:20px; border-radius:20px; margin-bottom:25px;">
-                    <label style="font-size:0.6rem; color:var(--gold); letter-spacing:1px;">HORARIO DE TRABAJO</label>
-                    <div style="display:flex; gap:10px; margin:10px 0;">
-                        <select id="config-apertura" style="margin:0;"></select>
-                        <select id="config-cierre" style="margin:0;"></select>
-                    </div>
-                    <button class="btn btn-gold" id="btn-save-hours" style="padding:10px; font-size:0.6rem;">ACTUALIZAR HORAS</button>
-                </div>
-                <input type="text" id="serv-n" placeholder="Servicio (Ej: Corte Elite)">
+                <h3 style="color:var(--gold);">CONFIGURACIÓN</h3>
+                <select id="config-apertura"></select>
+                <select id="config-cierre"></select>
+                <button class="btn btn-gold" id="btn-save-hours">GUARDAR HORAS</button>
+                <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
+                <input type="text" id="serv-n" placeholder="Servicio">
                 <input type="number" id="serv-p" placeholder="Precio (Q)">
-                <textarea id="serv-d" placeholder="Descripción breve..." style="height:60px;"></textarea>
-                <button class="btn btn-gold" id="btn-add-serv">AÑADIR AL CATÁLOGO</button>
-                <div id="lista-servicios-admin" style="margin-top:25px; max-height:150px; overflow-y:auto; text-align:left;"></div>
-                <button class="btn btn-outline" style="border:none;" onclick="toggleConfig()">SALIR</button>
+                <button class="btn btn-gold" id="btn-add-serv">AÑADIR SERVICIO</button>
+                <div id="lista-servicios-admin" style="margin-top:20px; max-height:150px; overflow-y:auto;"></div>
+                <button class="btn btn-outline" onclick="toggleConfig()">SALIR</button>
             </div>
         </div>
+        
+        <div id="modalConfirm" class="modal"><div class="modal-content"><p id="confirm-text"></p><button class="btn btn-red" id="confirm-yes">SÍ</button><button class="btn btn-outline" onclick="document.getElementById('modalConfirm').style.display='none'">NO</button></div></div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
 
     <script type="module">
@@ -179,55 +143,30 @@
         
         let calendar, selectedDateTime = null, catalogoGlobal = {}, iti;
 
-        // Intl Tel Input
-        iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), {
-            initialCountry: "gt",
-            separateDialCode: true,
-            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
-        });
+        iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { initialCountry: "gt", separateDialCode: true });
 
-        window.showToast = (m) => {
-            const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        };
+        window.showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
+        window.confirmarAccion = (t, cb) => { document.getElementById('confirm-text').innerText = t; document.getElementById('modalConfirm').style.display = 'flex'; document.getElementById('confirm-yes').onclick = () => { cb(); document.getElementById('modalConfirm').style.display = 'none'; }; };
 
-        window.confirmarAccion = (t, cb) => {
-            document.getElementById('confirm-text').innerText = t;
-            document.getElementById('modalConfirm').style.display = 'flex';
-            document.getElementById('confirm-yes').onclick = () => { cb(); document.getElementById('modalConfirm').style.display = 'none'; };
-        };
-
-        // Llenar horas
         const apS = document.getElementById('config-apertura'), ciS = document.getElementById('config-cierre');
-        for(let h=0; h<=23; h++){
-            let l = h === 0 ? "12 AM" : h === 12 ? "12 PM" : h > 12 ? `${h-12} PM` : `${h} AM`;
-            apS.innerHTML += `<option value="${h}">${l}</option>`;
-            ciS.innerHTML += `<option value="${h}">${l}</option>`;
-        }
+        for(let h=0; h<=23; h++){ apS.innerHTML += `<option value="${h}">${h}:00</option>`; ciS.innerHTML += `<option value="${h}">${h}:00</option>`; }
 
         window.loginGoogle = () => signInWithPopup(auth, provider);
         window.toggleConfig = () => { const m = document.getElementById('modalConfig'); m.style.display = (m.style.display==='flex') ? 'none' : 'flex'; };
 
-        onAuthStateChanged(auth, (u) => {
-            if(u){ document.getElementById('login-overlay').style.display='none'; document.getElementById('admin-content').style.display='block'; initDashboard(); }
-        });
+        onAuthStateChanged(auth, (u) => { if(u){ document.getElementById('login-overlay').style.display='none'; document.getElementById('admin-content').style.display='block'; initDashboard(); } });
 
         function initDashboard() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'timeGridDay',
-                locale: 'es',
-                firstDay: 1,
-                slotDuration: '01:00:00',
-                allDaySlot: false,
+                initialView: 'timeGridDay', locale: 'es', allDaySlot: false,
                 slotLabelFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' },
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
-                buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
                 selectable: true,
                 select: (info) => {
                     if(info.view.type !== 'dayGridMonth'){
                         let f = new Date(info.start); f.setMinutes(0,0,0);
                         selectedDateTime = `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}-${String(f.getDate()).padStart(2,'0')}T${String(f.getHours()).padStart(2,'0')}:00`;
-                        document.getElementById('add-fecha-display').innerText = f.toLocaleString('es-GT', { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' });
+                        document.getElementById('add-fecha-display').innerText = f.toLocaleString();
                         document.getElementById('modalAddCita').style.display = 'flex';
                     }
                 },
@@ -237,56 +176,48 @@
                     document.getElementById('pop-nombre').innerText = info.event.title;
                     document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString('es-GT');
                     const btnWa = document.getElementById('pop-whatsapp');
+                    
                     if(meta.whatsapp) {
+                        btnWa.style.display = 'block';
                         btnWa.onclick = () => {
                             const n = meta.whatsapp.replace(/\D/g,'');
-                            const m = encodeURIComponent(`Tu cita en INNOVATION Barber Studio ha sido agendada el ${fTxt} exitosamente.`);
+                            const m = encodeURIComponent(`Te recordamos que tienes una cita en INNOVATION Barber Studio el día ${fTxt}, te esperamos.`);
                             window.open(`https://wa.me/${n}?text=${m}`);
                         };
-                    }
+                    } else { btnWa.style.display = 'none'; }
+                    
                     document.getElementById('pop-nota').innerText = meta.nota || 'Sin notas';
                     document.getElementById('modalEvento').style.display = 'flex';
-                    document.getElementById('btn-eliminar-pop').onclick = () => confirmarAccion("¿Eliminar esta cita?", () => { remove(ref(db, `citas/${id}`)); cerrarPop(); showToast("ELIMINADO"); });
+                    document.getElementById('btn-eliminar-pop').onclick = () => confirmarAccion("¿Eliminar cita?", () => { remove(ref(db, `citas/${id}`)); cerrarPop(); showToast("ELIMINADO"); });
                 }
             });
             calendar.render();
-
-            onValue(ref(db, 'configuracion_horario'), snap => {
-                if(snap.val()){
-                    calendar.setOption('slotMinTime', snap.val().apertura.padStart(2,'0')+':00:00');
-                    calendar.setOption('slotMaxTime', snap.val().cierre.padStart(2,'0')+':00:00');
-                    apS.value = snap.val().apertura; ciS.value = snap.val().cierre;
-                }
-            });
-
+            onValue(ref(db, 'configuracion_horario'), snap => { if(snap.val()){ calendar.setOption('slotMinTime', snap.val().apertura.padStart(2,'0')+':00:00'); calendar.setOption('slotMaxTime', snap.val().cierre.padStart(2,'0')+':00:00'); apS.value = snap.val().apertura; ciS.value = snap.val().cierre; } });
             onValue(ref(db, 'citas'), snap => renderAdmin(snap.val()));
             onValue(ref(db, 'servicios'), snap => { catalogoGlobal = snap.val() || {}; renderServicios(catalogoGlobal); });
         }
 
         window.renderAdmin = (data) => {
             const lista = document.getElementById('lista-citas'); lista.innerHTML = '';
-            const eventos = []; let total = 0, cont = 0, mesA = new Date().getMonth();
-            const stats = {};
+            const eventos = []; let total = 0, cont = 0, mesA = new Date().getMonth(); const stats = {};
             if(data){
                 Object.keys(data).forEach(id => {
                     const c = data[id], fISO = c.fecha.replace(" ","T"), f = new Date(fISO), p = parseFloat(String(c.precio||0).replace('Q',''));
                     if(c.estado === 'Finalizada' && f.getMonth() === mesA){ total += p; cont++; stats[c.servicio] = (stats[c.servicio]||0)+1; }
-                    eventos.push({ id, title: c.nombre, start: fISO, backgroundColor: c.estado==='Finalizada'?'#111':'#d4af37' });
+                    eventos.push({ id, title: c.nombre, start: fISO, backgroundColor: c.estado==='Finalizada'?'#111':'#d4af37', extendedProps: { whatsapp: c.whatsapp, nota: c.nota } });
                     if(c.estado === 'Pendiente'){
                         const div = document.createElement('div'); div.className = 'card';
-                        div.innerHTML = `<span style="position:absolute; top:20px; right:20px; color:var(--gold); font-weight:700;">Q${p}</span><h4 style="margin:0 0 10px 0;">${c.nombre}</h4><p style="font-size:0.7rem; color:#555;">${c.servicio}<br>${f.toLocaleString()}</p><button class="btn btn-gold" style="padding:10px; font-size:0.55rem; margin-top:10px;" onclick="cambiarEstado('${id}','Finalizada')">FINALIZAR</button>`;
+                        div.innerHTML = `<h4 style="margin:0;">${c.nombre}</h4><p style="font-size:0.7rem; color:#555;">${f.toLocaleString()}</p><button class="btn btn-gold" style="padding:10px; font-size:0.5rem;" onclick="cambiarEstado('${id}','Finalizada')">FINALIZAR</button>`;
                         lista.appendChild(div);
                     }
                 });
             }
             document.getElementById('ingreso-total').innerText = `Q${total.toFixed(2)}`;
             document.getElementById('citas-count').innerText = cont;
-            const sDiv = document.getElementById('servicios-stats'); sDiv.innerHTML = '<span class="stat-label">Servicios Mes</span>';
-            for(let s in stats) sDiv.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:5px;"><span>${s}</span><span style="color:var(--gold);">${stats[s]}</span></div>`;
             calendar.removeAllEvents(); calendar.addEventSource(eventos);
         };
 
-        window.cambiarEstado = (id, est) => update(ref(db, `citas/${id}`), { estado: est }).then(() => showToast("CITA FINALIZADA"));
+        window.cambiarEstado = (id, est) => update(ref(db, `citas/${id}`), { estado: est }).then(() => showToast("FINALIZADA"));
         window.cerrarModalAdd = () => document.getElementById('modalAddCita').style.display = 'none';
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
         
@@ -294,27 +225,19 @@
             const nom = document.getElementById('add-nombre').value, wa = iti.getNumber(), sKey = document.getElementById('add-servicio-select').value;
             if(!nom || !wa || !sKey) return showToast("FALTAN DATOS");
             const s = catalogoGlobal[sKey];
-            push(ref(db, 'citas'), { nombre: nom, whatsapp: wa, servicio: s.nombre, precio: s.precio, nota: document.getElementById('add-nota').value, fecha: selectedDateTime, estado: "Pendiente" })
-            .then(() => { 
-                cerrarModalAdd(); showToast("AGENDADA");
-                const m = encodeURIComponent(`¡Hola! Tu cita en INNOVATION Barber Studio ha sido agendada el día ${new Date(selectedDateTime).toLocaleString()} exitosamente.`);
-                window.open(`https://wa.me/${wa.replace(/\D/g,'')}?text=${m}`);
-            });
+            push(ref(db, 'citas'), { nombre: nom, whatsapp: wa, servicio: s.nombre, precio: s.precio, fecha: selectedDateTime, estado: "Pendiente" }).then(() => { cerrarModalAdd(); showToast("OK"); });
         };
 
-        document.getElementById('btn-save-hours').onclick = () => set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value }).then(() => showToast("HORARIO ACTUALIZADO"));
-        document.getElementById('btn-add-serv').onclick = () => {
-            const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value, d = document.getElementById('serv-d').value;
-            if(n && p){ push(ref(db, 'servicios'), { nombre: n, precio: p, descripcion: d }).then(() => { document.getElementById('serv-n').value=''; document.getElementById('serv-p').value=''; showToast("SERVICIO AGREGADO"); }); }
-        };
+        document.getElementById('btn-save-hours').onclick = () => set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value }).then(() => showToast("ACTUALIZADO"));
+        document.getElementById('btn-add-serv').onclick = () => { const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value; if(n && p){ push(ref(db, 'servicios'), { nombre: n, precio: p }).then(() => { showToast("AGREGADO"); }); } };
 
         function renderServicios(servs){
             const d = document.getElementById('lista-servicios-admin'), sel = document.getElementById('add-servicio-select');
             d.innerHTML = ''; sel.innerHTML = '<option value="">Elegir servicio...</option>';
             Object.keys(servs).forEach(id => {
-                sel.innerHTML += `<option value="${id}">${servs[id].nombre} (Q${servs[id].precio})</option>`;
-                const r = document.createElement('div'); r.style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #111; font-size:0.7rem;";
-                r.innerHTML = `<span>${servs[id].nombre}</span><i class="fas fa-trash" style="color:var(--red); cursor:pointer;" onclick="confirmarAccion('¿Borrar servicio?', ()=>remove(ref(db,'servicios/${id}')))"></i>`;
+                sel.innerHTML += `<option value="${id}">${servs[id].nombre}</option>`;
+                const r = document.createElement('div'); r.style="display:flex; justify-content:space-between; padding:5px; font-size:0.7rem;";
+                r.innerHTML = `<span>${servs[id].nombre}</span><i class="fas fa-trash" style="color:var(--red);" onclick="remove(ref(db,'servicios/${id}'))"></i>`;
                 d.appendChild(r);
             });
         }
