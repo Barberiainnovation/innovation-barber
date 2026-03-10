@@ -22,21 +22,39 @@
         #admin-content { display:none; max-width: 1300px; margin: 0 auto; }
         .main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 25px; margin-top: 10px; }
         @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
+        
+        /* CALENDARIO AJUSTES DE TAMAÑO */
         #calendar-container { background: var(--card); padding: 25px; border-radius: 35px; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         .fc { --fc-border-color: #161616; --fc-today-bg-color: rgba(212,175,55,0.03); font-size: 0.85rem; }
         .fc .fc-toolbar-title { font-size: 1.1rem !important; text-transform: uppercase; letter-spacing: 3px; color: var(--gold); font-weight: 600; }
-        .fc .fc-button { background: #0f0f0f !important; border: 1px solid #222 !important; color: #777 !important; border-radius: 12px !important; text-transform: uppercase !important; font-weight: 600 !important; font-size: 0.65rem !important; transition: 0.3s; }
-        .fc .fc-button-active { background: var(--gold) !important; color: #000 !important; border-color: var(--gold) !important; }
-        .fc .fc-v-event { background: linear-gradient(135deg, var(--gold), var(--gold-dark)) !important; border: none !important; border-radius: 8px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.3); color: #000 !important; font-weight: 600; padding: 4px; }
-        .fc-timegrid-slot { height: 4em !important; border-bottom: 1px solid #111 !important; }
+        
+        /* Celdas más bajas para que no se vea gigante */
+        .fc-timegrid-slot { height: 2.5em !important; border-bottom: 1px solid #111 !important; }
+        
+        /* Eventos más delgados y estilizados */
+        .fc-v-event { 
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark)) !important; 
+            border: none !important; 
+            border-radius: 12px !important; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
+            color: #000 !important; 
+            padding: 5px 10px !important;
+            max-width: 95%;
+            margin: 0 auto !important;
+        }
+        .fc-event-main { font-weight: 600; font-size: 0.75rem; }
+
         .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 35px; padding: 30px; border-top: 5px solid var(--gold); position: sticky; top: 15px; height: fit-content; }
         .stat-val { font-size: 2.2rem; font-weight: 600; color: var(--gold); }
         .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #555; letter-spacing: 2px; }
         .citas-list { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding-bottom: 100px; }
         .card { background: #060606; border: 1px solid var(--border); padding: 25px; border-radius: 25px; border-left: 4px solid var(--gold); position: relative; transition: 0.3s; }
+        
+        /* Modales */
         .modal { display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.94); backdrop-filter: blur(12px); align-items: center; justify-content: center; z-index: 10000; }
         .modal-content { background: var(--glass); padding:40px; border: 1px solid var(--gold); width:90%; max-width:380px; border-radius:40px; text-align: center; }
         input, select, textarea { background: rgba(255,255,255,0.03); color:#fff; border:1px solid #1a1a1a; padding:15px; border-radius:18px; width:100%; margin-bottom:15px; outline: none; font-family: 'Poppins'; box-sizing: border-box; }
+        
         .btn { width: 100%; padding: 16px; border-radius: 18px; font-weight: 700; cursor: pointer; border: none; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; }
         .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #000; }
         .btn-outline { background: transparent; border: 1px solid #333; color: #777; margin-top: 10px; }
@@ -105,22 +123,16 @@
                     <select id="config-cierre" style="margin:0;"></select>
                 </div>
                 <button class="btn btn-gold" id="btn-save-hours">GUARDAR HORARIO</button>
-                
                 <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
-                
-                <h4 style="color:var(--gold); margin-bottom:15px; font-size:0.8rem;">GESTIÓN DE SERVICIOS</h4>
-                <input type="text" id="serv-n" placeholder="Nombre del Servicio (ej. Corte Elite)">
+                <input type="text" id="serv-n" placeholder="Servicio">
                 <input type="number" id="serv-p" placeholder="Precio (Q)">
-                <textarea id="serv-d" placeholder="¿Qué incluye? (Separa con comas)" rows="2"></textarea>
-                
+                <textarea id="serv-d" placeholder="¿Qué incluye?" rows="2"></textarea>
                 <button class="btn btn-gold" id="btn-add-serv">AÑADIR SERVICIO</button>
-                
-                <div id="lista-servicios-admin" style="margin-top:20px; max-height:150px; overflow-y:auto; border:1px solid #1a1a1a; border-radius:15px; padding:10px;"></div>
-                
+                <div id="lista-servicios-admin" style="margin-top:20px; max-height:150px; overflow-y:auto;"></div>
                 <button class="btn btn-outline" onclick="toggleConfig()">SALIR</button>
             </div>
         </div>
-
+        
         <div id="modalConfirm" class="modal"><div class="modal-content"><p id="confirm-text"></p><button class="btn btn-red" id="confirm-yes">SÍ</button><button class="btn btn-outline" onclick="document.getElementById('modalConfirm').style.display='none'">NO</button></div></div>
     </div>
 
@@ -139,7 +151,12 @@
         
         let calendar, selectedDateTime = null, catalogoGlobal = {}, iti;
 
-        iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { initialCountry: "gt", separateDialCode: true });
+        iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { 
+            initialCountry: "gt", 
+            separateDialCode: true,
+            onlyCountries: ["gt", "sv", "hn", "ni", "cr", "pa", "bz", "mx", "us"] 
+        });
+
         window.showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
         window.confirmarAccion = (t, cb) => { document.getElementById('confirm-text').innerText = t; document.getElementById('modalConfirm').style.display = 'flex'; document.getElementById('confirm-yes').onclick = () => { cb(); document.getElementById('modalConfirm').style.display = 'none'; }; };
 
@@ -157,6 +174,9 @@
                 locale: 'es',
                 firstDay: 1,
                 allDaySlot: false,
+                slotDuration: '00:30:00',
+                slotLabelInterval: '01:00',
+                contentHeight: 'auto', // Ajusta altura automáticamente
                 buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
                 selectable: true,
@@ -228,26 +248,9 @@
 
         document.getElementById('btn-save-hours').onclick = () => set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value }).then(() => showToast("ACTUALIZADO"));
 
-        // ACTUALIZADO PARA INCLUIR LA DESCRIPCIÓN (INCLUYE)
         document.getElementById('btn-add-serv').onclick = () => { 
-            const n = document.getElementById('serv-n').value; 
-            const p = document.getElementById('serv-p').value;
-            const d = document.getElementById('serv-d').value; // CAMPO INCLUYE
-            
-            if(n && p){ 
-                push(ref(db, 'servicios'), { 
-                    nombre: n, 
-                    precio: p, 
-                    descripcion: d // SE GUARDA EN FIREBASE
-                }).then(() => { 
-                    showToast("SERVICIO AGREGADO");
-                    document.getElementById('serv-n').value = '';
-                    document.getElementById('serv-p').value = '';
-                    document.getElementById('serv-d').value = '';
-                }); 
-            } else {
-                showToast("FALTAN DATOS");
-            }
+            const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value, d = document.getElementById('serv-d').value;
+            if(n && p){ push(ref(db, 'servicios'), { nombre: n, precio: p, descripcion: d }).then(() => { showToast("AGREGADO"); }); } 
         };
 
         function renderServicios(servs){
@@ -256,11 +259,7 @@
             Object.keys(servs).forEach(id => {
                 sel.innerHTML += `<option value="${id}">${servs[id].nombre}</option>`;
                 const r = document.createElement('div'); r.style="display:flex; justify-content:space-between; padding:8px; font-size:0.7rem; border-bottom:1px solid #111; align-items:center;";
-                r.innerHTML = `<div>
-                    <strong style="color:var(--gold);">${servs[id].nombre}</strong><br>
-                    <small style="color:#555;">${servs[id].descripcion || 'Sin descripción'}</small>
-                </div>
-                <i class="fas fa-trash" style="color:var(--red); cursor:pointer;" onclick="remove(ref(db,'servicios/${id}'))"></i>`;
+                r.innerHTML = `<div><strong>${servs[id].nombre}</strong><br><small style="color:#555;">${servs[id].descripcion || ''}</small></div><i class="fas fa-trash" style="color:var(--red);" onclick="remove(ref(db,'servicios/${id}'))"></i>`;
                 d.appendChild(r);
             });
         }
