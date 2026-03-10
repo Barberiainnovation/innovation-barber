@@ -18,29 +18,27 @@
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; overflow-x: hidden; }
         #login-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; align-items:center; justify-content:center; }
         .login-box { width:320px; padding:45px; text-align:center; background:var(--card); border-radius:35px; border: 1px solid var(--border); box-shadow: 0 0 40px rgba(212,175,55,0.05); }
-        .logo-main { width: 80px; margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(212,175,55,0.2)); }
         #admin-content { display:none; max-width: 1300px; margin: 0 auto; }
         .main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 25px; margin-top: 10px; }
         @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
         
-        /* CALENDARIO COMPACTO */
+        /* CALENDARIO */
         #calendar-container { background: var(--card); padding: 20px; border-radius: 35px; border: 1px solid var(--border); }
         .fc { --fc-border-color: #161616; --fc-today-bg-color: rgba(212,175,55,0.02); font-size: 0.8rem; }
         .fc .fc-toolbar-title { font-size: 1rem !important; text-transform: uppercase; color: var(--gold); font-weight: 600; }
         .fc-timegrid-slot { height: 1.5em !important; border-bottom: 1px solid #111 !important; }
-        .fc-timegrid-slot-label-cushion { font-size: 0.65rem; color: #555; }
-        .fc-v-event { background: linear-gradient(135deg, var(--gold), var(--gold-dark)) !important; border: none !important; border-radius: 6px !important; color: #000 !important; padding: 1px 8px !important; }
-        .fc-event-main { font-weight: 600; font-size: 0.85rem !important; line-height: 1.1; display: flex; align-items: center; }
+        .fc-v-event { background: linear-gradient(135deg, var(--gold), var(--gold-dark)) !important; border: none !important; border-radius: 6px !important; color: #000 !important; }
+        .fc-event-main { font-weight: 600; font-size: 0.85rem !important; line-height: 1.1; display: flex; align-items: center; padding-left: 5px; }
 
         .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 35px; padding: 30px; border-top: 5px solid var(--gold); position: sticky; top: 15px; height: fit-content; }
         .stat-val { font-size: 2.2rem; font-weight: 600; color: var(--gold); }
         .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #555; letter-spacing: 2px; }
         
-        /* LISTA DE CITAS PENDIENTES PEQUEÑAS */
-        .citas-list { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; padding-bottom: 100px; }
+        /* LISTA DE CITAS PENDIENTES - AJUSTE DE ANCHO */
+        .citas-list { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 320px)); gap: 15px; padding-bottom: 100px; justify-content: start; }
         .card { background: #060606; border: 1px solid var(--border); padding: 12px 18px; border-radius: 18px; border-left: 3px solid var(--gold); display: flex; justify-content: space-between; align-items: center; }
-        .card h4 { margin: 0; font-size: 0.85rem; font-weight: 600; }
-        .btn-mini { width: auto; padding: 8px 12px; border-radius: 10px; font-size: 0.6rem; margin: 0; }
+        .card h4 { margin: 0; font-size: 0.85rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; }
+        .btn-mini { width: auto; padding: 8px 12px; border-radius: 10px; font-size: 0.55rem; margin: 0; white-space: nowrap; }
 
         /* MODALES */
         .modal { display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.94); backdrop-filter: blur(12px); align-items: center; justify-content: center; z-index: 10000; }
@@ -53,7 +51,7 @@
         .btn-red { background: rgba(255, 77, 77, 0.1); border: 1px solid var(--red); color: var(--red); }
         .btn-config-float { position: fixed; bottom: 30px; right: 30px; background: var(--gold); color: #000; width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; z-index: 5000; border:none; cursor:pointer; }
         
-        .serv-item-admin { display:flex; justify-content:space-between; padding:10px; font-size:0.75rem; border-bottom:1px solid #1a1a1a; align-items:center; text-align: left; }
+        .serv-item-admin { display:flex; justify-content:space-between; padding:10px; font-size:0.7rem; border-bottom:1px solid #1a1a1a; align-items:center; text-align: left; }
         #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 14px 40px; border-radius: 50px; font-weight: 700; z-index: 11000; transition: 0.6s; }
         #toast.show { bottom: 40px; }
     </style>
@@ -64,7 +62,7 @@
 
     <div id="login-overlay">
         <div class="login-box">
-            <img src="logo.png" class="logo-main">
+            <img src="logo.png" style="width: 80px; margin-bottom: 20px;">
             <button class="btn btn-gold" onclick="loginGoogle()">Entrar al Sistema</button>
         </div>
     </div>
@@ -76,30 +74,27 @@
             <aside class="sidebar-stats">
                 <header style="text-align: center; margin-bottom:30px;"><img src="logo.png" style="width: 50px;"></header>
                 <div style="margin-bottom:30px;"><span class="stat-label">Citas Mes</span><br><span class="stat-val" id="citas-count">0</span></div>
-                <div id="servicios-stats" style="margin-bottom: 30px; border-top: 1px solid #1a1a1a; padding-top: 20px;"></div>
                 <div style="background: rgba(46, 204, 113, 0.05); padding: 20px; border-radius: 20px;"><span class="stat-label" style="color:var(--green);">Ingresos</span><br><span class="stat-val" id="ingreso-total" style="color:var(--green);">Q0.00</span></div>
             </aside>
         </div>
         <div class="citas-list" id="lista-citas"></div>
 
-        <div id="modalAddCita" class="modal"><div class="modal-content"><h3 style="color:var(--gold);">NUEVA CITA</h3><p id="add-fecha-display" style="font-size: 0.8rem; color: #666;"></p><input type="text" id="add-nombre" placeholder="Nombre"><input type="tel" id="add-whatsapp-input"><select id="add-servicio-select"></select><button class="btn btn-gold" id="btn-save-cita-calendar">AGENDAR</button><button class="btn btn-outline" onclick="cerrarModalAdd()">CANCELAR</button></div></div>
+        <div id="modalAddCita" class="modal"><div class="modal-content"><h3 style="color:var(--gold);">NUEVA CITA</h3><p id="add-fecha-display" style="font-size: 0.8rem; color: #666;"></p><input type="text" id="add-nombre" placeholder="Nombre Cliente"><input type="tel" id="add-whatsapp-input"><select id="add-servicio-select"></select><button class="btn btn-gold" id="btn-save-cita-calendar">AGENDAR</button><button class="btn btn-outline" onclick="cerrarModalAdd()">CANCELAR</button></div></div>
         
         <div id="modalEvento" class="modal"><div class="modal-content"><h3 id="pop-nombre" style="color:var(--gold);">Cita</h3><p id="pop-fecha" style="font-size:0.8rem; color:#555;"></p><div id="pop-whatsapp" style="font-size:0.9rem; color:var(--green); font-weight:600; cursor:pointer; background:rgba(46, 204, 113, 0.05); padding:18px; border-radius:20px; margin-bottom:20px;"><i class="fab fa-whatsapp"></i> MENSAJE</div><div style="display:flex; gap:12px;"><button class="btn btn-red" id="btn-eliminar-pop" style="flex:1;">BORRAR</button><button class="btn btn-outline" onclick="cerrarPop()" style="flex:1; margin:0;">CERRAR</button></div></div></div>
 
         <div id="modalConfig" class="modal"><div class="modal-content" style="max-width: 420px; max-height: 90vh; overflow-y: auto;">
             <h3 style="color:var(--gold);">CONFIGURACIÓN</h3>
-            <p style="font-size: 0.7rem; color: #555; text-transform: uppercase; letter-spacing: 1px;">Horas Laborales</p>
-            <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <select id="config-apertura" style="flex:1;"></select>
-                <select id="config-cierre" style="flex:1;"></select>
-            </div>
+            <p style="font-size: 0.7rem; color: #555;">HORARIO LABORAL</p>
+            <div style="display:flex; gap:10px; margin-bottom:10px;"><select id="config-apertura"></select><select id="config-cierre"></select></div>
             <button class="btn btn-gold" id="btn-save-hours">GUARDAR HORARIO</button>
             <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
-            <p style="font-size: 0.7rem; color: #555; text-transform: uppercase; letter-spacing: 1px;">Nuevo Servicio</p>
-            <input type="text" id="serv-n" placeholder="Nombre del servicio">
+            <p style="font-size: 0.7rem; color: #555;">GESTIÓN DE SERVICIOS</p>
+            <input type="text" id="serv-n" placeholder="Nombre Servicio">
             <input type="number" id="serv-p" placeholder="Precio (Q)">
+            <textarea id="serv-d" placeholder="¿Qué incluye el servicio?" rows="2"></textarea>
             <button class="btn btn-gold" id="btn-add-serv">AÑADIR SERVICIO</button>
-            <div id="lista-servicios-admin" style="margin-top:20px; max-height:150px; overflow-y:auto; background: #050505; border-radius: 15px;"></div>
+            <div id="lista-servicios-admin" style="margin-top:20px; background: #050505; border-radius: 15px;"></div>
             <button class="btn btn-outline" onclick="toggleConfig()">SALIR</button>
         </div></div>
 
@@ -138,7 +133,7 @@
         function initDashboard() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'timeGridDay',
-                locale: 'es',
+                locale: 'es', // FORZADO SIEMPRE EN ESPAÑOL
                 allDaySlot: false,
                 slotDuration: '00:30:00',
                 contentHeight: 'auto',
@@ -189,27 +184,31 @@
             calendar.removeAllEvents(); calendar.addEventSource(eventos);
         }
 
-        window.cambiarEstado = (id, est) => update(ref(db, `citas/${id}`), { estado: est }).then(() => showToast("FINALIZADA"));
+        window.cambiarEstado = (id, est) => update(ref(db, `citas/${id}`), { estado: est }).then(() => showToast("CITA FINALIZADA"));
         window.cerrarModalAdd = () => document.getElementById('modalAddCita').style.display = 'none';
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
         
         document.getElementById('btn-save-cita-calendar').onclick = () => {
             const nom = document.getElementById('add-nombre').value, wa = iti.getNumber(), sKey = document.getElementById('add-servicio-select').value;
+            if(!nom || !sKey) return showToast("Faltan datos");
             const s = catalogoGlobal[sKey];
             push(ref(db, 'citas'), { nombre: nom, whatsapp: wa, servicio: s.nombre, precio: s.precio, fecha: selectedDateTime, estado: "Pendiente" }).then(cerrarModalAdd);
         };
 
         document.getElementById('btn-add-serv').onclick = () => {
-            const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value;
-            if(n && p) push(ref(db, 'servicios'), { nombre: n, precio: p }).then(() => { document.getElementById('serv-n').value = ''; document.getElementById('serv-p').value = ''; showToast("AGREGADO"); });
+            const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value, d = document.getElementById('serv-d').value;
+            if(n && p) push(ref(db, 'servicios'), { nombre: n, precio: p, detalle: d }).then(() => { 
+                document.getElementById('serv-n').value = ''; document.getElementById('serv-p').value = ''; document.getElementById('serv-d').value = '';
+                showToast("AGREGADO"); 
+            });
         };
 
-        document.getElementById('btn-save-hours').onclick = () => set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value }).then(() => showToast("ACTUALIZADO"));
+        document.getElementById('btn-save-hours').onclick = () => set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value }).then(() => showToast("HORARIO ACTUALIZADO"));
 
         function renderServicios(servs){
             catalogoGlobal = servs;
             const d = document.getElementById('lista-servicios-admin'), sel = document.getElementById('add-servicio-select');
-            d.innerHTML = ''; sel.innerHTML = '<option value="">Servicio...</option>';
+            d.innerHTML = ''; sel.innerHTML = '<option value="">Elegir servicio...</option>';
             Object.keys(servs).forEach(id => {
                 sel.innerHTML += `<option value="${id}">${servs[id].nombre}</option>`;
                 d.innerHTML += `<div class="serv-item-admin"><span>${servs[id].nombre} (Q${servs[id].precio})</span><i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"></i></div>`;
