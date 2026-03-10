@@ -4,57 +4,53 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Innovation Admin | Management</title>
+    <title>Innovation Admin | Premium Management</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
+    
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/es.global.min.js"></script>
     
     <style>
         :root { --bg: #000; --card: #0d0d0d; --gold: #d4af37; --border: #1a1a1a; --green: #2ecc71; --red: #ff4d4d; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; scroll-behavior: smooth; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; }
         
         #login-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; align-items:center; justify-content:center; }
         .login-box { width:320px; padding:40px; text-align:center; background:var(--card); border-radius:25px; border: 1px solid var(--border); }
-        .logo-main { width: 80px; height: auto; display: block; margin: 0 auto 15px auto; object-fit: contain; }
+        .logo-main { width: 80px; height: auto; display: block; margin: 0 auto 15px auto; }
 
         #admin-content { display:none; width: 100%; max-width: 1200px; margin: 0 auto; padding-top: 20px; }
         .main-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
         @media (max-width: 950px) { .main-grid { grid-template-columns: 1fr; } }
 
         .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 25px; height: fit-content; border-top: 4px solid var(--gold); position: sticky; top: 10px; }
-        .stat-card { text-align: center; margin-bottom: 20px; }
-        .stat-val { font-size: 2rem; font-weight: 600; color: var(--green); display: block; }
-        .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #666; letter-spacing: 1px; margin-bottom: 5px; display: block; }
+        .stat-val { font-size: 2rem; font-weight: 600; color: var(--gold); display: block; }
+        .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #666; letter-spacing: 1px; }
         
-        #calendar-container { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; }
-        .fc { --fc-border-color: #1a1a1a; --fc-today-bg-color: rgba(212,175,55,0.05); font-size: 0.85rem; }
-        .fc-button { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; font-size: 0.65rem !important; }
-        /* Resaltado de selección en el calendario */
-        .fc-highlight { background: rgba(212, 175, 55, 0.3) !important; }
+        #calendar-container { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); }
+        .fc { font-size: 0.85rem; --fc-page-bg-color: #0d0d0d; --fc-border-color: #1a1a1a; }
+        .fc-button-primary { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; text-transform: uppercase !important; font-size: 0.65rem !important; }
+        .fc-highlight { background: rgba(212, 175, 55, 0.15) !important; }
 
-        .citas-list { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; padding-bottom: 80px; }
-        .card { background: #080808; border: 1px solid var(--border); padding: 20px; border-radius: 18px; position: relative; border-left: 4px solid var(--gold); }
-        .price-tag { position: absolute; top: 20px; right: 20px; color: var(--gold); font-weight: bold; font-size: 0.9rem; }
+        .modal { display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); backdrop-filter: blur(10px); align-items: center; justify-content: center; z-index: 3000; }
+        .modal-content { background:var(--card); padding:35px; border: 1px solid var(--border); width:90%; max-width:380px; border-radius:30px; border-top: 5px solid var(--gold); }
         
-        .btn { width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; font-size: 0.65rem; margin-top: 10px; text-transform: uppercase; }
+        input, select, textarea { background:#050505; color:#fff; border:1px solid #1a1a1a; padding:15px; border-radius:12px; width:100%; margin-bottom:12px; font-family: 'Poppins'; outline:none; font-size: 0.85rem; box-sizing: border-box; }
+        input:focus { border-color: var(--gold); }
+        
+        .btn { width: 100%; padding: 15px; border-radius: 12px; font-weight: 600; cursor: pointer; border: none; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; transition: 0.3s; }
         .btn-gold { background: var(--gold); color: #000; }
-        .btn-outline { background: transparent; border: 1px solid #444; color: #aaa; }
-        .btn-red { background: transparent; border: 1px solid var(--red); color: var(--red); }
-        
-        .btn-config-float { position: fixed; bottom: 20px; right: 20px; background: var(--gold); color: #000; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: none; cursor: pointer; z-index: 1000; }
-        .btn-add-float { position: fixed; bottom: 20px; left: 20px; background: var(--green); color: #fff; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: none; cursor: pointer; z-index: 1000; }
+        .btn-outline { background: transparent; border: 1px solid #222; color: #666; margin-top: 10px; }
 
-        .modal { display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter: blur(5px); align-items: center; justify-content: center; z-index: 3000; }
-        .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; }
-        input, select, textarea { background:#000; color:#fff; border:1px solid #222; padding:14px; border-radius:12px; width:100%; margin-bottom:15px; outline: none; }
+        .iti { width: 100%; margin-bottom: 12px; }
+        .iti__country-list { background-color: #0d0d0d; border: 1px solid var(--border); color: #fff; }
 
-        .iti { width: 100%; margin-bottom: 15px; text-align: left; }
-        .iti__country-list { background-color: #0d0d0d; border: 1px solid var(--gold); color: #fff; }
-
-        #toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 15px 30px; border-radius: 50px; font-weight: 600; font-size: 0.8rem; z-index: 10000; transition: top 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+        #toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 15px 35px; border-radius: 50px; font-weight: 600; font-size: 0.8rem; z-index: 10000; transition: 0.5s; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         #toast.show { top: 30px; }
+
+        .btn-config-float { position: fixed; bottom: 25px; right: 25px; background: var(--card); color: var(--gold); width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--border); cursor: pointer; z-index: 1000; font-size: 1.2rem; }
     </style>
 </head>
 <body>
@@ -64,72 +60,57 @@
     <div id="login-overlay">
         <div class="login-box">
             <img src="logo.png" alt="Logo" class="logo-main">
-            <h2 style="color:var(--gold); font-size:0.75rem; letter-spacing:2px; margin-bottom:25px;">INNOVATION ADMIN</h2>
-            <button class="btn btn-gold" onclick="loginGoogle()" style="background:#fff; color:#000;">Entrar con Google</button>
+            <h2 style="color:var(--gold); font-size:0.7rem; letter-spacing:3px;">INNOVATION ADMIN</h2>
+            <button class="btn btn-gold" onclick="loginGoogle()" style="background:#fff; margin-top:20px;">Acceso Staff</button>
         </div>
     </div>
 
     <div id="admin-content">
         <button class="btn-config-float" onclick="toggleConfig()"><i class="fas fa-cog"></i></button>
-        <button class="btn-add-float" id="btn-open-add"><i class="fas fa-plus"></i></button>
 
         <div class="main-grid">
             <div id="calendar-container"><div id="calendar"></div></div>
             <aside class="sidebar-stats">
-                <img src="logo.png" alt="Logo" class="logo-main" style="width: 60px;">
                 <div class="stat-card">
-                    <span class="stat-label">Citas Finalizadas</span>
-                    <span class="stat-val" id="citas-count" style="color:var(--gold);">0</span>
-                </div>
-                <div id="servicios-stats" style="margin-bottom: 20px;"></div>
-                <div class="total-highlight" style="border-top: 1px solid #222; padding-top: 15px;">
-                    <span class="stat-label" style="color:var(--green);">Ingresos del Mes</span>
+                    <span class="stat-label">Ingresos del Mes</span>
                     <span class="stat-val" id="ingreso-total">Q0.00</span>
                 </div>
+                <div id="servicios-stats" style="margin: 20px 0; border-top: 1px solid #1a1a1a; padding-top: 15px;"></div>
             </aside>
         </div>
 
-        <h2 style="font-size: 0.8rem; letter-spacing: 2px; color: var(--gold); margin-top: 40px;">GESTIÓN DE CITAS</h2>
-        <div class="citas-list" id="lista-citas"></div>
-
         <div id="modalAddCita" class="modal">
             <div class="modal-content">
-                <h3 style="color:var(--gold); margin-top:0;">AGENDAR CLIENTE</h3>
-                <input type="text" id="add-nombre" placeholder="Nombre del Cliente">
+                <h3 style="color:var(--gold); margin:0 0 20px 0; font-weight:600; font-size:1rem;">NUEVA CITA</h3>
+                <input type="text" id="add-nombre" placeholder="Nombre Completo">
                 <input type="tel" id="add-whatsapp">
-                <select id="add-servicio-select" style="margin-top: 15px;"></select>
-                <input type="datetime-local" id="add-fecha">
-                <button class="btn btn-gold" id="btn-save-new-cita">CONFIRMAR CITA</button>
-                <button class="btn btn-outline" onclick="document.getElementById('modalAddCita').style.display='none'">CANCELAR</button>
+                <select id="add-servicio-select"></select>
+                <textarea id="add-nota" placeholder="Notas adicionales (opcional)" style="height: 80px; resize: none;"></textarea>
+                <input type="hidden" id="add-fecha">
+                <button class="btn btn-gold" id="btn-save-new-cita">AGENDAR Y NOTIFICAR</button>
+                <button class="btn btn-outline" onclick="cerrarModalAdd()">DESCARTAR</button>
             </div>
         </div>
 
         <div id="modalEvento" class="modal">
-            <div class="modal-content">
-                <h3 id="pop-nombre" style="margin-top:0; color:var(--gold);">Cliente</h3>
-                <p id="pop-fecha" style="font-size:0.8rem; color:#888;"></p>
-                <div id="pop-whatsapp" style="font-size:0.9rem; color:var(--green); font-weight:600; cursor:pointer; margin: 15px 0; border: 1px solid #222; padding: 10px; border-radius: 10px;"></div>
-                <button class="btn btn-red" id="btn-eliminar-pop">ELIMINAR CITA</button>
+            <div class="modal-content" style="border-top-color: #555;">
+                <h3 id="pop-nombre" style="margin:0; color:var(--gold);"></h3>
+                <p id="pop-fecha" style="font-size:0.8rem; color:#666; margin: 10px 0;"></p>
+                <div id="pop-nota" style="background:#050505; padding:15px; border-radius:12px; font-size:0.75rem; color:#aaa; margin-bottom:15px; border:1px solid #111;"></div>
+                <button class="btn btn-gold" id="btn-confirm-finalizar">MARCAR COMO FINALIZADA</button>
+                <button class="btn btn-outline" id="btn-eliminar-cita" style="color:var(--red); border-color: rgba(255,77,77,0.2);">ELIMINAR</button>
                 <button class="btn btn-outline" onclick="cerrarPop()">CERRAR</button>
             </div>
         </div>
 
         <div id="modalConfig" class="modal">
             <div class="modal-content">
-                <h3 style="color:var(--gold); margin-top:0;">CONFIGURACIÓN</h3>
-                <div style="background: #000; padding: 15px; border-radius: 15px; border: 1px solid #222; margin-bottom: 20px;">
-                    <label style="font-size: 0.65rem; color: var(--gold); display: block; margin-bottom: 8px;">HORARIO LABORAL</label>
-                    <div style="display: flex; gap: 10px;">
-                        <select id="config-apertura"></select>
-                        <select id="config-cierre"></select>
-                    </div>
-                    <button class="btn btn-gold" id="btn-save-hours">GUARDAR HORARIO</button>
-                </div>
-                <input type="text" id="serv-n" placeholder="Servicio">
+                <h3 style="color:var(--gold); margin-bottom:20px;">CONFIGURACIÓN</h3>
+                <input type="text" id="serv-n" placeholder="Nombre del Servicio">
                 <input type="number" id="serv-p" placeholder="Precio (Q)">
-                <button class="btn btn-gold" id="btn-add-serv">Añadir Servicio</button>
-                <div id="lista-servicios-admin" style="margin-top:20px; max-height:150px; overflow-y:auto; text-align: left;"></div>
-                <button class="btn btn-outline" onclick="toggleConfig()">CERRAR</button>
+                <button class="btn btn-gold" id="btn-add-serv">Añadir al Catálogo</button>
+                <div id="lista-servicios-admin" style="margin-top:20px; max-height:200px; overflow-y:auto; border-top:1px solid #1a1a1a;"></div>
+                <button class="btn btn-outline" onclick="toggleConfig()">SALIR</button>
             </div>
         </div>
     </div>
@@ -148,19 +129,17 @@
         let calendar, catalogoServicios = {}, iti;
 
         const inputTel = document.querySelector("#add-whatsapp");
-        iti = window.intlTelInput(inputTel, { initialCountry: "gt", separateDialCode: true, utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js" });
+        iti = window.intlTelInput(inputTel, {
+            initialCountry: "gt",
+            onlyCountries: ["gt", "sv", "hn", "ni", "cr", "pa", "mx", "us"],
+            separateDialCode: true,
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
+        });
 
         function showToast(msj) {
             const t = document.getElementById('toast');
             t.innerText = msj; t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 3000);
-        }
-
-        const apS = document.getElementById('config-apertura'), ciS = document.getElementById('config-cierre');
-        for(let h=0; h<=23; h++){
-            let lbl = h === 0 ? "12 AM" : h === 12 ? "12 PM" : h > 12 ? `${h-12} PM` : `${h} AM`;
-            apS.innerHTML += `<option value="${h}">${lbl}</option>`;
-            ciS.innerHTML += `<option value="${h}">${lbl}</option>`;
         }
 
         window.loginGoogle = () => signInWithPopup(auth, provider);
@@ -179,27 +158,37 @@
 
         function initDashboard() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'timeGridWeek', 
-                locale: 'es', 
+                initialView: 'timeGridWeek',
+                locale: 'es',
                 firstDay: 1,
-                selectable: true, // PERMITIR SELECCIONAR HORARIOS
+                allDaySlot: false,
+                slotMinTime: "06:00:00",
+                slotMaxTime: "22:00:00",
+                selectable: true,
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
-                
-                // ESTO SUCEDE CUANDO HACES CLIC EN UN HORARIO VACÍO
                 select: (info) => {
-                    const localDate = new Date(info.start.getTime() - (info.start.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-                    document.getElementById('add-fecha').value = localDate;
+                    document.getElementById('add-fecha').value = info.startStr;
                     document.getElementById('modalAddCita').style.display = 'flex';
                 },
-
                 eventClick: (info) => {
                     const id = info.event.id;
                     const meta = info.event.extendedProps;
                     document.getElementById('pop-nombre').innerText = info.event.title;
-                    document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString('es-GT');
-                    document.getElementById('pop-whatsapp').innerHTML = meta.whatsapp ? `<i class="fab fa-whatsapp"></i> ${meta.whatsapp}` : 'Sin número';
+                    document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString('es-GT', { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'});
+                    document.getElementById('pop-nota').innerText = meta.nota || "Sin notas adicionales.";
                     document.getElementById('modalEvento').style.display = 'flex';
-                    document.getElementById('btn-eliminar-pop').onclick = () => { remove(ref(db, `citas/${id}`)); cerrarPop(); };
+                    
+                    document.getElementById('btn-confirm-finalizar').onclick = () => {
+                        update(ref(db, `citas/${id}`), { estado: 'Finalizada' });
+                        cerrarPop();
+                        showToast("CITA COMPLETADA");
+                    };
+                    document.getElementById('btn-eliminar-cita').onclick = () => {
+                        if(confirm("¿Eliminar esta cita?")) {
+                            remove(ref(db, `citas/${id}`));
+                            cerrarPop();
+                        }
+                    };
                 }
             });
             calendar.render();
@@ -207,8 +196,9 @@
             onValue(ref(db, 'citas'), snap => renderAdmin(snap.val()));
             onValue(ref(db, 'servicios'), snap => {
                 catalogoServicios = snap.val() || {};
+                renderServiciosList(catalogoServicios);
                 const select = document.getElementById('add-servicio-select');
-                select.innerHTML = '<option value="">Elegir Servicio</option>';
+                select.innerHTML = '<option value="">Selecciona el servicio...</option>';
                 Object.keys(catalogoServicios).forEach(id => {
                     select.innerHTML += `<option value="${id}">${catalogoServicios[id].nombre} (Q${catalogoServicios[id].precio})</option>`;
                 });
@@ -217,37 +207,58 @@
 
         document.getElementById('btn-save-new-cita').onclick = () => {
             const nom = document.getElementById('add-nombre').value;
-            const telFull = iti.getNumber();
+            const tel = iti.getNumber();
             const servId = document.getElementById('add-servicio-select').value;
-            const fecha = document.getElementById('add-fecha').value;
+            const nota = document.getElementById('add-nota').value;
+            const fechaIso = document.getElementById('add-fecha').value;
 
-            if(!nom || !telFull || !servId || !fecha) return showToast("⚠️ COMPLETA LOS DATOS");
+            if(!nom || !tel || !servId) return showToast("⚠️ REVISA LOS CAMPOS");
 
             const serv = catalogoServicios[servId];
-            push(ref(db, 'citas'), {
-                nombre: nom, whatsapp: telFull, servicio: serv.nombre, precio: serv.precio, fecha: new Date(fecha).toISOString(), estado: "Pendiente"
-            }).then(() => {
-                showToast("✅ AGENDADO");
-                document.getElementById('modalAddCita').style.display = 'none';
+            const fechaObj = new Date(fechaIso);
+            const fechaTxt = fechaObj.toLocaleString('es-GT', { day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' });
+
+            const dataCita = {
+                nombre: nom, whatsapp: tel, servicio: serv.nombre, precio: serv.precio,
+                nota: nota, fecha: fechaIso, estado: "Pendiente"
+            };
+
+            push(ref(db, 'citas'), dataCita).then(() => {
+                cerrarModalAdd();
+                showToast("✅ CITA AGENDADA");
+                
+                // Enviar WhatsApp automáticamente
+                const msg = encodeURIComponent(`*INNOVATION Barber Studio*\n\nHola ${nom}, confirmamos tu cita:\n\n💈 *Servicio:* ${serv.nombre}\n📅 *Fecha:* ${fechaTxt}\n\n¡Te esperamos!`);
+                window.open(`https://wa.me/${tel.replace(/\D/g,'')}?text=${msg}`);
             });
         };
 
         function renderAdmin(data) {
-            const lista = document.getElementById('lista-citas'); lista.innerHTML = '';
-            const eventos = [];
+            let total = 0, eventos = [], mesActual = new Date().getMonth();
             if(data) {
                 Object.keys(data).forEach(id => {
-                    const c = data[id];
-                    eventos.push({ id: id, title: c.nombre, start: c.fecha, backgroundColor: c.estado === 'Finalizada' ? '#111' : '#d4af37', extendedProps: { whatsapp: c.whatsapp || '' } });
-                    if(c.estado !== 'Finalizada') {
-                        const card = document.createElement('div'); card.className = 'card';
-                        card.innerHTML = `<div class="price-tag">Q${c.precio}</div><h3 style="margin:5px 0;">${c.nombre}</h3><p style="font-size:0.7rem;">${c.servicio}</p><button class="btn btn-gold" onclick="update(ref(db, 'citas/${id}'), {estado: 'Finalizada'})">FINALIZAR</button>`;
-                        lista.appendChild(card);
-                    }
+                    const c = data[id], f = new Date(c.fecha);
+                    if(c.estado === 'Finalizada' && f.getMonth() === mesActual) total += parseFloat(c.precio);
+                    eventos.push({ id: id, title: c.nombre, start: c.fecha, backgroundColor: c.estado === 'Finalizada' ? '#111' : '#d4af37', borderColor: '#1a1a1a', extendedProps: { nota: c.nota, whatsapp: c.whatsapp } });
                 });
             }
+            document.getElementById('ingreso-total').innerText = `Q${total.toFixed(2)}`;
             if(calendar) { calendar.removeAllEvents(); calendar.addEventSource(eventos); }
         }
+
+        function renderServiciosList(servs) {
+            const div = document.getElementById('lista-servicios-admin'); div.innerHTML = '';
+            Object.keys(servs).forEach(id => {
+                div.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; font-size:0.7rem; border-bottom:1px solid #111;"><span>${servs[id].nombre}</span><i class="fas fa-trash" style="color:red;" onclick="window.eliminarServ('${id}')"></i></div>`;
+            });
+        }
+
+        window.eliminarServ = (id) => remove(ref(db, `servicios/${id}`));
+        window.cerrarModalAdd = () => {
+            document.getElementById('modalAddCita').style.display = 'none';
+            document.getElementById('add-nombre').value = '';
+            document.getElementById('add-nota').value = '';
+        };
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
     </script>
 </body>
