@@ -66,7 +66,6 @@
         
         .block-item { background: rgba(255, 77, 77, 0.1); padding: 8px 12px; border-radius: 12px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; border: 1px solid rgba(255, 77, 77, 0.2); }
         
-        /* Estilos Flatpickr Personalizados */
         .flatpickr-calendar { background: #0a0a0a !important; border: 1px solid var(--gold) !important; box-shadow: 0 0 20px rgba(212,175,55,0.2) !important; }
         .flatpickr-day.selected { background: var(--gold) !important; border-color: var(--gold) !important; color: #000 !important; }
     </style>
@@ -155,13 +154,7 @@
 
         iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { initialCountry: "gt", separateDialCode: true });
 
-        // Inicializar Calendario de Bloqueo
-        fpBlock = flatpickr("#input-block-date", {
-            locale: "es",
-            minDate: "today",
-            dateFormat: "Y-m-d",
-            disableMobile: true
-        });
+        fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d", disableMobile: true });
 
         window.showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
         window.confirmarAccion = (t, cb) => { document.getElementById('confirm-text').innerText = t; document.getElementById('modalConfirm').style.display = 'flex'; document.getElementById('confirm-yes').onclick = () => { cb(); document.getElementById('modalConfirm').style.display = 'none'; }; };
@@ -183,14 +176,8 @@
 
         function initDashboard() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'timeGridDay',
-                locale: 'es',
-                allDaySlot: false,
-                slotDuration: '00:30:00',
-                contentHeight: 'auto',
-                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
-                buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
-                selectable: true,
+                initialView: 'timeGridDay', locale: 'es', allDaySlot: false, slotDuration: '00:30:00', contentHeight: 'auto', headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+                buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' }, selectable: true,
                 select: (info) => {
                     if(info.view.type !== 'dayGridMonth'){
                         selectedDateTime = info.startStr.split('T')[0]+'T'+info.start.getHours().toString().padStart(2,'0')+':00';
@@ -199,8 +186,7 @@
                     }
                 },
                 eventClick: (info) => {
-                    const id = info.event.id, meta = info.event.extendedProps;
-                    const nombre = info.event.title;
+                    const id = info.event.id, meta = info.event.extendedProps, nombre = info.event.title;
                     const fTxt = info.event.start.toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
                     document.getElementById('pop-nombre').innerText = nombre;
                     document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString('es-GT');
@@ -217,22 +203,17 @@
             onValue(ref(db, 'configuracion_horario'), snap => { 
                 const config = snap.val();
                 if(config){ 
-                    calendar.setOption('slotMinTime', config.apertura.padStart(2,'0')+':00:00'); 
-                    calendar.setOption('slotMaxTime', config.cierre.padStart(2,'0')+':00:00');
-                    apS.value = config.apertura; 
-                    ciS.value = config.cierre;
-                    lIn.value = config.lunch_inicio || "";
-                    lFi.value = config.lunch_fin || "";
+                    calendar.setOption('slotMinTime', config.apertura.padStart(2,'0')+':00:00'); calendar.setOption('slotMaxTime', config.cierre.padStart(2,'0')+':00:00');
+                    apS.value = config.apertura; ciS.value = config.cierre;
+                    lIn.value = config.lunch_inicio || ""; lFi.value = config.lunch_fin || "";
                 } 
             });
 
             onValue(ref(db, 'citas'), snap => renderAdmin(snap.val()));
             onValue(ref(db, 'servicios'), snap => renderServicios(snap.val() || {}));
-            
             onValue(ref(db, 'dias_bloqueados'), snap => {
                 const list = document.getElementById('lista-bloqueos-admin');
-                list.innerHTML = '';
-                const bloqueos = snap.val() || {};
+                list.innerHTML = ''; const bloqueos = snap.val() || {};
                 Object.keys(bloqueos).forEach(fecha => {
                     list.innerHTML += `<div class="block-item"><span>${fecha}</span><i class="fas fa-times" style="cursor:pointer; color:var(--red);" onclick="window.eliminarBloqueo('${fecha}')"></i></div>`;
                 });
@@ -242,14 +223,12 @@
         function renderAdmin(data) {
             const lista = document.getElementById('lista-citas'), cCount = document.getElementById('citas-count'), iTotal = document.getElementById('ingreso-total');
             lista.innerHTML = ''; let tMes = 0, iMes = 0, eventos = [], ahora = new Date(), mesActual = ahora.getMonth(), añoActual = ahora.getFullYear();
-
             if(data){
                 Object.keys(data).sort((a,b) => new Date(data[a].fecha) - new Date(data[b].fecha)).forEach(id => {
                     const c = data[id], fCita = new Date(c.fecha), isFinalizada = c.estado === 'Finalizada';
                     if(isFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) { tMes++; iMes += parseFloat(c.precio || 0); }
                     eventos.push({ id, title: c.nombre, start: c.fecha, backgroundColor: isFinalizada ? '#333333' : '#d4af37', textColor: isFinalizada ? '#777777' : '#000000', extendedProps: { whatsapp: c.whatsapp } });
-                    const div = document.createElement('div');
-                    div.className = `card ${isFinalizada ? 'finalizada' : ''}`;
+                    const div = document.createElement('div'); div.className = `card ${isFinalizada ? 'finalizada' : ''}`;
                     div.innerHTML = `<h4>${c.nombre}</h4><button class="btn btn-gold btn-mini" onclick="cambiarEstado('${id}','Finalizada')">FINALIZAR</button>`;
                     lista.appendChild(div);
                 });
@@ -262,24 +241,26 @@
         window.cerrarModalAdd = () => document.getElementById('modalAddCita').style.display = 'none';
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
         
-        // LÓGICA DE BLOQUEO REFORZADA
+        // LÓGICA DE BLOQUEO CORREGIDA
         document.getElementById('btn-add-block').onclick = () => {
-            const valInput = document.getElementById('input-block-date').value;
-            let fechaFinal = valInput;
-            
-            // Intento secundario desde la instancia por si el input está vacío
-            if(!fechaFinal && fpBlock.selectedDates.length > 0) {
-                fechaFinal = fpBlock.formatDate(fpBlock.selectedDates[0], "Y-m-d");
-            }
-
-            if(fechaFinal) {
-                set(ref(db, `dias_bloqueados/${fechaFinal}`), true).then(() => {
-                    showToast("DÍA BLOQUEADO CORRECTAMENTE");
+            const fechaFinal = document.getElementById('input-block-date').value;
+            if(fechaFinal && fechaFinal !== "") {
+                const updateData = {};
+                updateData[fechaFinal] = true;
+                
+                // Usamos update en el nodo padre para que la fecha (con guiones) se acepte como llave
+                update(ref(db, 'dias_bloqueados'), updateData)
+                .then(() => {
+                    showToast("DÍA BLOQUEADO");
                     fpBlock.clear();
                     document.getElementById('input-block-date').value = '';
-                }).catch(e => showToast("ERROR AL BLOQUEAR"));
+                })
+                .catch(e => {
+                    console.error("Error Firebase:", e);
+                    showToast("ERROR AL BLOQUEAR");
+                });
             } else {
-                showToast("SELECCIONE UNA FECHA PRIMERO");
+                showToast("SELECCIONE UNA FECHA");
             }
         };
 
@@ -301,7 +282,7 @@
         };
 
         document.getElementById('btn-save-hours').onclick = () => {
-            set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value, lunch_inicio: lIn.value, lunch_fin: lFi.value }).then(() => showToast("HORARIO Y LUNCH GUARDADOS"));
+            set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value, lunch_inicio: lIn.value, lunch_fin: lFi.value }).then(() => showToast("HORARIO GUARDADO"));
         };
 
         function renderServicios(servs){
