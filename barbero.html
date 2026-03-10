@@ -285,7 +285,7 @@
             push(ref(db, 'citas'), nuevaCita).then(() => {
                 cerrarModalAdd();
                 showToast("✅ CITA AGENDADA");
-                const msg = encodeURIComponent(`Tu cita en INNOVATION Barber Studio ha sido agendada exitósamente el día ${fechaTxt} exitósamente.`);
+                const msg = encodeURIComponent(`Tu cita en INNOVATION Barber Studio ha sido agendada el día ${fechaTxt} exitósamente.`);
                 window.open(`https://wa.me/${whatsapp.replace(/\D/g,'')}?text=${msg}`);
             });
         };
