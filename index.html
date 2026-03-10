@@ -130,7 +130,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let ocupados = [], fechaSeleccionada = "", horaSeleccionada = "", horaApertura = 7, horaCierre = 21;
+        let ocupados = [], fechaSeleccionada = "", horaSeleccionada = "";
+        let horaApertura = 7, horaCierre = 21, lunchInicio = -1, lunchFin = -1;
 
         window.renderSlots = () => {
             const container = document.getElementById('slots-container');
@@ -138,6 +139,11 @@
             if (!fechaSeleccionada) return;
 
             for (let h = horaApertura; h < horaCierre; h++) {
+                // LÓGICA DE BLOQUEO POR LUNCH
+                if (lunchInicio !== -1 && lunchFin !== -1) {
+                    if (h >= lunchInicio && h < lunchFin) continue; 
+                }
+
                 const horaStr = `${h.toString().padStart(2, '0')}:00`;
                 const fullDateTimeISO = `${fechaSeleccionada}T${horaStr}`;
                 const isOccupied = ocupados.some(o => o.startsWith(fullDateTimeISO));
@@ -186,7 +192,14 @@
 
         onValue(ref(db, 'configuracion_horario'), (snapshot) => {
             const config = snapshot.val();
-            if (config) { horaApertura = parseInt(config.apertura); horaCierre = parseInt(config.cierre); window.renderSlots(); }
+            if (config) { 
+                horaApertura = parseInt(config.apertura); 
+                horaCierre = parseInt(config.cierre);
+                // Cargar datos de lunch si existen
+                lunchInicio = config.lunch_inicio !== "" ? parseInt(config.lunch_inicio) : -1;
+                lunchFin = config.lunch_fin !== "" ? parseInt(config.lunch_fin) : -1;
+                window.renderSlots(); 
+            }
         });
 
         onValue(ref(db, 'citas'), (snap) => {
@@ -205,7 +218,6 @@
                 const d = s.val(), option = document.createElement('option');
                 option.value = d.nombre; option.text = `${d.nombre} - Q${d.precio}`;
                 option.setAttribute('data-precio', d.precio);
-                // CORRECCIÓN: Usar d.detalle que es el nombre real en tu DB
                 option.setAttribute('data-desc', d.detalle || 'Servicio de alta calidad');
                 sel.appendChild(option);
             });
