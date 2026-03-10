@@ -49,10 +49,9 @@
         input:focus, select:focus, textarea:focus { border-color: var(--gold); background: rgba(255,255,255,0.07); box-shadow: 0 0 15px rgba(212,175,55,0.1); }
         
         .phone-container { display: flex; gap: 8px; }
-        .flag-select { width: 110px; font-size: 1.1rem; cursor: pointer; }
+        .flag-select { width: 120px; font-size: 1.1rem; cursor: pointer; }
         textarea { height: 70px; resize: none; }
 
-        /* Caja de Descripción Dinámica */
         #info-servicio { 
             display:none; margin-top: 10px; padding: 12px; 
             background: rgba(212, 175, 55, 0.05); border-left: 3px solid var(--gold); 
@@ -73,7 +72,7 @@
         .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-content { background: #111; padding: 40px; border: 1px solid var(--gold); width: 85%; max-width: 320px; border-radius: 30px; text-align: center; }
 
-        /* Estilo Flatpickr */
+        /* Flatpickr Custom Dark */
         .flatpickr-calendar { background: #111 !important; border: 1px solid var(--gold) !important; color: #fff !important; }
         .flatpickr-day.selected { background: var(--gold) !important; border-color: var(--gold) !important; color: #000 !important; }
         .flatpickr-day.disabled { color: rgba(255,255,255,0.1) !important; }
@@ -98,8 +97,14 @@
             <div class="phone-container">
                 <select id="codigo-area" class="flag-select">
                     <option value="502">🇬🇹 +502</option>
-                    <option value="503">🇸🇻 +503</option>
+                    <option value="52">🇲🇽 +52</option>
                     <option value="1">🇺🇸 +1</option>
+                    <option value="503">🇸🇻 +503</option>
+                    <option value="504">🇭🇳 +504</option>
+                    <option value="505">🇳🇮 +505</option>
+                    <option value="506">🇨🇷 +506</option>
+                    <option value="507">🇵🇦 +507</option>
+                    <option value="501">🇧🇿 +501</option>
                 </select>
                 <input type="tel" id="whatsapp" placeholder="Número">
             </div>
@@ -131,7 +136,7 @@
         <div class="modal-content">
             <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--gold); margin-bottom: 20px;"></i>
             <h2 style="color:var(--gold); margin:0; letter-spacing: 2px;">CONFIRMADO</h2>
-            <p style="color:#888; font-size: 0.9rem; margin: 15px 0;">Tu solicitud ha sido enviada con éxito. El barbero confirmará tu espacio pronto.</p>
+            <p style="color:#888; font-size: 0.9rem; margin: 15px 0;">Tu solicitud ha sido enviada con éxito. El barbero te confirmará en breve.</p>
             <button class="btn-reserva" onclick="location.reload()">Finalizar</button>
         </div>
     </div>
@@ -150,12 +155,12 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let citasOcupadas = [];
+        let ocupados = [];
 
-        // 1. Escuchar citas y configurar Calendario sin bloqueo de día completo
+        // 1. Manejo del Calendario Dinámico
         onValue(ref(db, 'citas'), (snapshot) => {
-            citasOcupadas = [];
-            snapshot.forEach(child => { if(child.val().fecha) citasOcupadas.push(child.val().fecha); });
+            ocupados = [];
+            snapshot.forEach(child => { if(child.val().fecha) ocupados.push(child.val().fecha); });
 
             flatpickr("#fecha-cita", {
                 enableTime: true,
@@ -165,33 +170,26 @@
                 maxTime: "22:00",
                 time_24hr: false,
                 minuteIncrement: 60,
-                // Función para bloquear SOLO la hora exacta ocupada
-                onValueUpdate: (selectedDates, dateStr, instance) => {
-                    if (citasOcupadas.includes(dateStr)) {
+                // Validamos al cambiar que no se elija una hora ya ocupada
+                onChange: (selectedDates, dateStr, instance) => {
+                    if (ocupados.includes(dateStr)) {
                         alert("Este horario ya está reservado. Por favor elige otro.");
                         instance.clear();
                     }
                 },
-                // Deshabilita visualmente las horas que ya existen en la lista
-                disable: [
-                    function(date) {
-                        // Aquí no bloqueamos nada por fecha para evitar el error del día completo.
-                        // La validación real se hace al elegir la hora.
-                        return false; 
-                    },
-                    ...citasOcupadas // Pasamos la lista para que Flatpickr intente marcar las horas
-                ],
+                // Deshabilitamos la hora exacta visualmente
+                disable: ocupados,
                 locale: { firstDayOfWeek: 1 }
             });
         });
 
-        // 2. Cargar servicios con Descripción
+        // 2. Cargar servicios y descripción
         onValue(ref(db, 'servicios'), (snap) => {
             const select = document.getElementById('servicio');
             select.innerHTML = '<option value="" disabled selected>Selecciona tu servicio</option>';
             snap.forEach(s => {
                 const data = s.val();
-                select.innerHTML += `<option value="${data.nombre}" data-precio="${data.precio}" data-desc="${data.descripcion || 'Sin descripción'}">${data.nombre} - Q${data.precio}</option>`;
+                select.innerHTML += `<option value="${data.nombre}" data-precio="${data.precio}" data-desc="${data.descripcion || 'Servicio Elite'}">${data.nombre} - Q${data.precio}</option>`;
             });
         });
 
@@ -205,6 +203,7 @@
             infoDiv.style.display = 'block';
         };
 
+        // 3. Envío de Cita
         window.enviarCita = () => {
             const nom = document.getElementById('nombre').value;
             const cod = document.getElementById('codigo-area').value;
@@ -213,7 +212,7 @@
             const fec = document.getElementById('fecha-cita').value;
 
             if(!nom || !num || !sel.value || !fec) {
-                alert("Completa todos los campos por favor.");
+                alert("Completa todos los campos antes de agendar.");
                 return;
             }
 
