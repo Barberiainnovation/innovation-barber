@@ -16,13 +16,15 @@
     <style>
         :root { --bg: #000; --card: #0a0a0a; --gold: #d4af37; --gold-dark: #aa8c2c; --border: #1a1a1a; --green: #2ecc71; --red: #ff4d4d; --glass: rgba(10, 10, 10, 0.98); }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; overflow-x: hidden; }
+        
         #login-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; align-items:center; justify-content:center; }
         .login-box { width:320px; padding:45px; text-align:center; background:var(--card); border-radius:35px; border: 1px solid var(--border); box-shadow: 0 0 40px rgba(212,175,55,0.05); }
+        
         #admin-content { display:none; max-width: 1300px; margin: 0 auto; }
         .main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 25px; margin-top: 10px; }
         @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
         
-        /* CALENDARIO */
+        /* CALENDARIO ESTILO ELITE */
         #calendar-container { background: var(--card); padding: 20px; border-radius: 35px; border: 1px solid var(--border); }
         .fc { --fc-border-color: #161616; --fc-today-bg-color: rgba(212,175,55,0.02); font-size: 0.8rem; }
         .fc .fc-toolbar-title { font-size: 1rem !important; text-transform: uppercase; color: var(--gold); font-weight: 600; }
@@ -30,15 +32,17 @@
         .fc-v-event { background: linear-gradient(135deg, var(--gold), var(--gold-dark)) !important; border: none !important; border-radius: 6px !important; color: #000 !important; }
         .fc-event-main { font-weight: 600; font-size: 0.85rem !important; line-height: 1.1; display: flex; align-items: center; padding-left: 5px; }
 
+        /* SIDEBAR Y LOGO GRANDE */
         .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 35px; padding: 30px; border-top: 5px solid var(--gold); position: sticky; top: 15px; height: fit-content; }
+        .sidebar-logo { width: 90px; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(212,175,55,0.15)); }
         .stat-val { font-size: 2.2rem; font-weight: 600; color: var(--gold); }
         .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #555; letter-spacing: 2px; }
         
-        /* LISTA DE CITAS PENDIENTES - AJUSTE DE ANCHO */
+        /* TARJETAS DE FINALIZACIÓN COMPACTAS */
         .citas-list { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 320px)); gap: 15px; padding-bottom: 100px; justify-content: start; }
         .card { background: #060606; border: 1px solid var(--border); padding: 12px 18px; border-radius: 18px; border-left: 3px solid var(--gold); display: flex; justify-content: space-between; align-items: center; }
-        .card h4 { margin: 0; font-size: 0.85rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; }
-        .btn-mini { width: auto; padding: 8px 12px; border-radius: 10px; font-size: 0.55rem; margin: 0; white-space: nowrap; }
+        .card h4 { margin: 0; font-size: 0.82rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; }
+        .btn-mini { width: auto; padding: 8px 12px; border-radius: 10px; font-size: 0.55rem; margin: 0; white-space: nowrap; font-weight: 700; }
 
         /* MODALES */
         .modal { display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.94); backdrop-filter: blur(12px); align-items: center; justify-content: center; z-index: 10000; }
@@ -51,7 +55,7 @@
         .btn-red { background: rgba(255, 77, 77, 0.1); border: 1px solid var(--red); color: var(--red); }
         .btn-config-float { position: fixed; bottom: 30px; right: 30px; background: var(--gold); color: #000; width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; z-index: 5000; border:none; cursor:pointer; }
         
-        .serv-item-admin { display:flex; justify-content:space-between; padding:10px; font-size:0.7rem; border-bottom:1px solid #1a1a1a; align-items:center; text-align: left; }
+        .serv-item-admin { display:flex; justify-content:space-between; padding:10px; font-size:0.7rem; border-bottom:1px solid #1a1a1a; align-items:center; }
         #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 14px 40px; border-radius: 50px; font-weight: 700; z-index: 11000; transition: 0.6s; }
         #toast.show { bottom: 40px; }
     </style>
@@ -72,16 +76,16 @@
         <div class="main-grid">
             <div id="calendar-container"><div id="calendar"></div></div>
             <aside class="sidebar-stats">
-                <header style="text-align: center; margin-bottom:30px;"><img src="logo.png" style="width: 50px;"></header>
-                <div style="margin-bottom:30px;"><span class="stat-label">Citas Mes</span><br><span class="stat-val" id="citas-count">0</span></div>
-                <div style="background: rgba(46, 204, 113, 0.05); padding: 20px; border-radius: 20px;"><span class="stat-label" style="color:var(--green);">Ingresos</span><br><span class="stat-val" id="ingreso-total" style="color:var(--green);">Q0.00</span></div>
+                <header style="text-align: center; margin-bottom:30px;"><img src="logo.png" class="sidebar-logo"></header>
+                <div style="margin-bottom:30px;"><span class="stat-label">Servicios Mes</span><br><span class="stat-val" id="citas-count">0</span></div>
+                <div style="background: rgba(46, 204, 113, 0.05); padding: 20px; border-radius: 20px;"><span class="stat-label" style="color:var(--green);">Ingresos Mes</span><br><span class="stat-val" id="ingreso-total" style="color:var(--green);">Q0.00</span></div>
             </aside>
         </div>
         <div class="citas-list" id="lista-citas"></div>
 
         <div id="modalAddCita" class="modal"><div class="modal-content"><h3 style="color:var(--gold);">NUEVA CITA</h3><p id="add-fecha-display" style="font-size: 0.8rem; color: #666;"></p><input type="text" id="add-nombre" placeholder="Nombre Cliente"><input type="tel" id="add-whatsapp-input"><select id="add-servicio-select"></select><button class="btn btn-gold" id="btn-save-cita-calendar">AGENDAR</button><button class="btn btn-outline" onclick="cerrarModalAdd()">CANCELAR</button></div></div>
         
-        <div id="modalEvento" class="modal"><div class="modal-content"><h3 id="pop-nombre" style="color:var(--gold);">Cita</h3><p id="pop-fecha" style="font-size:0.8rem; color:#555;"></p><div id="pop-whatsapp" style="font-size:0.9rem; color:var(--green); font-weight:600; cursor:pointer; background:rgba(46, 204, 113, 0.05); padding:18px; border-radius:20px; margin-bottom:20px;"><i class="fab fa-whatsapp"></i> MENSAJE</div><div style="display:flex; gap:12px;"><button class="btn btn-red" id="btn-eliminar-pop" style="flex:1;">BORRAR</button><button class="btn btn-outline" onclick="cerrarPop()" style="flex:1; margin:0;">CERRAR</button></div></div></div>
+        <div id="modalEvento" class="modal"><div class="modal-content"><h3 id="pop-nombre" style="color:var(--gold);">Cita</h3><p id="pop-fecha" style="font-size:0.8rem; color:#555;"></p><div id="pop-whatsapp" style="font-size:0.9rem; color:var(--green); font-weight:600; cursor:pointer; background:rgba(46, 204, 113, 0.05); padding:18px; border-radius:20px; margin-bottom:20px;"><i class="fab fa-whatsapp"></i> RECORDATORIO</div><div style="display:flex; gap:12px;"><button class="btn btn-red" id="btn-eliminar-pop" style="flex:1;">BORRAR</button><button class="btn btn-outline" onclick="cerrarPop()" style="flex:1; margin:0;">CERRAR</button></div></div></div>
 
         <div id="modalConfig" class="modal"><div class="modal-content" style="max-width: 420px; max-height: 90vh; overflow-y: auto;">
             <h3 style="color:var(--gold);">CONFIGURACIÓN</h3>
@@ -133,7 +137,7 @@
         function initDashboard() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'timeGridDay',
-                locale: 'es', // FORZADO SIEMPRE EN ESPAÑOL
+                locale: 'es', 
                 allDaySlot: false,
                 slotDuration: '00:30:00',
                 contentHeight: 'auto',
@@ -148,9 +152,17 @@
                 },
                 eventClick: (info) => {
                     const id = info.event.id, meta = info.event.extendedProps;
-                    document.getElementById('pop-nombre').innerText = info.event.title;
+                    const nombre = info.event.title;
+                    const fechaTxt = info.event.start.toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+                    
+                    document.getElementById('pop-nombre').innerText = nombre;
                     document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString('es-GT');
-                    document.getElementById('pop-whatsapp').onclick = () => window.open(`https://wa.me/${meta.whatsapp.replace(/\D/g,'')}`);
+                    
+                    document.getElementById('pop-whatsapp').onclick = () => {
+                        const msg = encodeURIComponent(`Hola ${nombre}, te saludamos de Innovation Barber Studio. Te recordamos tu cita para el día ${fechaTxt}. ¡Te esperamos!`);
+                        window.open(`https://wa.me/${meta.whatsapp.replace(/\D/g,'')}?text=${msg}`);
+                    };
+
                     document.getElementById('modalEvento').style.display = 'flex';
                     document.getElementById('btn-eliminar-pop').onclick = () => confirmarAccion("¿Eliminar cita?", () => remove(ref(db, `citas/${id}`)).then(cerrarPop));
                 }
@@ -168,12 +180,26 @@
         }
 
         function renderAdmin(data) {
-            const lista = document.getElementById('lista-citas'); lista.innerHTML = '';
-            const eventos = [];
+            const lista = document.getElementById('lista-citas'); 
+            const citasCountEl = document.getElementById('citas-count');
+            const ingresoTotalEl = document.getElementById('ingreso-total');
+            lista.innerHTML = '';
+            
+            let totalServiciosMes = 0, totalIngresosMes = 0;
+            const eventos = [], ahora = new Date();
+            const mesActual = ahora.getMonth(), añoActual = ahora.getFullYear();
+
             if(data){
                 Object.keys(data).forEach(id => {
-                    const c = data[id];
+                    const c = data[id], fCita = new Date(c.fecha);
+                    
+                    if(c.estado === 'Finalizada' && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) {
+                        totalServiciosMes++;
+                        totalIngresosMes += parseFloat(c.precio || 0);
+                    }
+
                     eventos.push({ id, title: c.nombre, start: c.fecha, backgroundColor: c.estado==='Finalizada'?'#111':'#d4af37', extendedProps: { whatsapp: c.whatsapp } });
+
                     if(c.estado === 'Pendiente'){
                         const div = document.createElement('div'); div.className = 'card';
                         div.innerHTML = `<h4>${c.nombre}</h4><button class="btn btn-gold btn-mini" onclick="cambiarEstado('${id}','Finalizada')">FINALIZAR SERVICIO</button>`;
@@ -181,16 +207,18 @@
                     }
                 });
             }
+            citasCountEl.innerText = totalServiciosMes;
+            ingresoTotalEl.innerText = `Q${totalIngresosMes.toFixed(2)}`;
             calendar.removeAllEvents(); calendar.addEventSource(eventos);
         }
 
-        window.cambiarEstado = (id, est) => update(ref(db, `citas/${id}`), { estado: est }).then(() => showToast("CITA FINALIZADA"));
+        window.cambiarEstado = (id, est) => update(ref(db, `citas/${id}`), { estado: est }).then(() => showToast("FINALIZADO Y CONTABILIZADO"));
         window.cerrarModalAdd = () => document.getElementById('modalAddCita').style.display = 'none';
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
         
         document.getElementById('btn-save-cita-calendar').onclick = () => {
             const nom = document.getElementById('add-nombre').value, wa = iti.getNumber(), sKey = document.getElementById('add-servicio-select').value;
-            if(!nom || !sKey) return showToast("Faltan datos");
+            if(!nom || !sKey) return showToast("FALTAN DATOS");
             const s = catalogoGlobal[sKey];
             push(ref(db, 'citas'), { nombre: nom, whatsapp: wa, servicio: s.nombre, precio: s.precio, fecha: selectedDateTime, estado: "Pendiente" }).then(cerrarModalAdd);
         };
@@ -199,11 +227,11 @@
             const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value, d = document.getElementById('serv-d').value;
             if(n && p) push(ref(db, 'servicios'), { nombre: n, precio: p, detalle: d }).then(() => { 
                 document.getElementById('serv-n').value = ''; document.getElementById('serv-p').value = ''; document.getElementById('serv-d').value = '';
-                showToast("AGREGADO"); 
+                showToast("SERVICIO CREADO"); 
             });
         };
 
-        document.getElementById('btn-save-hours').onclick = () => set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value }).then(() => showToast("HORARIO ACTUALIZADO"));
+        document.getElementById('btn-save-hours').onclick = () => set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value }).then(() => showToast("HORARIO GUARDADO"));
 
         function renderServicios(servs){
             catalogoGlobal = servs;
