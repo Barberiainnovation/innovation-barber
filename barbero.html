@@ -67,8 +67,8 @@
         .btn-outline { background: transparent; border: 1px solid #444; color: #aaa; }
 
         .modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
-        .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; margin: auto; }
-        input, select { background:#000; color:#fff; border:1px solid #222; padding:14px; border-radius:12px; width:100%; margin-bottom:15px; box-sizing:border-box; font-family: 'Poppins', sans-serif; }
+        .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; margin: auto; max-height: 90vh; overflow-y: auto; }
+        input, select, textarea { background:#000; color:#fff; border:1px solid #222; padding:14px; border-radius:12px; width:100%; margin-bottom:15px; box-sizing:border-box; font-family: 'Poppins', sans-serif; font-size: 14px; }
         
         .iti { width: 100%; margin-bottom: 15px; text-align: left; }
         .iti__country-list { background: #0d0d0d; color: #fff; border: 1px solid var(--border); }
@@ -130,11 +130,27 @@
         <div id="modalConfig" class="modal">
             <div class="modal-content">
                 <h3 style="color:var(--gold); margin-top:0;">CONFIGURACIÓN</h3>
-                <input type="text" id="serv-n" placeholder="Nombre Servicio">
-                <input type="text" id="serv-p" placeholder="Precio (ej: 100)">
-                <button class="btn btn-gold" onclick="agregarServicio()">Añadir al Catálogo</button>
-                <div id="lista-servicios-admin" style="margin-top:20px; max-height:200px; overflow-y:auto; border-top: 1px solid #1a1a1a; padding-top:10px; text-align: left;"></div>
-                <button class="btn btn-outline" onclick="toggleConfig()">CERRAR</button>
+                
+                <div style="border: 1px solid #1a1a1a; padding: 15px; border-radius: 15px; margin-bottom: 20px; text-align: left;">
+                    <label style="font-size: 0.6rem; color: var(--gold); display: block; margin-bottom: 10px;">RANGO LABORAL (7-22)</label>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="cfg-apertura" style="margin-bottom:0;"></select>
+                        <select id="cfg-cierre" style="margin-bottom:0;"></select>
+                    </div>
+                    <button class="btn btn-gold" onclick="guardarHorario()" style="margin-top:10px; font-size: 0.55rem;">Actualizar Horario</button>
+                </div>
+
+                <div style="text-align: left;">
+                    <label style="font-size: 0.6rem; color: var(--gold); display: block; margin-bottom: 10px;">AÑADIR SERVICIO</label>
+                    <input type="text" id="serv-n" placeholder="Nombre del Servicio">
+                    <input type="text" id="serv-p" placeholder="Precio (Ej: 100)">
+                    <textarea id="serv-d" placeholder="¿Qué incluye? (Ej: Lavado, corte, bebida...)" style="height: 60px;"></textarea>
+                    <button class="btn btn-gold" onclick="agregarServicio()">Añadir al Catálogo</button>
+                </div>
+
+                <div id="lista-servicios-admin" style="margin-top:20px; max-height:150px; overflow-y:auto; border-top: 1px solid #1a1a1a; padding-top:10px; text-align: left;"></div>
+                
+                <button class="btn btn-outline" onclick="toggleConfig()" style="margin-top:20px;">CERRAR</button>
             </div>
         </div>
     </div>
@@ -153,6 +169,14 @@
         const provider = new GoogleAuthProvider();
         
         let calendar, selectedInfoManual = null, serviciosActuales = {}, iti;
+
+        // Poblar selects de horario en el modal
+        const apSel = document.getElementById('cfg-apertura');
+        const ciSel = document.getElementById('cfg-cierre');
+        for(let i=6; i<=22; i++) {
+            apSel.innerHTML += `<option value="${i}">${i}:00 AM</option>`;
+            ciSel.innerHTML += `<option value="${i}">${i > 12 ? (i-12)+':00 PM' : i+':00 PM'}</option>`;
+        }
 
         const inputTel = document.querySelector("#manual-whatsapp");
         iti = window.intlTelInput(inputTel, {
@@ -192,10 +216,27 @@
                         document.getElementById('login-overlay').style.display = 'none';
                         document.getElementById('admin-content').style.display = 'block';
                         initCalendar();
+                        cargarConfiguracion();
                     } else { signOut(auth); }
                 });
             }
         });
+
+        function cargarConfiguracion() {
+            onValue(ref(db, 'configuracion_horario'), (snap) => {
+                const d = snap.val();
+                if(d) {
+                    document.getElementById('cfg-apertura').value = d.apertura;
+                    document.getElementById('cfg-cierre').value = d.cierre;
+                }
+            });
+        }
+
+        window.guardarHorario = () => {
+            const ap = document.getElementById('cfg-apertura').value;
+            const ci = document.getElementById('cfg-cierre').value;
+            set(ref(db, 'configuracion_horario'), { apertura: ap, cierre: ci }).then(() => alert("Horario laboral actualizado."));
+        };
 
         function initCalendar() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
@@ -291,27 +332,38 @@
                 Object.keys(data).reverse().forEach(id => {
                     const c = data[id], f = new Date(c.fecha);
                     const pLimpio = limpiarPrecio(c.precio);
+                    
+                    // REQUISITO: ACEPTACIÓN AUTOMÁTICA
+                    if(c.estado === 'Pendiente') {
+                        update(ref(db, `citas/${id}`), { estado: 'Aceptada' });
+                    }
+
                     if(c.estado === 'Finalizada' && f.getMonth() === mesActual) {
                         totalIngresos += parseFloat(pLimpio) || 0;
                         contadorFinalizadas++;
                         statsServicios[c.servicio] = (statsServicios[c.servicio] || 0) + 1;
                     }
-                    eventos.push({ id: id, title: c.nombre, start: c.fecha, backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : (c.estado === 'Finalizada' ? '#111' : '#333'), borderColor: 'transparent' });
                     
-                    if(c.estado === 'Pendiente' || c.estado === 'Aceptada') {
+                    eventos.push({ 
+                        id: id, 
+                        title: c.nombre, 
+                        start: c.fecha, 
+                        backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : (c.estado === 'Finalizada' ? '#111' : '#333'), 
+                        borderColor: 'transparent' 
+                    });
+                    
+                    if(c.estado === 'Aceptada') {
                         const card = document.createElement('div'); card.className = 'card';
                         card.innerHTML = `
                             <div class="price-tag">Q${pLimpio}</div>
-                            <div style="font-size:0.55rem; color:var(--gold);">${c.estado}</div>
+                            <div style="font-size:0.55rem; color:var(--gold);">ACEPTADA AUTOMÁTICAMENTE</div>
                             <h3>${c.nombre}</h3>
                             <p style="font-size:0.7rem; color:#888;">${c.servicio} | ${f.toLocaleString()}</p>
-                            <button class="btn btn-gold" onclick="cambiarEstado('${id}', '${c.estado==='Pendiente'?'Aceptada':'Finalizada'}')">${c.estado==='Pendiente'?'ACEPTAR CITA':'FINALIZAR Y COBRAR'}</button>
-                            ${c.estado === 'Pendiente' ? `
-                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                                    <button class="btn btn-blue" onclick="gestionarCita('${id}', 'otro')">OTRO HORARIO</button>
-                                    <button class="btn btn-red" onclick="gestionarCita('${id}', 'cancelar')">RECHAZAR</button>
-                                </div>
-                            ` : ''}
+                            <button class="btn btn-gold" onclick="cambiarEstado('${id}', 'Finalizada')">FINALIZAR Y COBRAR</button>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                                <button class="btn btn-blue" onclick="gestionarCita('${id}', 'otro')">OTRO HORARIO</button>
+                                <button class="btn btn-red" onclick="gestionarCita('${id}', 'cancelar')">RECHAZAR</button>
+                            </div>
                         `;
                         lista.appendChild(card);
                     }
@@ -325,14 +377,28 @@
         }
 
         window.agregarServicio = () => {
-            const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value;
-            if(n && p) { push(ref(db, 'servicios'), { nombre: n, precio: p }); document.getElementById('serv-n').value=''; document.getElementById('serv-p').value=''; }
+            const n = document.getElementById('serv-n').value;
+            const p = document.getElementById('serv-p').value;
+            const d = document.getElementById('serv-d').value;
+            if(n && p) { 
+                push(ref(db, 'servicios'), { nombre: n, precio: p, descripcion: d || "Servicio Elite" }); 
+                document.getElementById('serv-n').value=''; 
+                document.getElementById('serv-p').value='';
+                document.getElementById('serv-d').value='';
+            }
         };
 
         function renderServicios(servs) {
             const div = document.getElementById('lista-servicios-admin'); div.innerHTML = '';
             if(servs) Object.keys(servs).forEach(id => {
-                div.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #1a1a1a; font-size: 0.75rem;"><span>${servs[id].nombre} (Q${servs[id].precio})</span><span style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"><i class="fas fa-trash"></i></span></div>`;
+                div.innerHTML += `
+                <div style="padding:10px; border-bottom:1px solid #1a1a1a;">
+                    <div style="display:flex; justify-content:space-between; font-size: 0.75rem;">
+                        <strong style="color:var(--gold);">${servs[id].nombre} (Q${servs[id].precio})</strong>
+                        <span style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"><i class="fas fa-trash"></i></span>
+                    </div>
+                    <div style="font-size:0.6rem; color:#888;">${servs[id].descripcion || ''}</div>
+                </div>`;
             });
         }
         window.eliminarServicio = (id) => remove(ref(db, `servicios/${id}`));
