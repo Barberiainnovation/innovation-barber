@@ -2,406 +2,194 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Innovation Admin</title>
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="InnoAdmin">
-    <meta name="mobile-web-app-capable" content="yes">
-    
-    <link rel="apple-touch-icon" href="logo negro.png">
-    <link rel="icon" type="image/png" href="logo negro.png">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Innovation Admin | Elite Control</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
-    
     <style>
-        :root { --bg: #000; --card: #0d0d0d; --gold: #d4af37; --border: #1a1a1a; --green: #2ecc71; --red: #ff4d4d; --blue: #3498db; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; scroll-behavior: smooth; }
+        :root { --bg: #000; --gold: #d4af37; --gold-l: #f1d592; --card: #111; --border: rgba(212, 175, 55, 0.2); }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; }
+        .container { max-width: 900px; margin: 0 auto; }
         
-        #login-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; align-items:center; justify-content:center; }
-        .login-box { width:320px; padding:40px; text-align:center; background:var(--card); border-radius:25px; border:1px solid var(--border); box-shadow: 0 10px 50px rgba(0,0,0,1); }
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 20px; text-align: center; }
+        .stat-card i { color: var(--gold); font-size: 1.5rem; margin-bottom: 10px; }
+        .stat-val { font-size: 1.4rem; font-weight: 600; display: block; }
+        .stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; }
 
-        #admin-content { display:none; width: 100%; max-width: 1200px; margin: 0 auto; padding-top: 20px; }
+        /* Estructura */
+        .admin-card { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 25px; margin-bottom: 25px; }
+        h3 { color: var(--gold); font-size: 1rem; margin-top: 0; letter-spacing: 1px; text-transform: uppercase; }
         
-        header { display: none; }
-
-        .btn-config-float { 
-            position: fixed; bottom: 20px; right: 20px; 
-            background: var(--gold); color: #000; 
-            width: 50px; height: 50px; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 1.5rem; border: none; cursor: pointer; z-index: 2000;
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
-        }
-
-        .main-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
-        @media (max-width: 950px) { .main-grid { grid-template-columns: 1fr; } }
-
-        .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 25px; height: fit-content; border-top: 4px solid var(--gold); position: sticky; top: 10px; }
-        .stat-card { text-align: center; margin-bottom: 20px; }
-        .stat-val { font-size: 2rem; font-weight: 600; color: var(--green); display: block; }
-        .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #666; letter-spacing: 1px; margin-bottom: 5px; display: block; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.65rem; color: var(--gold); margin-bottom: 5px; font-weight: 600; }
+        input, select, textarea { width: 100%; background: #000; border: 1px solid #333; padding: 12px; border-radius: 12px; color: #fff; outline: none; box-sizing: border-box; }
         
-        #servicios-stats { font-size: 0.75rem; color: #bbb; line-height: 1.8; margin: 15px 0; padding: 15px 0; border-top: 1px solid #1a1a1a; }
-        .total-highlight { background: rgba(46, 204, 113, 0.1); border: 1px solid var(--green); padding: 15px; border-radius: 12px; text-align: center; margin-top: 10px; }
-
-        #calendar-container { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; }
-        .fc { --fc-border-color: #1a1a1a; --fc-today-bg-color: rgba(212,175,55,0.05); font-size: 0.85rem; }
-        .fc-button { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; font-size: 0.6rem !important; text-transform: uppercase !important; }
-        .fc-button-active { background: var(--gold) !important; color: #000 !important; }
-        .fc-daygrid-day-number, .fc-col-header-cell-cushion { text-decoration: none !important; color: #fff !important; }
-
-        .citas-list { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; padding-bottom: 80px; }
-        .card { background: #080808; border: 1px solid var(--border); padding: 20px; border-radius: 18px; position: relative; border-left: 4px solid var(--gold); }
-        .card h3 { margin: 0 0 5px 0; font-size: 0.95rem; }
-        .price-tag { position: absolute; top: 20px; right: 20px; color: var(--gold); font-weight: bold; font-size: 0.9rem; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; margin-top: 10px; }
+        .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-l)); color: #000; }
         
-        .btn { width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; font-size: 0.65rem; margin-top: 10px; text-transform: uppercase; transition: 0.3s; }
-        .btn-gold { background: var(--gold); color: #000; }
-        .btn-red { background: transparent; border: 1px solid var(--red); color: var(--red); }
-        .btn-blue { background: transparent; border: 1px solid var(--blue); color: var(--blue); }
-        .btn-outline { background: transparent; border: 1px solid #444; color: #aaa; }
-
-        .modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
-        .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; margin: auto; max-height: 90vh; overflow-y: auto; }
-        input, select, textarea { background:#000; color:#fff; border:1px solid #222; padding:14px; border-radius:12px; width:100%; margin-bottom:15px; box-sizing:border-box; font-family: 'Poppins', sans-serif; font-size: 14px; }
-        
-        .iti { width: 100%; margin-bottom: 15px; text-align: left; }
-        .iti__country-list { background: #0d0d0d; color: #fff; border: 1px solid var(--border); }
+        /* Citas */
+        .citas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .cita-card { background: #1a1a1a; border-left: 4px solid var(--gold); padding: 15px; border-radius: 15px; }
+        .cita-info { font-size: 0.85rem; margin-bottom: 10px; line-height: 1.4; }
+        .service-tag { background: rgba(212,175,55,0.1); color: var(--gold); padding: 2px 8px; border-radius: 5px; font-size: 0.7rem; }
     </style>
 </head>
 <body>
 
-    <div id="login-overlay">
-        <div class="login-box">
-            <img src="logo.png" style="width: 70px; margin-bottom:15px;">
-            <h2 style="color:var(--gold); font-size:0.75rem; letter-spacing:2px; margin-bottom:25px;">INNOVATION BUSINESS</h2>
-            <button class="btn btn-gold" onclick="loginGoogle()" style="background:#fff;">Entrar con Google</button>
-            <button class="btn btn-outline" onclick="registrarNuevoAdmin()" style="border:1px solid var(--gold); color:var(--gold); margin-top:15px;">Registrarse</button>
+<div class="container">
+    <h2 style="text-align:center; letter-spacing:4px; color:var(--gold);">INNOVATION ADMIN</h2>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <i class="fas fa-wallet"></i>
+            <span class="stat-val" id="ingresos-total">Q0.00</span>
+            <span class="stat-label">Ingresos del Mes</span>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-calendar-check"></i>
+            <span class="stat-val" id="citas-count">0</span>
+            <span class="stat-label">Citas Hoy</span>
         </div>
     </div>
 
-    <div id="admin-content">
-        <button class="btn-config-float" onclick="toggleConfig()"><i class="fas fa-cog"></i></button>
-
-        <div class="main-grid">
-            <div id="calendar-container"><div id="calendar"></div></div>
-            <aside class="sidebar-stats">
-                <div class="stat-card">
-                    <span class="stat-label">Citas Finalizadas</span>
-                    <span class="stat-val" id="citas-count" style="color:var(--gold);">0</span>
-                </div>
-                <div id="servicios-stats"></div>
-                <div class="total-highlight">
-                    <span class="stat-label" style="color:var(--green);">Ingresos del Mes</span>
-                    <span class="stat-val" id="ingreso-total">Q0.00</span>
-                </div>
-            </aside>
-        </div>
-
-        <h2 style="font-size: 0.8rem; letter-spacing: 2px; color: var(--gold); margin-top: 40px;">GESTIÓN DE CITAS</h2>
-        <div class="citas-list" id="lista-citas"></div>
-
-        <div id="modalEvento" class="modal">
-            <div class="modal-content">
-                <h3 id="pop-nombre" style="margin-top:0; color:var(--gold);">Cliente</h3>
-                <p id="pop-fecha" style="font-size:0.8rem; color:#888;"></p>
-                <button class="btn btn-red" id="btn-eliminar-pop">ELIMINAR CITA</button>
-                <button class="btn btn-outline" onclick="cerrarPop()">CERRAR</button>
+    <div class="admin-card">
+        <h3><i class="fas fa-clock"></i> Horario Laboral</h3>
+        <div style="display: flex; gap: 10px; margin-bottom:10px;">
+            <div style="flex:1">
+                <label>Apertura</label>
+                <select id="apertura-admin"></select>
+            </div>
+            <div style="flex:1">
+                <label>Cierre</label>
+                <select id="cierre-admin"></select>
             </div>
         </div>
-
-        <div id="modalManual" class="modal">
-            <div class="modal-content">
-                <h3 style="color:var(--gold); margin-top:0;">NUEVA CITA MANUAL</h3>
-                <p id="manual-fecha-texto" style="font-size:0.7rem; color:#888; margin-bottom:15px;"></p>
-                <input type="text" id="manual-nombre" placeholder="Nombre del Cliente">
-                <input type="tel" id="manual-whatsapp" placeholder="Número de WhatsApp">
-                <select id="manual-servicio"></select>
-                <button class="btn btn-gold" id="btn-guardar-manual">GUARDAR Y CONFIRMAR</button>
-                <button class="btn btn-outline" onclick="document.getElementById('modalManual').style.display='none'">CANCELAR</button>
-            </div>
-        </div>
-
-        <div id="modalConfig" class="modal">
-            <div class="modal-content">
-                <h3 style="color:var(--gold); margin-top:0;">CONFIGURACIÓN</h3>
-                
-                <div style="border: 1px solid #1a1a1a; padding: 15px; border-radius: 15px; margin-bottom: 20px; text-align: left;">
-                    <label style="font-size: 0.6rem; color: var(--gold); display: block; margin-bottom: 10px;">RANGO LABORAL (7-22)</label>
-                    <div style="display: flex; gap: 10px;">
-                        <select id="cfg-apertura" style="margin-bottom:0;"></select>
-                        <select id="cfg-cierre" style="margin-bottom:0;"></select>
-                    </div>
-                    <button class="btn btn-gold" onclick="guardarHorario()" style="margin-top:10px; font-size: 0.55rem;">Actualizar Horario</button>
-                </div>
-
-                <div style="text-align: left;">
-                    <label style="font-size: 0.6rem; color: var(--gold); display: block; margin-bottom: 10px;">AÑADIR SERVICIO</label>
-                    <input type="text" id="serv-n" placeholder="Nombre del Servicio">
-                    <input type="text" id="serv-p" placeholder="Precio (Ej: 100)">
-                    <textarea id="serv-d" placeholder="¿Qué incluye? (Ej: Lavado, corte, bebida...)" style="height: 60px;"></textarea>
-                    <button class="btn btn-gold" onclick="agregarServicio()">Añadir al Catálogo</button>
-                </div>
-
-                <div id="lista-servicios-admin" style="margin-top:20px; max-height:150px; overflow-y:auto; border-top: 1px solid #1a1a1a; padding-top:10px; text-align: left;"></div>
-                
-                <button class="btn btn-outline" onclick="toggleConfig()" style="margin-top:20px;">CERRAR</button>
-            </div>
-        </div>
+        <button class="btn btn-gold" onclick="guardarHorario()">Actualizar Horario</button>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+    <div class="admin-card">
+        <h3><i class="fas fa-list"></i> Gestión de Citas</h3>
+        <div id="grid-citas" class="citas-grid"></div>
+    </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, set, get, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    <div class="admin-card">
+        <h3><i class="fas fa-cut"></i> Catálogo de Servicios</h3>
+        <div class="form-group">
+            <input type="text" id="serv-nombre" placeholder="Nombre (Ej: Fade + Barba)">
+            <input type="number" id="serv-precio" placeholder="Precio (Ej: 125)" style="margin-top:10px;">
+            <textarea id="serv-detalle" placeholder="¿Qué incluye?" style="margin-top:10px;"></textarea>
+            <button class="btn btn-gold" onclick="agregarServicio()">Añadir Servicio</button>
+        </div>
+        <div id="lista-servicios"></div>
+    </div>
+</div>
 
-        const firebaseConfig = { apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", authDomain: "innovation-barber-studio.firebaseapp.com", projectId: "innovation-barber-studio", databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
-        const provider = new GoogleAuthProvider();
-        
-        let calendar, selectedInfoManual = null, serviciosActuales = {}, iti;
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // Poblar selects de horario en el modal
-        const apSel = document.getElementById('cfg-apertura');
-        const ciSel = document.getElementById('cfg-cierre');
-        for(let i=6; i<=22; i++) {
-            apSel.innerHTML += `<option value="${i}">${i}:00 AM</option>`;
-            ciSel.innerHTML += `<option value="${i}">${i > 12 ? (i-12)+':00 PM' : i+':00 PM'}</option>`;
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", 
+        authDomain: "innovation-barber-studio.firebaseapp.com", 
+        projectId: "innovation-barber-studio", 
+        databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" 
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // --- 1. LLENAR HORAS ---
+    const fillHours = () => {
+        const ap = document.getElementById('apertura-admin');
+        const ci = document.getElementById('cierre-admin');
+        for(let h=0; h<=23; h++){
+            let lbl = h === 0 ? "12 AM" : h === 12 ? "12 PM" : h > 12 ? `${h-12} PM` : `${h} AM`;
+            let opt = `<option value="${h}">${lbl}</option>`;
+            ap.innerHTML += opt; ci.innerHTML += opt;
         }
+    }
+    fillHours();
 
-        const inputTel = document.querySelector("#manual-whatsapp");
-        iti = window.intlTelInput(inputTel, {
-            initialCountry: "gt",
-            preferredCountries: ["gt"],
-            separateDialCode: true,
-            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
-        });
+    // --- 2. FINANZAS (CALCULAR INGRESOS) ---
+    onValue(ref(db, 'finanzas'), (snap) => {
+        let total = 0;
+        snap.forEach(f => { total += parseFloat(f.val().monto || 0); });
+        document.getElementById('ingresos-total').innerText = `Q${total.toFixed(2)}`;
+    });
 
-        const limpiarPrecio = (p) => String(p || 0).replace(/Q/g, '').trim();
-
-        window.loginGoogle = () => signInWithPopup(auth, provider);
-        
-        window.registrarNuevoAdmin = () => {
-            signInWithPopup(auth, provider).then((result) => {
-                const user = result.user;
-                set(ref(db, 'solicitudes_acceso/' + user.uid), {
-                    nombre: user.displayName, correo: user.email, fecha: new Date().toLocaleString(), estado: 'pendiente'
-                }).then(() => {
-                    alert("Solicitud enviada.");
-                    signOut(auth).then(() => location.reload());
-                });
-            }).catch((error) => alert("Error: " + error.message));
-        };
-
-        window.logout = () => signOut(auth).then(() => location.reload());
-        window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
-        window.toggleConfig = () => {
-            const m = document.getElementById('modalConfig');
-            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
-        };
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                get(ref(db, 'admins_autorizados/' + user.uid)).then(snap => {
-                    if (snap.exists()) {
-                        document.getElementById('login-overlay').style.display = 'none';
-                        document.getElementById('admin-content').style.display = 'block';
-                        initCalendar();
-                        cargarConfiguracion();
-                    } else { signOut(auth); }
-                });
-            }
-        });
-
-        function cargarConfiguracion() {
-            onValue(ref(db, 'configuracion_horario'), (snap) => {
-                const d = snap.val();
-                if(d) {
-                    document.getElementById('cfg-apertura').value = d.apertura;
-                    document.getElementById('cfg-cierre').value = d.cierre;
-                }
-            });
-        }
-
-        window.guardarHorario = () => {
-            const ap = document.getElementById('cfg-apertura').value;
-            const ci = document.getElementById('cfg-cierre').value;
-            set(ref(db, 'configuracion_horario'), { apertura: ap, cierre: ci }).then(() => alert("Horario laboral actualizado."));
-        };
-
-        function initCalendar() {
-            calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'dayGridMonth', locale: 'es', firstDay: 1,
-                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
-                buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
-                navLinks: true,
-                navLinkDayClick: (date) => { calendar.changeView('timeGridDay', date); },
-                eventClick: (info) => {
-                    const id = info.event.id;
-                    document.getElementById('pop-nombre').innerText = info.event.title;
-                    document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString();
-                    document.getElementById('modalEvento').style.display = 'flex';
-                    document.getElementById('btn-eliminar-pop').onclick = () => { remove(ref(db, `citas/${id}`)); cerrarPop(); };
-                },
-                selectable: true,
-                select: (info) => {
-                    const vistaActual = calendar.view.type;
-                    if (vistaActual === 'timeGridWeek' || vistaActual === 'timeGridDay') {
-                        selectedInfoManual = info;
-                        document.getElementById('manual-fecha-texto').innerText = new Date(info.startStr).toLocaleString();
-                        const selectS = document.getElementById('manual-servicio');
-                        selectS.innerHTML = '';
-                        Object.keys(serviciosActuales).forEach(id => {
-                            selectS.innerHTML += `<option value="${id}">${serviciosActuales[id].nombre} (Q${serviciosActuales[id].precio})</option>`;
-                        });
-                        document.getElementById('manual-nombre').value = '';
-                        document.getElementById('manual-whatsapp').value = '';
-                        document.getElementById('modalManual').style.display = 'flex';
-                    } else { calendar.changeView('timeGridDay', info.start); }
-                    calendar.unselect();
-                }
-            });
-            calendar.render();
-            onValue(ref(db, 'citas'), snap => renderAdmin(snap.val()));
-            onValue(ref(db, 'servicios'), snap => {
-                serviciosActuales = snap.val() || {};
-                renderServicios(serviciosActuales);
-            });
-        }
-
-        window.gestionarCita = (id, accion) => {
-            get(ref(db, `citas/${id}`)).then(s => {
-                const c = s.val();
-                if (!c) return;
-                let msg = accion === 'cancelar' ? "Tu cita no ha sido aceptada, agenda llena" : "Este horario ya ha sido ocupado, ¿gustas agendar en otro horario?";
-                if(c.whatsapp && c.whatsapp !== "N/A") {
-                    window.open(`https://wa.me/${c.whatsapp.replace('+', '')}?text=${encodeURIComponent(msg)}`);
-                }
-                remove(ref(db, `citas/${id}`));
-            });
-        };
-
-        window.cambiarEstado = (id, est) => {
-            get(ref(db, `citas/${id}`)).then(s => {
-                const c = s.val();
-                if(!c) return;
-                if(est === 'Aceptada' && c.whatsapp !== "N/A") {
-                    const f = new Date(c.fecha);
-                    const msg = `¡Hola ${c.nombre}! Tu cita en INNOVATION Barber Studio ha sido aceptada para el ${f.toLocaleDateString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' })}. ¡Te esperamos!`;
-                    window.open(`https://wa.me/${c.whatsapp.replace('+', '')}?text=${encodeURIComponent(msg)}`);
-                }
-                update(ref(db, `citas/${id}`), { estado: est });
-            });
-        };
-
-        document.getElementById('btn-guardar-manual').onclick = () => {
-            const nombre = document.getElementById('manual-nombre').value;
-            const fullWhatsapp = iti.getNumber().replace('+', '');
-            const servicioKey = document.getElementById('manual-servicio').value;
-            const serv = serviciosActuales[servicioKey];
-            if(nombre && selectedInfoManual && serv) {
-                const nuevaCita = { 
-                    nombre: nombre + " (M)", servicio: serv.nombre, whatsapp: fullWhatsapp || "N/A", 
-                    fecha: selectedInfoManual.startStr.slice(0,16), estado: 'Aceptada', precio: serv.precio 
-                };
-                push(ref(db, 'citas'), nuevaCita).then(() => {
-                    document.getElementById('modalManual').style.display = 'none';
-                    if(fullWhatsapp && fullWhatsapp !== "N/A") {
-                        const f = new Date(nuevaCita.fecha);
-                        const msg = `¡Hola ${nombre}! Tu cita en INNOVATION Barber Studio ha sido aceptada para el ${f.toLocaleDateString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' })}. ¡Te esperamos!`;
-                        window.open(`https://wa.me/${fullWhatsapp}?text=${encodeURIComponent(msg)}`);
-                    }
-                });
-            }
-        };
-
-        function renderAdmin(data) {
-            const lista = document.getElementById('lista-citas'); lista.innerHTML = '';
-            const eventos = []; let totalIngresos = 0, contadorFinalizadas = 0;
-            const statsServicios = {}, mesActual = new Date().getMonth();
-            if(data) {
-                Object.keys(data).reverse().forEach(id => {
-                    const c = data[id], f = new Date(c.fecha);
-                    const pLimpio = limpiarPrecio(c.precio);
-                    
-                    // REQUISITO: ACEPTACIÓN AUTOMÁTICA
-                    if(c.estado === 'Pendiente') {
-                        update(ref(db, `citas/${id}`), { estado: 'Aceptada' });
-                    }
-
-                    if(c.estado === 'Finalizada' && f.getMonth() === mesActual) {
-                        totalIngresos += parseFloat(pLimpio) || 0;
-                        contadorFinalizadas++;
-                        statsServicios[c.servicio] = (statsServicios[c.servicio] || 0) + 1;
-                    }
-                    
-                    eventos.push({ 
-                        id: id, 
-                        title: c.nombre, 
-                        start: c.fecha, 
-                        backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : (c.estado === 'Finalizada' ? '#111' : '#333'), 
-                        borderColor: 'transparent' 
-                    });
-                    
-                    if(c.estado === 'Aceptada') {
-                        const card = document.createElement('div'); card.className = 'card';
-                        card.innerHTML = `
-                            <div class="price-tag">Q${pLimpio}</div>
-                            <div style="font-size:0.55rem; color:var(--gold);">ACEPTADA AUTOMÁTICAMENTE</div>
-                            <h3>${c.nombre}</h3>
-                            <p style="font-size:0.7rem; color:#888;">${c.servicio} | ${f.toLocaleString()}</p>
-                            <button class="btn btn-gold" onclick="cambiarEstado('${id}', 'Finalizada')">FINALIZAR Y COBRAR</button>
-                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                                <button class="btn btn-blue" onclick="gestionarCita('${id}', 'otro')">OTRO HORARIO</button>
-                                <button class="btn btn-red" onclick="gestionarCita('${id}', 'cancelar')">RECHAZAR</button>
-                            </div>
-                        `;
-                        lista.appendChild(card);
-                    }
-                });
-            }
-            document.getElementById('ingreso-total').innerText = `Q${totalIngresos.toFixed(2)}`;
-            document.getElementById('citas-count').innerText = contadorFinalizadas;
-            const sDiv = document.getElementById('servicios-stats'); sDiv.innerHTML = '<strong>Servicios del Mes:</strong>';
-            for(let s in statsServicios) sDiv.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:0.7rem;"><span>${s}</span> <span>${statsServicios[s]}</span></div>`;
-            if(calendar) { calendar.removeAllEvents(); calendar.addEventSource(eventos); }
-        }
-
-        window.agregarServicio = () => {
-            const n = document.getElementById('serv-n').value;
-            const p = document.getElementById('serv-p').value;
-            const d = document.getElementById('serv-d').value;
-            if(n && p) { 
-                push(ref(db, 'servicios'), { nombre: n, precio: p, descripcion: d || "Servicio Elite" }); 
-                document.getElementById('serv-n').value=''; 
-                document.getElementById('serv-p').value='';
-                document.getElementById('serv-d').value='';
-            }
-        };
-
-        function renderServicios(servs) {
-            const div = document.getElementById('lista-servicios-admin'); div.innerHTML = '';
-            if(servs) Object.keys(servs).forEach(id => {
-                div.innerHTML += `
-                <div style="padding:10px; border-bottom:1px solid #1a1a1a;">
-                    <div style="display:flex; justify-content:space-between; font-size: 0.75rem;">
-                        <strong style="color:var(--gold);">${servs[id].nombre} (Q${servs[id].precio})</strong>
-                        <span style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"><i class="fas fa-trash"></i></span>
+    // --- 3. GESTIÓN DE CITAS (CON COBRO) ---
+    onValue(ref(db, 'citas'), (snap) => {
+        const grid = document.getElementById('grid-citas');
+        grid.innerHTML = "";
+        let count = 0;
+        snap.forEach(child => {
+            const c = child.val();
+            count++;
+            grid.innerHTML += `
+                <div class="cita-card">
+                    <div style="font-weight:600; font-size:1rem; margin-bottom:5px;">${c.nombre}</div>
+                    <div class="cita-info">
+                        <span class="service-tag">${c.servicio}</span><br>
+                        <small><i class="fas fa-clock"></i> ${c.fecha}</small><br>
+                        <small><i class="fab fa-whatsapp"></i> ${c.whatsapp}</small>
                     </div>
-                    <div style="font-size:0.6rem; color:#888;">${servs[id].descripcion || ''}</div>
+                    <button class="btn btn-gold" onclick="finalizarCobrar('${child.key}', ${c.precio})">
+                        Finalizar (Q${c.precio})
+                    </button>
                 </div>`;
-            });
+        });
+        document.getElementById('citas-count').innerText = count;
+    });
+
+    window.finalizarCobrar = (id, monto) => {
+        if(confirm(`¿Finalizar y registrar cobro de Q${monto}?`)){
+            // Guardar en finanzas
+            push(ref(db, 'finanzas'), { monto: monto, fecha: new Date().toISOString() });
+            // Borrar de citas
+            remove(ref(db, `citas/${id}`));
         }
-        window.eliminarServicio = (id) => remove(ref(db, `servicios/${id}`));
-    </script>
+    };
+
+    // --- 4. CONFIGURACIONES (HORARIO Y SERVICIOS) ---
+    onValue(ref(db, 'configuracion_horario'), s => {
+        if(s.val()){
+            document.getElementById('apertura-admin').value = s.val().apertura;
+            document.getElementById('cierre-admin').value = s.val().cierre;
+        }
+    });
+
+    window.guardarHorario = () => {
+        set(ref(db, 'configuracion_horario'), {
+            apertura: document.getElementById('apertura-admin').value,
+            cierre: document.getElementById('cierre-admin').value
+        }).then(() => alert("Horario actualizado"));
+    };
+
+    window.agregarServicio = () => {
+        const n = document.getElementById('serv-nombre').value;
+        const p = document.getElementById('serv-precio').value;
+        const d = document.getElementById('serv-detalle').value;
+        if(n && p) push(ref(db, 'servicios'), { nombre: n, precio: p, descripcion: d }).then(() => {
+            document.getElementById('serv-nombre').value = "";
+            document.getElementById('serv-precio').value = "";
+            document.getElementById('serv-detalle').value = "";
+        });
+    };
+
+    onValue(ref(db, 'servicios'), snap => {
+        const list = document.getElementById('lista-servicios');
+        list.innerHTML = "";
+        snap.forEach(s => {
+            const d = s.val();
+            list.innerHTML += `<div style="padding:10px; border-bottom:1px solid #222; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.8rem;"><b>${d.nombre}</b> (Q${d.precio})</span>
+                <button onclick="eliminarServicio('${s.key}')" style="background:none; border:none; color:red; cursor:pointer;"><i class="fas fa-trash"></i></button>
+            </div>`;
+        });
+    });
+
+    window.eliminarServicio = id => { if(confirm("¿Eliminar?")) remove(ref(db, `servicios/${id}`)); };
+</script>
 </body>
 </html>
