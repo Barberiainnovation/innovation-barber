@@ -30,10 +30,8 @@
         #calendar-container { background: var(--card); padding: 20px; border-radius: 35px; border: 1px solid var(--border); }
         .fc { --fc-border-color: #161616; --fc-today-bg-color: rgba(212,175,55,0.02); font-size: 0.8rem; }
         .fc .fc-toolbar-title { font-size: 1rem !important; text-transform: uppercase; color: var(--gold); font-weight: 600; }
-        .fc-timegrid-slot { height: 1.5em !important; border-bottom: 1px solid #111 !important; }
         
-        .fc-v-event { border: none !important; border-radius: 6px !important; }
-        .fc-event-main { font-weight: 600; font-size: 0.85rem !important; line-height: 1.1; display: flex; align-items: center; padding-left: 5px; }
+        .fc-event-main { font-weight: 600; font-size: 0.75rem !important; line-height: 1.1; display: flex; align-items: center; padding: 2px 5px; white-space: normal !important; }
 
         .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 35px; padding: 30px; border-top: 5px solid var(--gold); position: sticky; top: 15px; height: fit-content; }
         .sidebar-logo { width: 90px; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(212,175,55,0.15)); }
@@ -41,18 +39,20 @@
         .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #555; letter-spacing: 2px; }
         
         .citas-list { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 320px)); gap: 15px; padding-bottom: 100px; justify-content: start; }
-        .card { background: #060606; border: 1px solid var(--border); padding: 12px 18px; border-radius: 18px; border-left: 3px solid var(--gold); display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
+        .card { background: #060606; border: 1px solid var(--border); padding: 10px 15px; border-radius: 18px; border-left: 3px solid var(--gold); display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
         
         .card.finalizada { border-left-color: #333; opacity: 0.4; background: #050505; }
         .card.finalizada h4 { color: #555; text-decoration: line-through; }
         .card.finalizada .btn-mini { display: none; }
 
-        .card h4 { margin: 0; font-size: 0.82rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; }
-        .btn-mini { width: auto; padding: 8px 12px; border-radius: 10px; font-size: 0.55rem; margin: 0; white-space: nowrap; font-weight: 700; }
+        .card h4 { margin: 0; font-size: 0.75rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+        
+        /* BOTÓN FINALIZAR PEQUEÑO */
+        .btn-mini { width: auto; padding: 5px 10px; border-radius: 8px; font-size: 0.55rem; margin: 0; font-weight: 700; background: var(--green); color: #000; border: none; cursor: pointer; }
 
         .modal { display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.94); backdrop-filter: blur(12px); align-items: center; justify-content: center; z-index: 10000; }
         .modal-content { background: var(--glass); padding:35px; border: 1px solid var(--gold); width:90%; max-width:380px; border-radius:40px; text-align: center; }
-        input, select, textarea { background: rgba(255,255,255,0.03); color:#fff; border:1px solid #1a1a1a; padding:15px; border-radius:18px; width:100%; margin-bottom:12px; outline: none; font-family: 'Poppins'; box-sizing: border-box; }
+        input, select, textarea { background: rgba(255,255,255,0.03); color:#fff; border:1px solid #1a1a1a; padding:12px; border-radius:15px; width:100%; margin-bottom:10px; outline: none; font-family: 'Poppins'; box-sizing: border-box; font-size: 0.8rem; }
         
         .btn { width: 100%; padding: 16px; border-radius: 18px; font-weight: 700; cursor: pointer; border: none; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; }
         .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #000; }
@@ -60,14 +60,9 @@
         .btn-red { background: rgba(255, 77, 77, 0.1); border: 1px solid var(--red); color: var(--red); }
         .btn-config-float { position: fixed; bottom: 30px; right: 30px; background: var(--gold); color: #000; width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; z-index: 5000; border:none; cursor:pointer; }
         
-        .serv-item-admin { display:flex; justify-content:space-between; padding:10px; font-size:0.7rem; border-bottom:1px solid #1a1a1a; align-items:center; }
         #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 14px 40px; border-radius: 50px; font-weight: 700; z-index: 11000; transition: 0.6s; }
         #toast.show { bottom: 40px; }
-        
         .block-item { background: rgba(255, 77, 77, 0.1); padding: 8px 12px; border-radius: 12px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; border: 1px solid rgba(255, 77, 77, 0.2); }
-        
-        .flatpickr-calendar { background: #0a0a0a !important; border: 1px solid var(--gold) !important; box-shadow: 0 0 20px rgba(212,175,55,0.2) !important; }
-        .flatpickr-day.selected { background: var(--gold) !important; border-color: var(--gold) !important; color: #000 !important; }
     </style>
 </head>
 <body>
@@ -93,40 +88,46 @@
         </div>
         <div class="citas-list" id="lista-citas"></div>
 
-        <div id="modalAddCita" class="modal"><div class="modal-content"><h3 style="color:var(--gold);">NUEVA CITA</h3><p id="add-fecha-display" style="font-size: 0.8rem; color: #666;"></p><input type="text" id="add-nombre" placeholder="Nombre Cliente"><input type="tel" id="add-whatsapp-input"><select id="add-servicio-select"></select><button class="btn btn-gold" id="btn-save-cita-calendar">AGENDAR</button><button class="btn btn-outline" onclick="cerrarModalAdd()">CANCELAR</button></div></div>
+        <div id="modalAddCita" class="modal">
+            <div class="modal-content">
+                <h3 style="color:var(--gold);">NUEVA CITA</h3>
+                <p id="add-fecha-display" style="font-size: 0.8rem; color: #666;"></p>
+                <input type="text" id="add-nombre" placeholder="Nombre Cliente">
+                <input type="tel" id="add-whatsapp-input">
+                <select id="add-servicio-select"></select>
+                <textarea id="add-nota" placeholder="Nota especial (ej. Barba larga, solo tijera)" rows="2"></textarea>
+                <button class="btn btn-gold" id="btn-save-cita-calendar">AGENDAR</button>
+                <button class="btn btn-outline" onclick="cerrarModalAdd()">CANCELAR</button>
+            </div>
+        </div>
         
-        <div id="modalEvento" class="modal"><div class="modal-content"><h3 id="pop-nombre" style="color:var(--gold);">Cita</h3><p id="pop-fecha" style="font-size:0.8rem; color:#555;"></p><div id="pop-whatsapp" style="font-size:0.9rem; color:var(--green); font-weight:600; cursor:pointer; background:rgba(46, 204, 113, 0.05); padding:18px; border-radius:20px; margin-bottom:20px;"><i class="fab fa-whatsapp"></i> RECORDATORIO</div><div style="display:flex; gap:12px;"><button class="btn btn-red" id="btn-eliminar-pop" style="flex:1;">BORRAR</button><button class="btn btn-outline" onclick="cerrarPop()" style="flex:1; margin:0;">CERRAR</button></div></div></div>
+        <div id="modalEvento" class="modal">
+            <div class="modal-content">
+                <h3 id="pop-nombre" style="color:var(--gold);">Cita</h3>
+                <p id="pop-fecha" style="font-size:0.8rem; color:#555;"></p>
+                <p id="pop-nota" style="font-size:0.85rem; color:#aaa; font-style: italic; margin-bottom: 15px;"></p>
+                <div id="pop-whatsapp" style="font-size:0.9rem; color:var(--green); font-weight:600; cursor:pointer; background:rgba(46, 204, 113, 0.05); padding:18px; border-radius:20px; margin-bottom:20px;"><i class="fab fa-whatsapp"></i> RECORDATORIO</div>
+                <div style="display:flex; gap:12px;"><button class="btn btn-red" id="btn-eliminar-pop" style="flex:1;">BORRAR</button><button class="btn btn-outline" onclick="cerrarPop()" style="flex:1; margin:0;">CERRAR</button></div>
+            </div>
+        </div>
 
         <div id="modalConfig" class="modal"><div class="modal-content" style="max-width: 420px; max-height: 90vh; overflow-y: auto;">
             <h3 style="color:var(--gold);">CONFIGURACIÓN</h3>
-            
             <p style="font-size: 0.7rem; color: #555;">HORARIO LABORAL</p>
-            <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <select id="config-apertura"></select>
-                <select id="config-cierre"></select>
-            </div>
-
+            <div style="display:flex; gap:10px; margin-bottom:10px;"><select id="config-apertura"></select><select id="config-cierre"></select></div>
             <p style="font-size: 0.7rem; color: #555; margin-top: 15px;">HORARIO DE ALMUERZO (LUNCH)</p>
-            <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <select id="lunch-inicio"><option value="">Sin lunch</option></select>
-                <select id="lunch-fin"><option value="">Sin lunch</option></select>
-            </div>
-            
+            <div style="display:flex; gap:10px; margin-bottom:10px;"><select id="lunch-inicio"><option value="">Sin lunch</option></select><select id="lunch-fin"><option value="">Sin lunch</option></select></div>
             <button class="btn btn-gold" id="btn-save-hours">GUARDAR HORARIO</button>
-            
             <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
             <p style="font-size: 0.7rem; color: #555;">BLOQUEAR DÍA ESPECÍFICO</p>
-            
             <input type="text" id="input-block-date" placeholder="Toca para elegir fecha" readonly style="cursor:pointer; border:1px solid var(--gold); text-align: center;">
-            <button class="btn btn-gold" id="btn-add-block" style="margin-top:5px;">BLOQUEAR DÍA SELECCIONADO</button>
-            
+            <button class="btn btn-gold" id="btn-add-block" style="margin-top:5px;">BLOQUEAR DÍA</button>
             <div id="lista-bloqueos-admin" style="margin-top:15px; text-align: left;"></div>
-
             <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
             <p style="font-size: 0.7rem; color: #555;">GESTIÓN DE SERVICIOS</p>
             <input type="text" id="serv-n" placeholder="Nombre Servicio">
             <input type="number" id="serv-p" placeholder="Precio (Q)">
-            <textarea id="serv-d" placeholder="¿Qué incluye el servicio?" rows="2"></textarea>
+            <textarea id="serv-d" placeholder="¿Qué incluye?" rows="2"></textarea>
             <button class="btn btn-gold" id="btn-add-serv">AÑADIR SERVICIO</button>
             <div id="lista-servicios-admin" style="margin-top:20px; background: #050505; border-radius: 15px;"></div>
             <button class="btn btn-outline" onclick="toggleConfig()">SALIR</button>
@@ -153,7 +154,6 @@
         let calendar, selectedDateTime = null, catalogoGlobal = {}, iti, fpBlock;
 
         iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { initialCountry: "gt", separateDialCode: true });
-
         fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d", disableMobile: true });
 
         window.showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
@@ -161,17 +161,10 @@
 
         const apS = document.getElementById('config-apertura'), ciS = document.getElementById('config-cierre');
         const lIn = document.getElementById('lunch-inicio'), lFi = document.getElementById('lunch-fin');
-
-        for(let h=0; h<=23; h++){ 
-            const opt = `<option value="${h}">${h}:00</option>`;
-            apS.innerHTML += opt; ciS.innerHTML += opt; 
-            lIn.innerHTML += opt; lFi.innerHTML += opt;
-        }
+        for(let h=0; h<=23; h++){ const opt = `<option value="${h}">${h}:00</option>`; apS.innerHTML += opt; ciS.innerHTML += opt; lIn.innerHTML += opt; lFi.innerHTML += opt; }
 
         window.loginGoogle = () => signInWithPopup(auth, provider);
         window.toggleConfig = () => { const m = document.getElementById('modalConfig'); m.style.display = (m.style.display==='flex') ? 'none' : 'flex'; };
-        window.eliminarServicio = (id) => confirmarAccion("¿Eliminar servicio?", () => remove(ref(db, `servicios/${id}`)).then(() => showToast("ELIMINADO")));
-
         onAuthStateChanged(auth, (u) => { if(u){ document.getElementById('login-overlay').style.display='none'; document.getElementById('admin-content').style.display='block'; initDashboard(); } });
 
         function initDashboard() {
@@ -190,6 +183,7 @@
                     const fTxt = info.event.start.toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
                     document.getElementById('pop-nombre').innerText = nombre;
                     document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString('es-GT');
+                    document.getElementById('pop-nota').innerText = meta.nota ? `Nota: ${meta.nota}` : "";
                     document.getElementById('pop-whatsapp').onclick = () => {
                         const msg = encodeURIComponent(`Hola ${nombre}, te saludamos de Innovation Barber Studio. Te recordamos tu cita para el día ${fTxt}. ¡Te esperamos!`);
                         window.open(`https://wa.me/${meta.whatsapp.replace(/\D/g,'')}?text=${msg}`);
@@ -205,7 +199,6 @@
                 if(config){ 
                     calendar.setOption('slotMinTime', config.apertura.padStart(2,'0')+':00:00'); calendar.setOption('slotMaxTime', config.cierre.padStart(2,'0')+':00:00');
                     apS.value = config.apertura; ciS.value = config.cierre;
-                    lIn.value = config.lunch_inicio || ""; lFi.value = config.lunch_fin || "";
                 } 
             });
 
@@ -227,9 +220,14 @@
                 Object.keys(data).sort((a,b) => new Date(data[a].fecha) - new Date(data[b].fecha)).forEach(id => {
                     const c = data[id], fCita = new Date(c.fecha), isFinalizada = c.estado === 'Finalizada';
                     if(isFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) { tMes++; iMes += parseFloat(c.precio || 0); }
-                    eventos.push({ id, title: c.nombre, start: c.fecha, backgroundColor: isFinalizada ? '#333333' : '#d4af37', textColor: isFinalizada ? '#777777' : '#000000', extendedProps: { whatsapp: c.whatsapp } });
+                    
+                    // MOSTRAR NOTA EN TÍTULO DEL CALENDARIO
+                    const titulo = c.nota ? `${c.nombre} (${c.nota})` : c.nombre;
+                    
+                    eventos.push({ id, title: titulo, start: c.fecha, backgroundColor: isFinalizada ? '#333333' : '#d4af37', textColor: isFinalizada ? '#777777' : '#000000', extendedProps: { whatsapp: c.whatsapp, nota: c.nota } });
+                    
                     const div = document.createElement('div'); div.className = `card ${isFinalizada ? 'finalizada' : ''}`;
-                    div.innerHTML = `<h4>${c.nombre}</h4><button class="btn btn-gold btn-mini" onclick="cambiarEstado('${id}','Finalizada')">FINALIZAR</button>`;
+                    div.innerHTML = `<h4>${c.nombre}</h4><button class="btn-mini" onclick="cambiarEstado('${id}','Finalizada')">FINALIZAR</button>`;
                     lista.appendChild(div);
                 });
             }
@@ -238,51 +236,21 @@
         }
 
         window.cambiarEstado = (id, est) => update(ref(db, `citas/${id}`), { estado: est }).then(() => showToast("FINALIZADO"));
-        window.cerrarModalAdd = () => document.getElementById('modalAddCita').style.display = 'none';
+        window.cerrarModalAdd = () => { document.getElementById('modalAddCita').style.display = 'none'; document.getElementById('add-nota').value = ''; };
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
         
-        // LÓGICA DE BLOQUEO CORREGIDA
-        document.getElementById('btn-add-block').onclick = () => {
-            const fechaFinal = document.getElementById('input-block-date').value;
-            if(fechaFinal && fechaFinal !== "") {
-                const updateData = {};
-                updateData[fechaFinal] = true;
-                
-                // Usamos update en el nodo padre para que la fecha (con guiones) se acepte como llave
-                update(ref(db, 'dias_bloqueados'), updateData)
-                .then(() => {
-                    showToast("DÍA BLOQUEADO");
-                    fpBlock.clear();
-                    document.getElementById('input-block-date').value = '';
-                })
-                .catch(e => {
-                    console.error("Error Firebase:", e);
-                    showToast("ERROR AL BLOQUEAR");
-                });
-            } else {
-                showToast("SELECCIONE UNA FECHA");
-            }
-        };
-
-        window.eliminarBloqueo = (f) => remove(ref(db, `dias_bloqueados/${f}`)).then(() => showToast("BLOQUEO ELIMINADO"));
-
+        // AGENDAR CON NOTA
         document.getElementById('btn-save-cita-calendar').onclick = () => {
-            const nom = document.getElementById('add-nombre').value, wa = iti.getNumber(), sKey = document.getElementById('add-servicio-select').value;
+            const nom = document.getElementById('add-nombre').value, wa = iti.getNumber(), sKey = document.getElementById('add-servicio-select').value, nota = document.getElementById('add-nota').value;
             if(!nom || !sKey) return showToast("FALTAN DATOS");
             const s = catalogoGlobal[sKey];
-            push(ref(db, 'citas'), { nombre: nom, whatsapp: wa, servicio: s.nombre, precio: s.precio, fecha: selectedDateTime, estado: "Pendiente", nota: "Admin" }).then(cerrarModalAdd);
+            push(ref(db, 'citas'), { nombre: nom, whatsapp: wa, servicio: s.nombre, precio: s.precio, fecha: selectedDateTime, estado: "Pendiente", nota: nota || "" }).then(cerrarModalAdd);
         };
 
-        document.getElementById('btn-add-serv').onclick = () => {
-            const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value, d = document.getElementById('serv-d').value;
-            if(n && p) push(ref(db, 'servicios'), { nombre: n, precio: p, detalle: d }).then(() => { 
-                document.getElementById('serv-n').value = ''; document.getElementById('serv-p').value = ''; document.getElementById('serv-d').value = '';
-                showToast("SERVICIO CREADO"); 
-            });
-        };
-
-        document.getElementById('btn-save-hours').onclick = () => {
-            set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value, lunch_inicio: lIn.value, lunch_fin: lFi.value }).then(() => showToast("HORARIO GUARDADO"));
+        window.eliminarBloqueo = (f) => remove(ref(db, `dias_bloqueados/${f}`)).then(() => showToast("ELIMINADO"));
+        document.getElementById('btn-add-block').onclick = () => {
+            const f = document.getElementById('input-block-date').value;
+            if(f) { const up = {}; up[f] = true; update(ref(db, 'dias_bloqueados'), up).then(() => { showToast("BLOQUEADO"); document.getElementById('input-block-date').value = ''; }); }
         };
 
         function renderServicios(servs){
@@ -294,6 +262,14 @@
                 d.innerHTML += `<div class="serv-item-admin"><span>${servs[id].nombre} (Q${servs[id].precio})</span><i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"></i></div>`;
             });
         }
+        window.eliminarServicio = (id) => confirmarAccion("¿Eliminar?", () => remove(ref(db, `servicios/${id}`)));
+        document.getElementById('btn-add-serv').onclick = () => {
+            const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value, d = document.getElementById('serv-d').value;
+            if(n && p) push(ref(db, 'servicios'), { nombre: n, precio: p, detalle: d }).then(() => { document.getElementById('serv-n').value=''; document.getElementById('serv-p').value=''; document.getElementById('serv-d').value=''; });
+        };
+        document.getElementById('btn-save-hours').onclick = () => {
+            set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value, lunch_inicio: lIn.value, lunch_fin: lFi.value }).then(() => showToast("GUARDADO"));
+        };
     </script>
 </body>
 </html>
