@@ -37,8 +37,8 @@
         h1 { font-size: 1.6rem; letter-spacing: 6px; color: var(--gold); margin: 10px 0 0 0; font-weight: 600; }
         .subtitle { font-size: 0.7rem; color: #888; letter-spacing: 4px; text-transform: uppercase; }
 
-        .form-group { text-align: left; margin-bottom: 22px; position: relative; }
-        label { display: block; font-size: 0.65rem; color: var(--gold); margin-bottom: 8px; text-transform: uppercase; font-weight: 600; letter-spacing: 1.5px; opacity: 0.9; }
+        .form-group { text-align: left; margin-bottom: 22px; }
+        label { display: block; font-size: 0.65rem; color: var(--gold); margin-bottom: 8px; text-transform: uppercase; font-weight: 600; letter-spacing: 1.5px; }
         
         input, select, textarea { 
             width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); 
@@ -46,10 +46,10 @@
             font-size: 0.9rem; transition: all 0.3s ease; outline: none;
         }
 
-        input:focus, select:focus, textarea:focus { border-color: var(--gold); background: rgba(255,255,255,0.07); box-shadow: 0 0 15px rgba(212,175,55,0.1); }
+        input:focus, select:focus, textarea:focus { border-color: var(--gold); background: rgba(255,255,255,0.07); }
         
         .phone-container { display: flex; gap: 8px; }
-        .flag-select { width: 120px; font-size: 1.1rem; cursor: pointer; }
+        .flag-select { width: 125px; font-size: 1rem; cursor: pointer; }
         textarea { height: 70px; resize: none; }
 
         #info-servicio { 
@@ -66,16 +66,15 @@
             color: #000; border: none; width: 100%; 
             padding: 18px; border-radius: 18px; font-weight: 700; cursor: pointer; 
             margin-top: 10px; text-transform: uppercase; letter-spacing: 2px;
-            box-shadow: 0 10px 20px rgba(212,175,55,0.2); transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(212,175,55,0.2);
         }
 
         .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-content { background: #111; padding: 40px; border: 1px solid var(--gold); width: 85%; max-width: 320px; border-radius: 30px; text-align: center; }
 
-        /* Flatpickr Custom Dark */
+        /* Flatpickr Dark Mode */
         .flatpickr-calendar { background: #111 !important; border: 1px solid var(--gold) !important; color: #fff !important; }
         .flatpickr-day.selected { background: var(--gold) !important; border-color: var(--gold) !important; color: #000 !important; }
-        .flatpickr-day.disabled { color: rgba(255,255,255,0.1) !important; }
     </style>
 </head>
 <body>
@@ -136,7 +135,7 @@
         <div class="modal-content">
             <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--gold); margin-bottom: 20px;"></i>
             <h2 style="color:var(--gold); margin:0; letter-spacing: 2px;">CONFIRMADO</h2>
-            <p style="color:#888; font-size: 0.9rem; margin: 15px 0;">Tu solicitud ha sido enviada con éxito. El barbero te confirmará en breve.</p>
+            <p style="color:#888; font-size: 0.9rem; margin: 15px 0;">Tu solicitud ha sido enviada con éxito.</p>
             <button class="btn-reserva" onclick="location.reload()">Finalizar</button>
         </div>
     </div>
@@ -157,7 +156,7 @@
 
         let ocupados = [];
 
-        // 1. Manejo del Calendario Dinámico
+        // --- CALENDARIO CORREGIDO ---
         onValue(ref(db, 'citas'), (snapshot) => {
             ocupados = [];
             snapshot.forEach(child => { if(child.val().fecha) ocupados.push(child.val().fecha); });
@@ -170,20 +169,18 @@
                 maxTime: "22:00",
                 time_24hr: false,
                 minuteIncrement: 60,
-                // Validamos al cambiar que no se elija una hora ya ocupada
-                onChange: (selectedDates, dateStr, instance) => {
+                // En lugar de disable, validamos después de la selección para no bloquear días
+                onValueUpdate: function(selectedDates, dateStr, instance) {
                     if (ocupados.includes(dateStr)) {
-                        alert("Este horario ya está reservado. Por favor elige otro.");
+                        alert("Este horario ya está reservado por otro cliente. Por favor elige otra hora.");
                         instance.clear();
                     }
                 },
-                // Deshabilitamos la hora exacta visualmente
-                disable: ocupados,
                 locale: { firstDayOfWeek: 1 }
             });
         });
 
-        // 2. Cargar servicios y descripción
+        // Cargar servicios
         onValue(ref(db, 'servicios'), (snap) => {
             const select = document.getElementById('servicio');
             select.innerHTML = '<option value="" disabled selected>Selecciona tu servicio</option>';
@@ -198,12 +195,10 @@
             const infoDiv = document.getElementById('info-servicio');
             const textoDesc = document.getElementById('texto-descripcion');
             const option = select.options[select.selectedIndex];
-            
             textoDesc.innerText = option.getAttribute('data-desc');
             infoDiv.style.display = 'block';
         };
 
-        // 3. Envío de Cita
         window.enviarCita = () => {
             const nom = document.getElementById('nombre').value;
             const cod = document.getElementById('codigo-area').value;
@@ -212,7 +207,7 @@
             const fec = document.getElementById('fecha-cita').value;
 
             if(!nom || !num || !sel.value || !fec) {
-                alert("Completa todos los campos antes de agendar.");
+                alert("Completa todos los campos.");
                 return;
             }
 
