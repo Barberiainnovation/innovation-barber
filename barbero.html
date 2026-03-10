@@ -40,15 +40,13 @@
         .btn-gold { background: var(--gold); color: #000; }
         .btn-outline { background: transparent; border: 1px solid #444; color: #aaa; }
         .btn-red { background: transparent; border: 1px solid var(--red); color: var(--red); }
+        
+        /* BOTONES FLOTANTES */
         .btn-config-float { position: fixed; bottom: 20px; right: 20px; background: var(--gold); color: #000; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: none; cursor: pointer; z-index: 1000; box-shadow: 0 5px 15px rgba(212,175,55,0.3); }
+        .btn-add-float { position: fixed; bottom: 20px; left: 20px; background: var(--green); color: #fff; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: none; cursor: pointer; z-index: 1000; box-shadow: 0 5px 15px rgba(46,204,113,0.3); }
 
-        /* MODALES ESTRUCTURA */
         .modal { display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
-        
-        /* Modal Configuración y Evento (Capa 3000) */
-        #modalConfig, #modalEvento { z-index: 3000; }
-        
-        /* Modal de Confirmación (Capa 5000 - Siempre arriba de todo) */
+        #modalConfig, #modalEvento, #modalAddCita { z-index: 3000; }
         #modalConfirm { z-index: 5000 !important; }
 
         .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; }
@@ -72,6 +70,7 @@
 
     <div id="admin-content">
         <button class="btn-config-float" onclick="toggleConfig()"><i class="fas fa-cog"></i></button>
+        <button class="btn-add-float" onclick="toggleAddCita()"><i class="fas fa-plus"></i></button>
 
         <div class="main-grid">
             <div id="calendar-container"><div id="calendar"></div></div>
@@ -91,6 +90,18 @@
 
         <h2 style="font-size: 0.8rem; letter-spacing: 2px; color: var(--gold); margin-top: 40px;">GESTIÓN DE CITAS</h2>
         <div class="citas-list" id="lista-citas"></div>
+
+        <div id="modalAddCita" class="modal">
+            <div class="modal-content">
+                <h3 style="color:var(--gold); margin-top:0;">NUEVA CITA</h3>
+                <input type="text" id="add-nombre" placeholder="Nombre del Cliente">
+                <input type="number" id="add-whatsapp" placeholder="WhatsApp (Ej: 502...)">
+                <select id="add-servicio-select"></select>
+                <input type="datetime-local" id="add-fecha">
+                <button class="btn btn-gold" id="btn-save-new-cita">AGENDAR CITA</button>
+                <button class="btn btn-outline" onclick="toggleAddCita()">CANCELAR</button>
+            </div>
+        </div>
 
         <div id="modalEvento" class="modal">
             <div class="modal-content">
@@ -147,6 +158,7 @@
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
         let calendar;
+        let catalogoServicios = {};
 
         function showToast(msj) {
             const t = document.getElementById('toast');
@@ -154,7 +166,6 @@
             setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        // CONFIRMACIÓN MEJORADA (Se muestra arriba de todo)
         window.confirmarAccion = (texto, callback) => {
             document.getElementById('confirm-text').innerText = texto;
             document.getElementById('modalConfirm').style.display = 'flex';
@@ -172,8 +183,14 @@
         }
 
         window.loginGoogle = () => signInWithPopup(auth, provider);
+        
         window.toggleConfig = () => {
             const m = document.getElementById('modalConfig');
+            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+        };
+
+        window.toggleAddCita = () => {
+            const m = document.getElementById('modalAddCita');
             m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
         };
 
@@ -193,10 +210,20 @@
                 eventClick: (info) => {
                     const id = info.event.id;
                     const meta = info.event.extendedProps;
+                    const fechaTxt = info.event.start.toLocaleString('es-GT', { day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' });
+                    
                     document.getElementById('pop-nombre').innerText = info.event.title;
                     document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString('es-GT');
                     document.getElementById('pop-whatsapp').innerHTML = meta.whatsapp ? `<i class="fab fa-whatsapp"></i> ${meta.whatsapp}` : 'N/A';
-                    document.getElementById('pop-whatsapp').onclick = () => { if(meta.whatsapp) window.open(`https://wa.me/${meta.whatsapp.replace(/\D/g,'')}`); };
+                    
+                    // WHATSAPP CON MENSAJE PERSONALIZADO
+                    document.getElementById('pop-whatsapp').onclick = () => { 
+                        if(meta.whatsapp) {
+                            const msg = encodeURIComponent(`Tu cita en INNOVATION Barber Studio ha sido agendada exitosamente para el ${fechaTxt}`);
+                            window.open(`https://wa.me/${meta.whatsapp.replace(/\D/g,'')}?text=${msg}`); 
+                        }
+                    };
+
                     document.getElementById('pop-nota').innerText = meta.nota ? `Nota: ${meta.nota}` : 'Sin notas';
                     document.getElementById('modalEvento').style.display = 'flex';
                     document.getElementById('btn-eliminar-pop').onclick = () => { 
@@ -213,8 +240,49 @@
             });
 
             onValue(ref(db, 'citas'), snap => renderAdmin(snap.val()));
-            onValue(ref(db, 'servicios'), snap => renderServicios(snap.val() || {}));
+            onValue(ref(db, 'servicios'), snap => {
+                catalogoServicios = snap.val() || {};
+                renderServicios(catalogoServicios);
+                actualizarSelectServicios(catalogoServicios);
+            });
         }
+
+        // LÓGICA PARA AGREGAR CITA MANUALMENTE
+        function actualizarSelectServicios(servs) {
+            const select = document.getElementById('add-servicio-select');
+            select.innerHTML = '<option value="">Selecciona un servicio</option>';
+            Object.keys(servs).forEach(id => {
+                select.innerHTML += `<option value="${id}">${servs[id].nombre} (Q${servs[id].precio})</option>`;
+            });
+        }
+
+        document.getElementById('btn-save-new-cita').onclick = () => {
+            const nom = document.getElementById('add-nombre').value;
+            const tel = document.getElementById('add-whatsapp').value;
+            const servId = document.getElementById('add-servicio-select').value;
+            const fecha = document.getElementById('add-fecha').value;
+
+            if(!nom || !tel || !servId || !fecha) return showToast("FALTAN DATOS");
+
+            const servicio = catalogoServicios[servId];
+            const nuevaCita = {
+                nombre: nom,
+                whatsapp: tel,
+                servicio: servicio.nombre,
+                precio: servicio.precio,
+                fecha: new Date(fecha).toISOString(),
+                estado: "Pendiente",
+                timestamp: Date.now()
+            };
+
+            push(ref(db, 'citas'), nuevaCita).then(() => {
+                showToast("CITA AGREGADA");
+                toggleAddCita();
+                document.getElementById('add-nombre').value = '';
+                document.getElementById('add-whatsapp').value = '';
+                document.getElementById('add-fecha').value = '';
+            });
+        };
 
         document.getElementById('btn-save-hours').onclick = () => {
             set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value })
@@ -250,7 +318,8 @@
                     eventos.push({ id: id, title: c.nombre, start: c.fecha, backgroundColor: c.estado === 'Finalizada' ? '#111' : '#d4af37', extendedProps: { nota: c.nota || '', whatsapp: c.whatsapp || '' } });
                     if(c.estado !== 'Finalizada' && c.estado !== 'Cancelada') {
                         const card = document.createElement('div'); card.className = 'card';
-                        card.innerHTML = `<div class="price-tag">Q${p}</div><h3 style="margin:5px 0;">${c.nombre}</h3><div style="font-size:0.75rem; color:var(--green); margin-bottom:10px; cursor:pointer;" onclick="window.open('https://wa.me/${(c.whatsapp||'').replace(/\D/g,'')}')"><i class="fab fa-whatsapp"></i> ${c.whatsapp || 'N/A'}</div><p style="font-size:0.7rem; color:#888;">${c.servicio} | ${f.toLocaleString('es-GT')}</p>${c.nota ? `<div class="note-box">${c.nota}</div>` : ''}<button class="btn btn-gold" onclick="cambiarEstado('${id}', 'Finalizada')">FINALIZAR CITA</button>`;
+                        const fLocal = f.toLocaleString('es-GT', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+                        card.innerHTML = `<div class="price-tag">Q${p}</div><h3 style="margin:5px 0;">${c.nombre}</h3><div style="font-size:0.75rem; color:var(--green); margin-bottom:10px; cursor:pointer;" onclick="window.open('https://wa.me/${(c.whatsapp||'').replace(/\D/g,'')}')"><i class="fab fa-whatsapp"></i> ${c.whatsapp || 'N/A'}</div><p style="font-size:0.7rem; color:#888;">${c.servicio} | ${fLocal}</p>${c.nota ? `<div class="note-box">${c.nota}</div>` : ''}<button class="btn btn-gold" onclick="cambiarEstado('${id}', 'Finalizada')">FINALIZAR CITA</button>`;
                         lista.appendChild(card);
                     }
                 });
@@ -268,8 +337,6 @@
                 const sRow = document.createElement('div');
                 sRow.style = "display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #1a1a1a; font-size: 0.7rem;";
                 sRow.innerHTML = `<span>${servs[id].nombre}</span><i class="fas fa-trash" style="color:red; cursor:pointer;"></i>`;
-                
-                // Aquí el cambio: El click activa el modal de confirmación por encima de la config
                 sRow.querySelector('i').onclick = () => {
                     confirmarAccion(`¿Eliminar ${servs[id].nombre} del catálogo?`, () => {
                         remove(ref(db, `servicios/${id}`));
