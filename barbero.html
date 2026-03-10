@@ -51,7 +51,6 @@
         .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; }
         input, select, textarea { background:#000; color:#fff; border:1px solid #222; padding:14px; border-radius:12px; width:100%; margin-bottom:15px; outline: none; font-family: 'Poppins'; }
         
-        /* Estilos específicos para el input de teléfono */
         .iti { width: 100%; text-align: left; margin-bottom: 15px; }
         .iti__country-list { background-color: #0d0d0d; border: 1px solid var(--gold); color: #fff; }
 
@@ -99,9 +98,7 @@
                 <p id="add-fecha-display" style="font-size: 0.8rem; color: #888; margin-bottom: 15px;"></p>
                 <input type="text" id="add-nombre" placeholder="Nombre del Cliente">
                 <input type="tel" id="add-whatsapp-input">
-                <select id="add-servicio-select">
-                    <option value="">Seleccionar Servicio...</option>
-                </select>
+                <select id="add-servicio-select"></select>
                 <textarea id="add-nota" placeholder="Notas adicionales..." style="height:60px;"></textarea>
                 <button class="btn btn-gold" id="btn-save-cita-calendar">GUARDAR Y NOTIFICAR</button>
                 <button class="btn btn-outline" onclick="cerrarModalAdd()">CANCELAR</button>
@@ -165,12 +162,8 @@
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
         
-        let calendar;
-        let selectedDateTime = null;
-        let catalogoGlobal = {}; // Para llenar el select de servicios
-        let iti;
+        let calendar, selectedDateTime = null, catalogoGlobal = {}, iti;
 
-        // Inicializar selector de teléfono
         const inputTel = document.querySelector("#add-whatsapp-input");
         iti = window.intlTelInput(inputTel, {
             initialCountry: "gt",
@@ -222,9 +215,9 @@
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
                 selectable: true,
                 select: (info) => {
-                    // Solo permitir agendar si es vista de día o semana (con hora específica)
                     if(info.view.type !== 'dayGridMonth'){
-                        selectedDateTime = info.startStr;
+                        // Sincronización PC/Móvil: Limpiamos segundos para evitar duplicados
+                        selectedDateTime = info.startStr.split(':').slice(0,2).join(':'); 
                         document.getElementById('add-fecha-display').innerText = new Date(selectedDateTime).toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
                         document.getElementById('modalAddCita').style.display = 'flex';
                     }
@@ -272,37 +265,26 @@
             });
         }
 
-        // GUARDAR CITA DESDE CALENDARIO
         document.getElementById('btn-save-cita-calendar').onclick = () => {
             const nombre = document.getElementById('add-nombre').value;
-            const whatsapp = iti.getNumber(); // Obtiene el número con el código de área completo
+            const whatsapp = iti.getNumber();
             const servicioKey = document.getElementById('add-servicio-select').value;
             const nota = document.getElementById('add-nota').value;
 
-            if(!nombre || !whatsapp || !servicioKey) {
-                showToast("⚠️ Faltan datos");
-                return;
-            }
+            if(!nombre || !whatsapp || !servicioKey) return showToast("⚠️ Faltan datos");
 
             const serv = catalogoGlobal[servicioKey];
             const fechaObj = new Date(selectedDateTime);
             const fechaTxt = fechaObj.toLocaleString('es-GT', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
 
             const nuevaCita = {
-                nombre: nombre,
-                whatsapp: whatsapp,
-                servicio: serv.nombre,
-                precio: serv.precio,
-                nota: nota,
-                fecha: selectedDateTime,
-                estado: "Pendiente"
+                nombre: nombre, whatsapp: whatsapp, servicio: serv.nombre,
+                precio: serv.precio, nota: nota, fecha: selectedDateTime, estado: "Pendiente"
             };
 
             push(ref(db, 'citas'), nuevaCita).then(() => {
                 cerrarModalAdd();
                 showToast("✅ CITA AGENDADA");
-                
-                // Mensaje de WhatsApp solicitado
                 const msg = encodeURIComponent(`Tu cita en INNOVATION Barber Studio ha sido agendada exitósamente el día ${fechaTxt} exitósamente.`);
                 window.open(`https://wa.me/${whatsapp.replace(/\D/g,'')}?text=${msg}`);
             });
@@ -312,7 +294,6 @@
             document.getElementById('modalAddCita').style.display = 'none';
             document.getElementById('add-nombre').value = '';
             document.getElementById('add-nota').value = '';
-            iti.setCountry("gt");
         };
 
         document.getElementById('btn-save-hours').onclick = () => {
