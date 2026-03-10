@@ -66,8 +66,8 @@
         
         .block-item { background: rgba(255, 77, 77, 0.1); padding: 8px 12px; border-radius: 12px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; border: 1px solid rgba(255, 77, 77, 0.2); }
         
-        /* Estilos Flatpickr */
-        .flatpickr-calendar { background: #0a0a0a !important; border: 1px solid var(--gold) !important; margin-top: 5px !important; box-shadow: 0 0 20px rgba(212,175,55,0.1) !important; }
+        /* Estilos Flatpickr Personalizados */
+        .flatpickr-calendar { background: #0a0a0a !important; border: 1px solid var(--gold) !important; box-shadow: 0 0 20px rgba(212,175,55,0.2) !important; }
         .flatpickr-day.selected { background: var(--gold) !important; border-color: var(--gold) !important; color: #000 !important; }
     </style>
 </head>
@@ -116,9 +116,9 @@
             <button class="btn btn-gold" id="btn-save-hours">GUARDAR HORARIO</button>
             
             <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
-            <p style="font-size: 0.7rem; color: #555;">BLOQUEAR DÍAS ESPECÍFICOS</p>
+            <p style="font-size: 0.7rem; color: #555;">BLOQUEAR DÍA ESPECÍFICO</p>
             
-            <input type="text" id="input-block-date" placeholder="Seleccione una fecha" readonly style="cursor:pointer; border:1px solid var(--gold); text-align: center;">
+            <input type="text" id="input-block-date" placeholder="Toca para elegir fecha" readonly style="cursor:pointer; border:1px solid var(--gold); text-align: center;">
             <button class="btn btn-gold" id="btn-add-block" style="margin-top:5px;">BLOQUEAR DÍA SELECCIONADO</button>
             
             <div id="lista-bloqueos-admin" style="margin-top:15px; text-align: left;"></div>
@@ -155,12 +155,12 @@
 
         iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { initialCountry: "gt", separateDialCode: true });
 
-        // Inicializar Flatpickr
+        // Inicializar Calendario de Bloqueo
         fpBlock = flatpickr("#input-block-date", {
             locale: "es",
             minDate: "today",
             dateFormat: "Y-m-d",
-            disableMobile: "true"
+            disableMobile: true
         });
 
         window.showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
@@ -262,16 +262,24 @@
         window.cerrarModalAdd = () => document.getElementById('modalAddCita').style.display = 'none';
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
         
-        // Lógica corregida para el botón de bloqueo
+        // LÓGICA DE BLOQUEO REFORZADA
         document.getElementById('btn-add-block').onclick = () => {
-            const fechaSeleccionada = fpBlock.formatDate(fpBlock.selectedDates[0], "Y-m-d");
-            if(fechaSeleccionada) {
-                set(ref(db, `dias_bloqueados/${fechaSeleccionada}`), true).then(() => {
-                    showToast("DÍA BLOQUEADO");
+            const valInput = document.getElementById('input-block-date').value;
+            let fechaFinal = valInput;
+            
+            // Intento secundario desde la instancia por si el input está vacío
+            if(!fechaFinal && fpBlock.selectedDates.length > 0) {
+                fechaFinal = fpBlock.formatDate(fpBlock.selectedDates[0], "Y-m-d");
+            }
+
+            if(fechaFinal) {
+                set(ref(db, `dias_bloqueados/${fechaFinal}`), true).then(() => {
+                    showToast("DÍA BLOQUEADO CORRECTAMENTE");
                     fpBlock.clear();
-                });
+                    document.getElementById('input-block-date').value = '';
+                }).catch(e => showToast("ERROR AL BLOQUEAR"));
             } else {
-                showToast("SELECCIONE UNA FECHA");
+                showToast("SELECCIONE UNA FECHA PRIMERO");
             }
         };
 
