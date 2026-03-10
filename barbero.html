@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
     
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/es.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
     
     <style>
         :root { --bg: #000; --card: #0a0a0a; --gold: #d4af37; --gold-dark: #aa8c2c; --border: #1a1a1a; --green: #2ecc71; --red: #ff4d4d; --glass: rgba(10, 10, 10, 0.98); }
@@ -29,7 +29,6 @@
         .fc .fc-toolbar-title { font-size: 1rem !important; text-transform: uppercase; color: var(--gold); font-weight: 600; }
         .fc-timegrid-slot { height: 1.5em !important; border-bottom: 1px solid #111 !important; }
         
-        /* EVENTOS CALENDARIO */
         .fc-v-event { border: none !important; border-radius: 6px !important; }
         .fc-event-main { font-weight: 600; font-size: 0.85rem !important; line-height: 1.1; display: flex; align-items: center; padding-left: 5px; }
 
@@ -41,7 +40,6 @@
         .citas-list { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 320px)); gap: 15px; padding-bottom: 100px; justify-content: start; }
         .card { background: #060606; border: 1px solid var(--border); padding: 12px 18px; border-radius: 18px; border-left: 3px solid var(--gold); display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
         
-        /* ESTADO FINALIZADO (LISTA) */
         .card.finalizada { border-left-color: #333; opacity: 0.4; background: #050505; }
         .card.finalizada h4 { color: #555; text-decoration: line-through; }
         .card.finalizada .btn-mini { display: none; }
@@ -49,7 +47,6 @@
         .card h4 { margin: 0; font-size: 0.82rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; }
         .btn-mini { width: auto; padding: 8px 12px; border-radius: 10px; font-size: 0.55rem; margin: 0; white-space: nowrap; font-weight: 700; }
 
-        /* MODALES */
         .modal { display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.94); backdrop-filter: blur(12px); align-items: center; justify-content: center; z-index: 10000; }
         .modal-content { background: var(--glass); padding:35px; border: 1px solid var(--gold); width:90%; max-width:380px; border-radius:40px; text-align: center; }
         input, select, textarea { background: rgba(255,255,255,0.03); color:#fff; border:1px solid #1a1a1a; padding:15px; border-radius:18px; width:100%; margin-bottom:12px; outline: none; font-family: 'Poppins'; box-sizing: border-box; }
@@ -142,7 +139,7 @@
         function initDashboard() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'timeGridDay',
-                locale: 'es', // IDIOMA EN ESPAÑOL
+                locale: 'es', // ESTE ES EL CAMBIO SOLICITADO
                 allDaySlot: false,
                 slotDuration: '00:30:00',
                 contentHeight: 'auto',
@@ -204,7 +201,6 @@
                         totalIngresosMes += parseFloat(c.precio || 0);
                     }
 
-                    // COLOR GRIS SI ESTÁ FINALIZADA EN EL CALENDARIO
                     eventos.push({ 
                         id, 
                         title: c.nombre, 
