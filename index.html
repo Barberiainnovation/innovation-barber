@@ -72,7 +72,6 @@
         .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-content { background: #111; padding: 40px; border: 1px solid var(--gold); width: 85%; max-width: 320px; border-radius: 30px; text-align: center; }
 
-        /* Flatpickr Dark Mode */
         .flatpickr-calendar { background: #111 !important; border: 1px solid var(--gold) !important; color: #fff !important; }
         .flatpickr-day.selected { background: var(--gold) !important; border-color: var(--gold) !important; color: #000 !important; }
     </style>
@@ -140,6 +139,15 @@
         </div>
     </div>
 
+    <div id="modalError" class="modal">
+        <div class="modal-content" style="border-color: #ff4444;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: #ff4444; margin-bottom: 20px;"></i>
+            <h2 style="color:#ff4444; margin:0; letter-spacing: 2px;">HORARIO OCUPADO</h2>
+            <p style="color:#888; font-size: 0.9rem; margin: 15px 0;">Este horario ya está reservado. Por favor elige otro momento para tu servicio.</p>
+            <button class="btn-reserva" style="background: #ff4444; color: white;" onclick="cerrarModalError()">Entendido</button>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -155,13 +163,14 @@
         const db = getDatabase(app);
 
         let ocupados = [];
+        let fpInstance;
 
-        // --- CALENDARIO CORREGIDO ---
+        // --- CALENDARIO ---
         onValue(ref(db, 'citas'), (snapshot) => {
             ocupados = [];
             snapshot.forEach(child => { if(child.val().fecha) ocupados.push(child.val().fecha); });
 
-            flatpickr("#fecha-cita", {
+            fpInstance = flatpickr("#fecha-cita", {
                 enableTime: true,
                 dateFormat: "Y-m-d H:i",
                 minDate: "today",
@@ -169,10 +178,9 @@
                 maxTime: "22:00",
                 time_24hr: false,
                 minuteIncrement: 60,
-                // En lugar de disable, validamos después de la selección para no bloquear días
                 onValueUpdate: function(selectedDates, dateStr, instance) {
                     if (ocupados.includes(dateStr)) {
-                        alert("Este horario ya está reservado por otro cliente. Por favor elige otra hora.");
+                        document.getElementById('modalError').style.display = 'flex';
                         instance.clear();
                     }
                 },
@@ -180,7 +188,7 @@
             });
         });
 
-        // Cargar servicios
+        // --- SERVICIOS ---
         onValue(ref(db, 'servicios'), (snap) => {
             const select = document.getElementById('servicio');
             select.innerHTML = '<option value="" disabled selected>Selecciona tu servicio</option>';
@@ -199,6 +207,10 @@
             infoDiv.style.display = 'block';
         };
 
+        window.cerrarModalError = () => {
+            document.getElementById('modalError').style.display = 'none';
+        };
+
         window.enviarCita = () => {
             const nom = document.getElementById('nombre').value;
             const cod = document.getElementById('codigo-area').value;
@@ -207,6 +219,7 @@
             const fec = document.getElementById('fecha-cita').value;
 
             if(!nom || !num || !sel.value || !fec) {
+                // Aquí podrías añadir otro modal si quieres que sea perfecto, por ahora usamos alert para no saturar.
                 alert("Completa todos los campos.");
                 return;
             }
