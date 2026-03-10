@@ -28,7 +28,9 @@
         .fc { --fc-border-color: #161616; --fc-today-bg-color: rgba(212,175,55,0.02); font-size: 0.8rem; }
         .fc .fc-toolbar-title { font-size: 1rem !important; text-transform: uppercase; color: var(--gold); font-weight: 600; }
         .fc-timegrid-slot { height: 1.5em !important; border-bottom: 1px solid #111 !important; }
-        .fc-v-event { background: linear-gradient(135deg, var(--gold), var(--gold-dark)) !important; border: none !important; border-radius: 6px !important; color: #000 !important; }
+        
+        /* EVENTOS CALENDARIO */
+        .fc-v-event { border: none !important; border-radius: 6px !important; }
         .fc-event-main { font-weight: 600; font-size: 0.85rem !important; line-height: 1.1; display: flex; align-items: center; padding-left: 5px; }
 
         .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 35px; padding: 30px; border-top: 5px solid var(--gold); position: sticky; top: 15px; height: fit-content; }
@@ -36,15 +38,13 @@
         .stat-val { font-size: 2.2rem; font-weight: 600; color: var(--gold); }
         .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #555; letter-spacing: 2px; }
         
-        /* TARJETAS DE SERVICIOS */
         .citas-list { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 320px)); gap: 15px; padding-bottom: 100px; justify-content: start; }
         .card { background: #060606; border: 1px solid var(--border); padding: 12px 18px; border-radius: 18px; border-left: 3px solid var(--gold); display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
         
-        /* ESTADO FINALIZADO (GRIS) */
-        .card.finalizada { border-left-color: #333; opacity: 0.5; background: #0a0a0a; }
-        .card.finalizada h4 { color: #666; }
+        /* ESTADO FINALIZADO (LISTA) */
+        .card.finalizada { border-left-color: #333; opacity: 0.4; background: #050505; }
+        .card.finalizada h4 { color: #555; text-decoration: line-through; }
         .card.finalizada .btn-mini { display: none; }
-        .card.finalizada::after { content: 'FINALIZADO'; font-size: 0.5rem; color: #444; font-weight: 700; letter-spacing: 1px; }
 
         .card h4 { margin: 0; font-size: 0.82rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; }
         .btn-mini { width: auto; padding: 8px 12px; border-radius: 10px; font-size: 0.55rem; margin: 0; white-space: nowrap; font-weight: 700; }
@@ -142,7 +142,7 @@
         function initDashboard() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'timeGridDay',
-                locale: 'es', 
+                locale: 'es', // IDIOMA EN ESPAÑOL
                 allDaySlot: false,
                 slotDuration: '00:30:00',
                 contentHeight: 'auto',
@@ -195,7 +195,6 @@
             const mesActual = ahora.getMonth(), añoActual = ahora.getFullYear();
 
             if(data){
-                // Ordenar por fecha para que los finalizados no desordenen todo
                 Object.keys(data).sort((a,b) => new Date(data[a].fecha) - new Date(data[b].fecha)).forEach(id => {
                     const c = data[id], fCita = new Date(c.fecha);
                     const isFinalizada = c.estado === 'Finalizada';
@@ -205,9 +204,16 @@
                         totalIngresosMes += parseFloat(c.precio || 0);
                     }
 
-                    eventos.push({ id, title: c.nombre, start: c.fecha, backgroundColor: isFinalizada?'#111':'#d4af37', extendedProps: { whatsapp: c.whatsapp } });
+                    // COLOR GRIS SI ESTÁ FINALIZADA EN EL CALENDARIO
+                    eventos.push({ 
+                        id, 
+                        title: c.nombre, 
+                        start: c.fecha, 
+                        backgroundColor: isFinalizada ? '#333333' : '#d4af37', 
+                        textColor: isFinalizada ? '#777777' : '#000000',
+                        extendedProps: { whatsapp: c.whatsapp } 
+                    });
 
-                    // Solo mostrar en la lista inferior si es de HOY (o si prefieres ver todas, quitamos el filtro de fecha)
                     const div = document.createElement('div');
                     div.className = `card ${isFinalizada ? 'finalizada' : ''}`;
                     div.innerHTML = `<h4>${c.nombre}</h4><button class="btn btn-gold btn-mini" onclick="cambiarEstado('${id}','Finalizada')">FINALIZAR</button>`;
