@@ -8,6 +8,7 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     
     <style>
@@ -41,17 +42,19 @@
         .btn-outline { background: transparent; border: 1px solid #444; color: #aaa; }
         .btn-red { background: transparent; border: 1px solid var(--red); color: var(--red); }
         
-        /* BOTONES FLOTANTES */
         .btn-config-float { position: fixed; bottom: 20px; right: 20px; background: var(--gold); color: #000; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: none; cursor: pointer; z-index: 1000; box-shadow: 0 5px 15px rgba(212,175,55,0.3); }
         .btn-add-float { position: fixed; bottom: 20px; left: 20px; background: var(--green); color: #fff; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: none; cursor: pointer; z-index: 1000; box-shadow: 0 5px 15px rgba(46,204,113,0.3); }
 
-        .modal { display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
-        #modalConfig, #modalEvento, #modalAddCita { z-index: 3000; }
-        #modalConfirm { z-index: 5000 !important; }
-
+        .modal { display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter: blur(5px); align-items: center; justify-content: center; z-index: 3000; }
         .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; }
         input, select, textarea { background:#000; color:#fff; border:1px solid #222; padding:14px; border-radius:12px; width:100%; margin-bottom:15px; outline: none; }
 
+        /* Ajustes para intl-tel-input */
+        .iti { width: 100%; margin-bottom: 15px; text-align: left; }
+        .iti__country-list { background-color: #0d0d0d; border: 1px solid var(--gold); color: #fff; }
+        .iti__country:hover { background-color: #1a1a1a; }
+
+        #modalConfirm { z-index: 5000 !important; }
         #toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 15px 30px; border-radius: 50px; font-weight: 600; font-size: 0.8rem; z-index: 10000; transition: top 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         #toast.show { top: 30px; }
     </style>
@@ -70,7 +73,7 @@
 
     <div id="admin-content">
         <button class="btn-config-float" onclick="toggleConfig()"><i class="fas fa-cog"></i></button>
-        <button class="btn-add-float" onclick="toggleAddCita()"><i class="fas fa-plus"></i></button>
+        <button class="btn-add-float" id="btn-open-add"><i class="fas fa-plus"></i></button>
 
         <div class="main-grid">
             <div id="calendar-container"><div id="calendar"></div></div>
@@ -93,13 +96,13 @@
 
         <div id="modalAddCita" class="modal">
             <div class="modal-content">
-                <h3 style="color:var(--gold); margin-top:0;">NUEVA CITA</h3>
+                <h3 style="color:var(--gold); margin-top:0;">AGENDAR CLIENTE</h3>
                 <input type="text" id="add-nombre" placeholder="Nombre del Cliente">
-                <input type="number" id="add-whatsapp" placeholder="WhatsApp (Ej: 502...)">
-                <select id="add-servicio-select"></select>
+                <input type="tel" id="add-whatsapp">
+                <select id="add-servicio-select" style="margin-top: 15px;"></select>
                 <input type="datetime-local" id="add-fecha">
-                <button class="btn btn-gold" id="btn-save-new-cita">AGENDAR CITA</button>
-                <button class="btn btn-outline" onclick="toggleAddCita()">CANCELAR</button>
+                <button class="btn btn-gold" id="btn-save-new-cita">CONFIRMAR CITA</button>
+                <button class="btn btn-outline" onclick="document.getElementById('modalAddCita').style.display='none'">CANCELAR</button>
             </div>
         </div>
 
@@ -147,6 +150,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -159,6 +163,15 @@
         const provider = new GoogleAuthProvider();
         let calendar;
         let catalogoServicios = {};
+        let iti;
+
+        // Inicializar intl-tel-input
+        const inputTel = document.querySelector("#add-whatsapp");
+        iti = window.intlTelInput(inputTel, {
+            initialCountry: "gt",
+            separateDialCode: true,
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
+        });
 
         function showToast(msj) {
             const t = document.getElementById('toast');
@@ -183,15 +196,13 @@
         }
 
         window.loginGoogle = () => signInWithPopup(auth, provider);
-        
         window.toggleConfig = () => {
             const m = document.getElementById('modalConfig');
             m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
         };
 
-        window.toggleAddCita = () => {
-            const m = document.getElementById('modalAddCita');
-            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+        document.getElementById('btn-open-add').onclick = () => {
+            document.getElementById('modalAddCita').style.display = 'flex';
         };
 
         onAuthStateChanged(auth, (user) => {
@@ -214,9 +225,8 @@
                     
                     document.getElementById('pop-nombre').innerText = info.event.title;
                     document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString('es-GT');
-                    document.getElementById('pop-whatsapp').innerHTML = meta.whatsapp ? `<i class="fab fa-whatsapp"></i> ${meta.whatsapp}` : 'N/A';
+                    document.getElementById('pop-whatsapp').innerHTML = meta.whatsapp ? `<i class="fab fa-whatsapp"></i> ${meta.whatsapp}` : 'Sin número';
                     
-                    // WHATSAPP CON MENSAJE PERSONALIZADO
                     document.getElementById('pop-whatsapp').onclick = () => { 
                         if(meta.whatsapp) {
                             const msg = encodeURIComponent(`Tu cita en INNOVATION Barber Studio ha sido agendada exitosamente para el ${fechaTxt}`);
@@ -243,31 +253,26 @@
             onValue(ref(db, 'servicios'), snap => {
                 catalogoServicios = snap.val() || {};
                 renderServicios(catalogoServicios);
-                actualizarSelectServicios(catalogoServicios);
-            });
-        }
-
-        // LÓGICA PARA AGREGAR CITA MANUALMENTE
-        function actualizarSelectServicios(servs) {
-            const select = document.getElementById('add-servicio-select');
-            select.innerHTML = '<option value="">Selecciona un servicio</option>';
-            Object.keys(servs).forEach(id => {
-                select.innerHTML += `<option value="${id}">${servs[id].nombre} (Q${servs[id].precio})</option>`;
+                const select = document.getElementById('add-servicio-select');
+                select.innerHTML = '<option value="">Seleccionar Servicio</option>';
+                Object.keys(catalogoServicios).forEach(id => {
+                    select.innerHTML += `<option value="${id}">${catalogoServicios[id].nombre} (Q${catalogoServicios[id].precio})</option>`;
+                });
             });
         }
 
         document.getElementById('btn-save-new-cita').onclick = () => {
             const nom = document.getElementById('add-nombre').value;
-            const tel = document.getElementById('add-whatsapp').value;
+            const telFull = iti.getNumber(); // Obtiene número con código internacional
             const servId = document.getElementById('add-servicio-select').value;
             const fecha = document.getElementById('add-fecha').value;
 
-            if(!nom || !tel || !servId || !fecha) return showToast("FALTAN DATOS");
+            if(!nom || !telFull || !servId || !fecha) return showToast("⚠️ COMPLETA TODOS LOS CAMPOS");
 
             const servicio = catalogoServicios[servId];
             const nuevaCita = {
                 nombre: nom,
-                whatsapp: tel,
+                whatsapp: telFull,
                 servicio: servicio.nombre,
                 precio: servicio.precio,
                 fecha: new Date(fecha).toISOString(),
@@ -276,8 +281,8 @@
             };
 
             push(ref(db, 'citas'), nuevaCita).then(() => {
-                showToast("CITA AGREGADA");
-                toggleAddCita();
+                showToast("✅ CLIENTE AGENDADO");
+                document.getElementById('modalAddCita').style.display = 'none';
                 document.getElementById('add-nombre').value = '';
                 document.getElementById('add-whatsapp').value = '';
                 document.getElementById('add-fecha').value = '';
@@ -318,8 +323,7 @@
                     eventos.push({ id: id, title: c.nombre, start: c.fecha, backgroundColor: c.estado === 'Finalizada' ? '#111' : '#d4af37', extendedProps: { nota: c.nota || '', whatsapp: c.whatsapp || '' } });
                     if(c.estado !== 'Finalizada' && c.estado !== 'Cancelada') {
                         const card = document.createElement('div'); card.className = 'card';
-                        const fLocal = f.toLocaleString('es-GT', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
-                        card.innerHTML = `<div class="price-tag">Q${p}</div><h3 style="margin:5px 0;">${c.nombre}</h3><div style="font-size:0.75rem; color:var(--green); margin-bottom:10px; cursor:pointer;" onclick="window.open('https://wa.me/${(c.whatsapp||'').replace(/\D/g,'')}')"><i class="fab fa-whatsapp"></i> ${c.whatsapp || 'N/A'}</div><p style="font-size:0.7rem; color:#888;">${c.servicio} | ${fLocal}</p>${c.nota ? `<div class="note-box">${c.nota}</div>` : ''}<button class="btn btn-gold" onclick="cambiarEstado('${id}', 'Finalizada')">FINALIZAR CITA</button>`;
+                        card.innerHTML = `<div class="price-tag">Q${p}</div><h3 style="margin:5px 0;">${c.nombre}</h3><div style="font-size:0.75rem; color:var(--green); margin-bottom:10px; cursor:pointer;" onclick="window.open('https://wa.me/${(c.whatsapp||'').replace(/\D/g,'')}')"><i class="fab fa-whatsapp"></i> ${c.whatsapp || 'N/A'}</div><p style="font-size:0.7rem; color:#888;">${c.servicio} | ${f.toLocaleString('es-GT')}</p>${c.nota ? `<div class="note-box">${c.nota}</div>` : ''}<button class="btn btn-gold" onclick="cambiarEstado('${id}', 'Finalizada')">FINALIZAR CITA</button>`;
                         lista.appendChild(card);
                     }
                 });
