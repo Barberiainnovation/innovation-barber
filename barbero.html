@@ -7,13 +7,17 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="InnoAdmin">
+    
+    <link rel="apple-touch-icon" href="logo negro.png">
+    <link rel="icon" type="image/png" href="logo negro.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     
     <style>
-        /* Mantenemos exactamente tus estilos originales */
         :root { --bg: #000; --card: #0d0d0d; --gold: #d4af37; --border: #1a1a1a; --green: #2ecc71; --red: #ff4d4d; --blue: #3498db; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; scroll-behavior: smooth; }
         
@@ -28,6 +32,7 @@
             width: 50px; height: 50px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
             font-size: 1.5rem; border: none; cursor: pointer; z-index: 2000;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
         }
 
         .main-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
@@ -38,21 +43,29 @@
         .stat-val { font-size: 2rem; font-weight: 600; color: var(--green); display: block; }
         .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #666; letter-spacing: 1px; margin-bottom: 5px; display: block; }
         
+        #servicios-stats { font-size: 0.75rem; color: #bbb; line-height: 1.8; margin: 15px 0; padding: 15px 0; border-top: 1px solid #1a1a1a; }
+        .total-highlight { background: rgba(46, 204, 113, 0.1); border: 1px solid var(--green); padding: 15px; border-radius: 12px; text-align: center; margin-top: 10px; }
+
         #calendar-container { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; }
         .fc { --fc-border-color: #1a1a1a; --fc-today-bg-color: rgba(212,175,55,0.05); font-size: 0.85rem; }
+        .fc-button { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; font-size: 0.6rem !important; text-transform: uppercase !important; }
+        .fc-button-active { background: var(--gold) !important; color: #000 !important; }
+        .fc-daygrid-day-number, .fc-col-header-cell-cushion { text-decoration: none !important; color: #fff !important; }
 
         .citas-list { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; padding-bottom: 80px; }
         .card { background: #080808; border: 1px solid var(--border); padding: 20px; border-radius: 18px; position: relative; border-left: 4px solid var(--gold); }
         .card h3 { margin: 0 0 5px 0; font-size: 0.95rem; }
         .price-tag { position: absolute; top: 20px; right: 20px; color: var(--gold); font-weight: bold; font-size: 0.9rem; }
+        .note-text { font-size: 0.75rem; color: #d4af37; font-style: italic; margin: 10px 0; display: block; background: rgba(212, 175, 55, 0.05); padding: 8px; border-radius: 8px; }
         
         .btn { width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; font-size: 0.65rem; margin-top: 10px; text-transform: uppercase; transition: 0.3s; }
         .btn-gold { background: var(--gold); color: #000; }
+        .btn-red { background: transparent; border: 1px solid var(--red); color: var(--red); }
         .btn-outline { background: transparent; border: 1px solid #444; color: #aaa; }
 
         .modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
-        .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; margin: auto; max-height: 90vh; overflow-y: auto; }
-        input, select, textarea { background:#000; color:#fff; border:1px solid #222; padding:14px; border-radius:12px; width:100%; margin-bottom:15px; box-sizing:border-box; font-family: 'Poppins', sans-serif; }
+        .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; margin: auto; max-height: 80vh; overflow-y: auto; }
+        input, select, textarea { background:#000; color:#fff; border:1px solid #222; padding:14px; border-radius:12px; width:100%; margin-bottom:15px; box-sizing:border-box; font-family: 'Poppins', sans-serif; outline: none; }
     </style>
 </head>
 <body>
@@ -85,6 +98,16 @@
         <h2 style="font-size: 0.8rem; letter-spacing: 2px; color: var(--gold); margin-top: 40px;">GESTIÓN DE CITAS</h2>
         <div class="citas-list" id="lista-citas"></div>
 
+        <div id="modalEvento" class="modal">
+            <div class="modal-content">
+                <h3 id="pop-nombre" style="margin-top:0; color:var(--gold);">Cliente</h3>
+                <p id="pop-fecha" style="font-size:0.8rem; color:#888;"></p>
+                <div id="pop-nota" class="note-text"></div>
+                <button class="btn btn-red" id="btn-eliminar-pop">ELIMINAR CITA</button>
+                <button class="btn btn-outline" onclick="cerrarPop()">CERRAR</button>
+            </div>
+        </div>
+
         <div id="modalConfig" class="modal">
             <div class="modal-content">
                 <h3 style="color:var(--gold); margin-top:0;">CONFIGURACIÓN</h3>
@@ -100,20 +123,11 @@
 
                 <input type="text" id="serv-n" placeholder="Nombre Servicio">
                 <input type="number" id="serv-p" placeholder="Precio (Q)">
-                <textarea id="serv-d" placeholder="¿Qué incluye el servicio? (Detalle)" style="height: 80px;"></textarea>
+                <textarea id="serv-d" placeholder="Detalles del servicio..." style="height: 60px;"></textarea>
                 <button class="btn btn-gold" onclick="agregarServicio()">Añadir al Catálogo</button>
                 
                 <div id="lista-servicios-admin" style="margin-top:20px; max-height:150px; overflow-y:auto; border-top: 1px solid #1a1a1a; padding-top:10px; text-align: left;"></div>
                 <button class="btn btn-outline" onclick="toggleConfig()">CERRAR</button>
-            </div>
-        </div>
-
-        <div id="modalEvento" class="modal">
-            <div class="modal-content">
-                <h3 id="pop-nombre" style="margin-top:0; color:var(--gold);">Cliente</h3>
-                <p id="pop-fecha" style="font-size:0.8rem; color:#888;"></p>
-                <button class="btn btn-red" id="btn-eliminar-pop">ELIMINAR CITA</button>
-                <button class="btn btn-outline" onclick="cerrarPop()">CERRAR</button>
             </div>
         </div>
     </div>
@@ -131,17 +145,14 @@
         
         let calendar, serviciosActuales = {};
 
-        // LLENAR SELECTORES DE HORA
-        const fillHours = () => {
-            const ap = document.getElementById('config-apertura');
-            const ci = document.getElementById('config-cierre');
-            for(let h=0; h<=23; h++){
-                let lbl = h === 0 ? "12 AM" : h === 12 ? "12 PM" : h > 12 ? `${h-12} PM` : `${h} AM`;
-                let opt = `<option value="${h}">${lbl}</option>`;
-                ap.innerHTML += opt; ci.innerHTML += opt;
-            }
-        };
-        fillHours();
+        // Llenar selectores de horas
+        const apSelect = document.getElementById('config-apertura');
+        const ciSelect = document.getElementById('config-cierre');
+        for(let h=0; h<=23; h++){
+            let lbl = h === 0 ? "12 AM" : h === 12 ? "12 PM" : h > 12 ? `${h-12} PM` : `${h} AM`;
+            let opt = `<option value="${h}">${lbl}</option>`;
+            apSelect.innerHTML += opt; ciSelect.innerHTML += opt;
+        }
 
         window.loginGoogle = () => signInWithPopup(auth, provider);
         window.toggleConfig = () => {
@@ -151,7 +162,6 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Simplificado para que entres directo si eres Antony
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('admin-content').style.display = 'block';
                 initCalendar();
@@ -160,42 +170,58 @@
 
         function initCalendar() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                initialView: 'dayGridMonth', locale: 'es',
-                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
+                initialView: 'dayGridMonth', 
+                locale: 'es',
+                firstDay: 1,
+                headerToolbar: { 
+                    left: 'prev,next today', 
+                    center: 'title', 
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay' 
+                },
+                buttonText: { 
+                    today: 'Hoy', 
+                    month: 'Mes', 
+                    week: 'Semana', 
+                    day: 'Día' 
+                },
                 eventClick: (info) => {
                     const id = info.event.id;
+                    const meta = info.event.extendedProps;
                     document.getElementById('pop-nombre').innerText = info.event.title;
                     document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString();
+                    document.getElementById('pop-nota').innerText = meta.nota ? `Nota: ${meta.nota}` : 'Sin notas adicionales';
                     document.getElementById('modalEvento').style.display = 'flex';
                     document.getElementById('btn-eliminar-pop').onclick = () => { remove(ref(db, `citas/${id}`)); cerrarPop(); };
                 }
             });
             calendar.render();
             
-            // CARGAR CITAS Y SERVICIOS
             onValue(ref(db, 'citas'), snap => renderAdmin(snap.val()));
             onValue(ref(db, 'servicios'), snap => {
                 serviciosActuales = snap.val() || {};
                 renderServicios(serviciosActuales);
             });
-            // CARGAR HORARIO
             onValue(ref(db, 'configuracion_horario'), snap => {
                 if(snap.val()){
-                    document.getElementById('config-apertura').value = snap.val().apertura;
-                    document.getElementById('config-cierre').value = snap.val().cierre;
+                    apSelect.value = snap.val().apertura;
+                    ciSelect.value = snap.val().cierre;
                 }
             });
         }
 
-        // PUNTO 2: ACEPTAR AUTOMÁTICAMENTE Y FINALIZAR
-        window.cambiarEstado = (id, est) => {
-            update(ref(db, `citas/${id}`), { estado: est });
+        window.guardarHorarioAdmin = () => {
+            const a = apSelect.value;
+            const c = ciSelect.value;
+            if (parseInt(a) >= parseInt(c)) return alert("La apertura debe ser antes del cierre.");
+            set(ref(db, 'configuracion_horario'), { apertura: a, cierre: c })
+            .then(() => alert("✅ Horario de Barbería actualizado"));
         };
+
+        window.cambiarEstado = (id, est) => update(ref(db, `citas/${id}`), { estado: est });
 
         function renderAdmin(data) {
             const lista = document.getElementById('lista-citas'); 
-            lista.innerHTML = ''; // ANTI-DUPLICADOS
-            
+            lista.innerHTML = '';
             const eventos = []; let totalIngresos = 0, contadorFinalizadas = 0;
             const statsServicios = {}, mesActual = new Date().getMonth();
 
@@ -210,9 +236,14 @@
                         statsServicios[c.servicio] = (statsServicios[c.servicio] || 0) + 1;
                     }
 
-                    eventos.push({ id: id, title: c.nombre, start: c.fecha, backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#111' });
+                    eventos.push({ 
+                        id: id, 
+                        title: c.nombre, 
+                        start: c.fecha, 
+                        backgroundColor: c.estado === 'Aceptada' ? '#d4af37' : '#111',
+                        extendedProps: { nota: c.nota || '' }
+                    });
 
-                    // SOLO MOSTRAR LAS QUE NO ESTÁN FINALIZADAS
                     if(c.estado !== 'Finalizada') {
                         const card = document.createElement('div'); card.className = 'card';
                         card.innerHTML = `
@@ -220,6 +251,7 @@
                             <div style="font-size:0.55rem; color:var(--gold);">${c.estado}</div>
                             <h3>${c.nombre}</h3>
                             <p style="font-size:0.7rem; color:#888;">${c.servicio} | ${f.toLocaleString()}</p>
+                            ${c.nota ? `<span class="note-text">Nota: ${c.nota}</span>` : ''}
                             <button class="btn btn-gold" onclick="cambiarEstado('${id}', 'Finalizada')">FINALIZAR Y COBRAR</button>
                         `;
                         lista.appendChild(card);
@@ -228,46 +260,24 @@
             }
             document.getElementById('ingreso-total').innerText = `Q${totalIngresos.toFixed(2)}`;
             document.getElementById('citas-count').innerText = contadorFinalizadas;
-            
             const sDiv = document.getElementById('servicios-stats'); sDiv.innerHTML = '<strong>Servicios del Mes:</strong>';
             for(let s in statsServicios) sDiv.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:0.7rem;"><span>${s}</span> <span>${statsServicios[s]}</span></div>`;
-            
             if(calendar) { calendar.removeAllEvents(); calendar.addEventSource(eventos); }
         }
 
-        // FUNCIONES DE CONFIGURACIÓN
-        window.guardarHorarioAdmin = () => {
-            set(ref(db, 'configuracion_horario'), {
-                apertura: document.getElementById('config-apertura').value,
-                cierre: document.getElementById('config-cierre').value
-            }).then(() => alert("Horario actualizado"));
-        };
-
         window.agregarServicio = () => {
-            const n = document.getElementById('serv-n').value;
-            const p = document.getElementById('serv-p').value;
-            const d = document.getElementById('serv-d').value;
-            if(n && p) { 
-                push(ref(db, 'servicios'), { nombre: n, precio: p, descripcion: d }); 
-                document.getElementById('serv-n').value=''; 
-                document.getElementById('serv-p').value='';
-                document.getElementById('serv-d').value='';
-            }
+            const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value, d = document.getElementById('serv-d').value;
+            if(n && p) { push(ref(db, 'servicios'), { nombre: n, precio: p, descripcion: d }); document.getElementById('serv-n').value=''; document.getElementById('serv-p').value=''; document.getElementById('serv-d').value=''; }
         };
 
         function renderServicios(servs) {
-            const div = document.getElementById('lista-servicios-admin'); 
-            div.innerHTML = ''; // ANTI-DUPLICADOS
+            const div = document.getElementById('lista-servicios-admin'); div.innerHTML = '';
             Object.keys(servs).forEach(id => {
-                div.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #1a1a1a; font-size: 0.7rem;">
-                    <span>${servs[id].nombre} (Q${servs[id].precio})</span>
-                    <i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"></i>
-                </div>`;
+                div.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #1a1a1a; font-size: 0.7rem;"><span>${servs[id].nombre} (Q${servs[id].precio})</span><i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"></i></div>`;
             });
         }
         window.eliminarServicio = (id) => remove(ref(db, `servicios/${id}`));
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
-
     </script>
 </body>
 </html>
