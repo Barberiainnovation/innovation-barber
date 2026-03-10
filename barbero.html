@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
     
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/es.global.min.js"></script>
     
@@ -61,8 +64,10 @@
         #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 14px 40px; border-radius: 50px; font-weight: 700; z-index: 11000; transition: 0.6s; }
         #toast.show { bottom: 40px; }
         
-        /* Estilos específicos para bloqueos */
-        .block-item { background: rgba(255, 77, 77, 0.1); padding: 10px 15px; border-radius: 15px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; border: 1px solid rgba(255, 77, 77, 0.3); color: #eee; }
+        .block-item { background: rgba(255, 77, 77, 0.1); padding: 8px 12px; border-radius: 12px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; border: 1px solid rgba(255, 77, 77, 0.2); }
+        
+        /* Ajuste para el calendario de bloqueo */
+        .flatpickr-calendar { background: #0a0a0a !important; border: 1px solid var(--gold) !important; margin-bottom: 10px !important; }
     </style>
 </head>
 <body>
@@ -111,11 +116,11 @@
             
             <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
             <p style="font-size: 0.7rem; color: #555;">BLOQUEAR DÍAS ESPECÍFICOS</p>
-            <div style="display:flex; gap:10px;">
-                <input type="date" id="input-block-date" style="margin-bottom:0;">
-                <button class="btn btn-gold" id="btn-add-block" style="width:80px; padding:10px;">OK</button>
-            </div>
-            <div id="lista-bloqueos-admin" style="margin-top:15px; text-align: left;"></div>
+            
+            <input type="text" id="input-block-date" placeholder="Toca para ver el calendario" readonly style="cursor:pointer; border:1px solid var(--gold);">
+            <button class="btn btn-gold" id="btn-add-block" style="margin-top:5px;">BLOQUEAR DÍA SELECCIONADO</button>
+            
+            <div id="lista-bloqueos-admin" style="margin-top:10px; text-align: left;"></div>
 
             <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
             <p style="font-size: 0.7rem; color: #555;">GESTIÓN DE SERVICIOS</p>
@@ -131,6 +136,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -143,9 +150,16 @@
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
         
-        let calendar, selectedDateTime = null, catalogoGlobal = {}, iti;
+        let calendar, selectedDateTime = null, catalogoGlobal = {}, iti, fpBlock;
 
         iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { initialCountry: "gt", separateDialCode: true });
+
+        // Inicializar Flatpickr en español
+        fpBlock = flatpickr("#input-block-date", {
+            locale: "es",
+            minDate: "today",
+            dateFormat: "Y-m-d"
+        });
 
         window.showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
         window.confirmarAccion = (t, cb) => { document.getElementById('confirm-text').innerText = t; document.getElementById('modalConfirm').style.display = 'flex'; document.getElementById('confirm-yes').onclick = () => { cb(); document.getElementById('modalConfirm').style.display = 'none'; }; };
@@ -164,9 +178,6 @@
         window.eliminarServicio = (id) => confirmarAccion("¿Eliminar servicio?", () => remove(ref(db, `servicios/${id}`)).then(() => showToast("ELIMINADO")));
 
         onAuthStateChanged(auth, (u) => { if(u){ document.getElementById('login-overlay').style.display='none'; document.getElementById('admin-content').style.display='block'; initDashboard(); } });
-
-        // Función para eliminar bloqueos (definida globalmente para el onclick)
-        window.eliminarBloqueo = (f) => remove(ref(db, `dias_bloqueados/${f}`)).then(() => showToast("BLOQUEO ELIMINADO"));
 
         function initDashboard() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
@@ -212,21 +223,15 @@
                     lFi.value = config.lunch_fin || "";
                 } 
             });
-            
             onValue(ref(db, 'citas'), snap => renderAdmin(snap.val()));
             onValue(ref(db, 'servicios'), snap => renderServicios(snap.val() || {}));
             
-            // Listener para días bloqueados corregido
             onValue(ref(db, 'dias_bloqueados'), snap => {
                 const list = document.getElementById('lista-bloqueos-admin');
                 list.innerHTML = '';
                 const bloqueos = snap.val() || {};
                 Object.keys(bloqueos).forEach(fecha => {
-                    list.innerHTML += `
-                        <div class="block-item">
-                            <span><i class="fas fa-calendar-lock"></i> ${fecha}</span>
-                            <i class="fas fa-trash-alt" style="cursor:pointer; color:var(--red);" onclick="window.eliminarBloqueo('${fecha}')"></i>
-                        </div>`;
+                    list.innerHTML += `<div class="block-item"><span>${fecha}</span><i class="fas fa-times" style="cursor:pointer; color:var(--red);" onclick="window.eliminarBloqueo('${fecha}')"></i></div>`;
                 });
             });
         }
@@ -254,19 +259,20 @@
         window.cerrarModalAdd = () => document.getElementById('modalAddCita').style.display = 'none';
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
         
-        // EVENTO DEL BOTÓN OK PARA BLOQUEAR DÍAS
+        // Función de Bloqueo ajustada con Flatpickr
         document.getElementById('btn-add-block').onclick = () => {
-            const fechaInput = document.getElementById('input-block-date').value;
-            if(fechaInput) {
-                set(ref(db, `dias_bloqueados/${fechaInput}`), true)
-                .then(() => {
+            const fecha = document.getElementById('input-block-date').value;
+            if(fecha) {
+                set(ref(db, `dias_bloqueados/${fecha}`), true).then(() => {
                     showToast("DÍA BLOQUEADO");
-                    document.getElementById('input-block-date').value = '';
+                    fpBlock.clear();
                 });
             } else {
-                showToast("SELECCIONE UNA FECHA");
+                showToast("SELECCIONE FECHA");
             }
         };
+
+        window.eliminarBloqueo = (f) => remove(ref(db, `dias_bloqueados/${f}`)).then(() => showToast("BLOQUEO ELIMINADO"));
 
         document.getElementById('btn-save-cita-calendar').onclick = () => {
             const nom = document.getElementById('add-nombre').value, wa = iti.getNumber(), sKey = document.getElementById('add-servicio-select').value;
