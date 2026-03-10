@@ -52,6 +52,16 @@
         .flag-select { width: 110px; font-size: 1.1rem; cursor: pointer; }
         textarea { height: 70px; resize: none; }
 
+        /* Caja de Descripción Dinámica */
+        #info-servicio { 
+            display:none; margin-top: 10px; padding: 12px; 
+            background: rgba(212, 175, 55, 0.05); border-left: 3px solid var(--gold); 
+            border-radius: 8px; font-size: 0.8rem; color: #ccc; 
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
         .btn-reserva { 
             background: linear-gradient(135deg, var(--gold), var(--gold-light)); 
             color: #000; border: none; width: 100%; 
@@ -61,16 +71,12 @@
         }
 
         .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.9); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-content { 
-            background: #111; padding: 40px; border: 1px solid var(--gold); 
-            width: 85%; max-width: 320px; border-radius: 30px; text-align: center;
-        }
+        .modal-content { background: #111; padding: 40px; border: 1px solid var(--gold); width: 85%; max-width: 320px; border-radius: 30px; text-align: center; }
 
         /* Estilo Flatpickr */
         .flatpickr-calendar { background: #111 !important; border: 1px solid var(--gold) !important; color: #fff !important; }
         .flatpickr-day.selected { background: var(--gold) !important; border-color: var(--gold) !important; color: #000 !important; }
         .flatpickr-day.disabled { color: rgba(255,255,255,0.1) !important; }
-        .flatpickr-time input:hover, .flatpickr-time .numInputWrapper:hover { background: #222 !important; }
     </style>
 </head>
 <body>
@@ -101,7 +107,11 @@
 
         <div class="form-group">
             <label><i class="fas fa-cut"></i> Servicio Elite</label>
-            <select id="servicio"></select>
+            <select id="servicio" onchange="actualizarInfoServicio()"></select>
+            <div id="info-servicio">
+                <strong style="color: var(--gold); display: block; margin-bottom: 4px;">Incluye:</strong>
+                <span id="texto-descripcion"></span>
+            </div>
         </div>
 
         <div class="form-group">
@@ -121,8 +131,8 @@
         <div class="modal-content">
             <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--gold); margin-bottom: 20px;"></i>
             <h2 style="color:var(--gold); margin:0; letter-spacing: 2px;">CONFIRMADO</h2>
-            <p style="color:#888; font-size: 0.9rem; margin: 15px 0;">Tu solicitud ha sido enviada con éxito. El barbero te confirmará en breve.</p>
-            <button class="btn-reserva" onclick="cerrarModal('modalExito', true)">Finalizar</button>
+            <p style="color:#888; font-size: 0.9rem; margin: 15px 0;">Tu solicitud ha sido enviada con éxito. El barbero confirmará tu espacio pronto.</p>
+            <button class="btn-reserva" onclick="location.reload()">Finalizar</button>
         </div>
     </div>
 
@@ -142,12 +152,10 @@
 
         let citasOcupadas = [];
 
-        // Escuchar citas en tiempo real
+        // 1. Escuchar citas y configurar Calendario sin bloqueo de día completo
         onValue(ref(db, 'citas'), (snapshot) => {
             citasOcupadas = [];
-            snapshot.forEach(child => {
-                if(child.val().fecha) citasOcupadas.push(child.val().fecha);
-            });
+            snapshot.forEach(child => { if(child.val().fecha) citasOcupadas.push(child.val().fecha); });
 
             flatpickr("#fecha-cita", {
                 enableTime: true,
@@ -157,21 +165,45 @@
                 maxTime: "22:00",
                 time_24hr: false,
                 minuteIncrement: 60,
-                // Bloquea visualmente las horas que ya están en el array de Firebase
-                disable: citasOcupadas,
+                // Función para bloquear SOLO la hora exacta ocupada
+                onValueUpdate: (selectedDates, dateStr, instance) => {
+                    if (citasOcupadas.includes(dateStr)) {
+                        alert("Este horario ya está reservado. Por favor elige otro.");
+                        instance.clear();
+                    }
+                },
+                // Deshabilita visualmente las horas que ya existen en la lista
+                disable: [
+                    function(date) {
+                        // Aquí no bloqueamos nada por fecha para evitar el error del día completo.
+                        // La validación real se hace al elegir la hora.
+                        return false; 
+                    },
+                    ...citasOcupadas // Pasamos la lista para que Flatpickr intente marcar las horas
+                ],
                 locale: { firstDayOfWeek: 1 }
             });
         });
 
-        // Cargar servicios con precios
+        // 2. Cargar servicios con Descripción
         onValue(ref(db, 'servicios'), (snap) => {
             const select = document.getElementById('servicio');
             select.innerHTML = '<option value="" disabled selected>Selecciona tu servicio</option>';
             snap.forEach(s => {
                 const data = s.val();
-                select.innerHTML += `<option value="${data.nombre}" data-precio="${data.precio}">${data.nombre} - Q${data.precio}</option>`;
+                select.innerHTML += `<option value="${data.nombre}" data-precio="${data.precio}" data-desc="${data.descripcion || 'Sin descripción'}">${data.nombre} - Q${data.precio}</option>`;
             });
         });
+
+        window.actualizarInfoServicio = () => {
+            const select = document.getElementById('servicio');
+            const infoDiv = document.getElementById('info-servicio');
+            const textoDesc = document.getElementById('texto-descripcion');
+            const option = select.options[select.selectedIndex];
+            
+            textoDesc.innerText = option.getAttribute('data-desc');
+            infoDiv.style.display = 'block';
+        };
 
         window.enviarCita = () => {
             const nom = document.getElementById('nombre').value;
@@ -181,7 +213,7 @@
             const fec = document.getElementById('fecha-cita').value;
 
             if(!nom || !num || !sel.value || !fec) {
-                alert("Por favor completa todos los campos.");
+                alert("Completa todos los campos por favor.");
                 return;
             }
 
@@ -196,11 +228,6 @@
             }).then(() => {
                 document.getElementById('modalExito').style.display = 'flex';
             });
-        };
-
-        window.cerrarModal = (id, recargar) => {
-            document.getElementById(id).style.display = 'none';
-            if(recargar) location.reload();
         };
     </script>
 </body>
