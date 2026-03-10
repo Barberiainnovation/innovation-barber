@@ -8,53 +8,52 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     
     <style>
         :root { --bg: #000; --card: #0d0d0d; --gold: #d4af37; --border: #1a1a1a; --green: #2ecc71; --red: #ff4d4d; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; scroll-behavior: smooth; }
         
-        /* Login */
         #login-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; align-items:center; justify-content:center; }
         .login-box { width:320px; padding:40px; text-align:center; background:var(--card); border-radius:25px; border: 1px solid var(--border); }
         .logo-main { width: 80px; height: auto; display: block; margin: 0 auto 15px auto; object-fit: contain; }
 
-        /* Layout */
         #admin-content { display:none; width: 100%; max-width: 1200px; margin: 0 auto; padding-top: 20px; }
         .main-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
         @media (max-width: 950px) { .main-grid { grid-template-columns: 1fr; } }
 
-        /* Sidebar & Stats */
         .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 25px; height: fit-content; border-top: 4px solid var(--gold); position: sticky; top: 10px; }
         .stat-card { text-align: center; margin-bottom: 20px; }
         .stat-val { font-size: 2rem; font-weight: 600; color: var(--green); display: block; }
         .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #666; letter-spacing: 1px; margin-bottom: 5px; display: block; }
         
-        /* Calendario */
         #calendar-container { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; }
         .fc { --fc-border-color: #1a1a1a; --fc-today-bg-color: rgba(212,175,55,0.05); font-size: 0.85rem; }
         .fc-button { background: transparent !important; border: 1px solid var(--border) !important; color: var(--gold) !important; font-size: 0.65rem !important; }
 
-        /* Listado de Citas */
         .citas-list { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; padding-bottom: 80px; }
         .card { background: #080808; border: 1px solid var(--border); padding: 20px; border-radius: 18px; position: relative; border-left: 4px solid var(--gold); }
         .price-tag { position: absolute; top: 20px; right: 20px; color: var(--gold); font-weight: bold; font-size: 0.9rem; }
         .note-box { font-size: 0.75rem; color: #bbb; background: #151515; padding: 12px; border-radius: 10px; margin: 12px 0; border: 1px solid #222; }
         
-        /* Botones */
         .btn { width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; font-size: 0.65rem; margin-top: 10px; text-transform: uppercase; }
         .btn-gold { background: var(--gold); color: #000; }
         .btn-outline { background: transparent; border: 1px solid #444; color: #aaa; }
         .btn-red { background: transparent; border: 1px solid var(--red); color: var(--red); }
-        .btn-config-float { position: fixed; bottom: 20px; right: 20px; background: var(--gold); color: #000; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: none; cursor: pointer; z-index: 2000; box-shadow: 0 5px 15px rgba(212,175,55,0.3); }
+        .btn-config-float { position: fixed; bottom: 20px; right: 20px; background: var(--gold); color: #000; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: none; cursor: pointer; z-index: 1000; box-shadow: 0 5px 15px rgba(212,175,55,0.3); }
 
-        /* Modales */
-        .modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
+        /* MODALES ESTRUCTURA */
+        .modal { display:none; position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
+        
+        /* Modal Configuración y Evento (Capa 3000) */
+        #modalConfig, #modalEvento { z-index: 3000; }
+        
+        /* Modal de Confirmación (Capa 5000 - Siempre arriba de todo) */
+        #modalConfirm { z-index: 5000 !important; }
+
         .modal-content { background:var(--card); padding:30px; border: 1px solid var(--gold); width:90%; max-width:400px; border-radius:20px; text-align: center; }
         input, select, textarea { background:#000; color:#fff; border:1px solid #222; padding:14px; border-radius:12px; width:100%; margin-bottom:15px; outline: none; }
 
-        /* Toast */
         #toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 15px 30px; border-radius: 50px; font-weight: 600; font-size: 0.8rem; z-index: 10000; transition: top 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         #toast.show { top: 30px; }
     </style>
@@ -109,8 +108,10 @@
                 <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:var(--red); margin-bottom:15px;"></i>
                 <h3 style="color:#fff; margin:0;">¿ESTÁS SEGURO?</h3>
                 <p id="confirm-text" style="color:#888; font-size:0.8rem; margin:15px 0;"></p>
-                <button class="btn btn-red" id="confirm-yes">SÍ, ELIMINAR</button>
-                <button class="btn btn-outline" onclick="document.getElementById('modalConfirm').style.display='none'">CANCELAR</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-red" id="confirm-yes">ELIMINAR</button>
+                    <button class="btn btn-outline" onclick="document.getElementById('modalConfirm').style.display='none'">CANCELAR</button>
+                </div>
             </div>
         </div>
 
@@ -130,7 +131,7 @@
                 <textarea id="serv-d" placeholder="Detalles..." style="height:60px;"></textarea>
                 <button class="btn btn-gold" id="btn-add-serv">Añadir al Catálogo</button>
                 <div id="lista-servicios-admin" style="margin-top:20px; max-height:150px; overflow-y:auto; border-top: 1px solid #1a1a1a; padding-top:10px; text-align: left;"></div>
-                <button class="btn btn-outline" onclick="toggleConfig()">CERRAR</button>
+                <button class="btn btn-outline" onclick="toggleConfig()">CERRAR VENTANA</button>
             </div>
         </div>
     </div>
@@ -153,6 +154,7 @@
             setTimeout(() => t.classList.remove('show'), 3000);
         }
 
+        // CONFIRMACIÓN MEJORADA (Se muestra arriba de todo)
         window.confirmarAccion = (texto, callback) => {
             document.getElementById('confirm-text').innerText = texto;
             document.getElementById('modalConfirm').style.display = 'flex';
@@ -198,7 +200,7 @@
                     document.getElementById('pop-nota').innerText = meta.nota ? `Nota: ${meta.nota}` : 'Sin notas';
                     document.getElementById('modalEvento').style.display = 'flex';
                     document.getElementById('btn-eliminar-pop').onclick = () => { 
-                        confirmarAccion("Esta cita se borrará permanentemente.", () => {
+                        confirmarAccion("¿Borrar cita permanentemente?", () => {
                             remove(ref(db, `citas/${id}`)); cerrarPop(); showToast("CITA ELIMINADA");
                         });
                     };
@@ -266,8 +268,13 @@
                 const sRow = document.createElement('div');
                 sRow.style = "display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #1a1a1a; font-size: 0.7rem;";
                 sRow.innerHTML = `<span>${servs[id].nombre}</span><i class="fas fa-trash" style="color:red; cursor:pointer;"></i>`;
+                
+                // Aquí el cambio: El click activa el modal de confirmación por encima de la config
                 sRow.querySelector('i').onclick = () => {
-                    confirmarAccion(`¿Eliminar ${servs[id].nombre}?`, () => { remove(ref(db, `servicios/${id}`)); showToast("SERVICIO ELIMINADO"); });
+                    confirmarAccion(`¿Eliminar ${servs[id].nombre} del catálogo?`, () => {
+                        remove(ref(db, `servicios/${id}`));
+                        showToast("SERVICIO ELIMINADO");
+                    });
                 };
                 div.appendChild(sRow);
             });
