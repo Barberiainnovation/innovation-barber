@@ -30,7 +30,7 @@
         input:focus { border-color: var(--gold); background: rgba(255,255,255,0.08); }
         
         .phone-container { display: flex; gap: 8px; }
-        .flag-select { width: 120px; cursor: pointer; }
+        .flag-select { width: 130px; cursor: pointer; }
         
         /* Slots de Tiempo */
         .slots-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; max-height: 220px; overflow-y: auto; padding: 5px; }
@@ -43,13 +43,11 @@
         .btn-reserva { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #000; border: none; width: 100%; padding: 18px; border-radius: 20px; font-weight: 700; cursor: pointer; margin-top: 25px; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; }
         .btn-reserva:active { transform: scale(0.96); }
 
-        /* Modales Elegantes */
         .modal { display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.92); align-items: center; justify-content: center; backdrop-filter: blur(10px); animation: fadeIn 0.4s ease; }
         .modal-content { background: #0d0d0d; padding: 40px 30px; border: 1px solid var(--gold); width: 85%; max-width: 320px; border-radius: 35px; text-align: center; box-shadow: 0 0 40px rgba(212,175,55,0.1); }
 
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         
-        /* Flatpickr Personalizado */
         .flatpickr-calendar { background: #0d0d0d !important; border: 1px solid var(--border) !important; box-shadow: none !important; }
         .flatpickr-day.selected { background: var(--gold) !important; border-color: var(--gold) !important; color: #000 !important; }
     </style>
@@ -68,11 +66,15 @@
             <label><i class="fab fa-whatsapp"></i> WhatsApp</label>
             <div class="phone-container">
                 <select id="codigo-area" class="flag-select">
-                    <option value="502">🇬🇹 +502</option>
-                    <option value="503">🇸🇻 +503</option>
-                    <option value="504">🇭🇳 +504</option>
-                    <option value="1">🇺🇸 +1</option>
-                    <option value="52">🇲🇽 +52</option>
+                    <option value="502">🇬🇹 GT +502</option>
+                    <option value="503">🇸🇻 SV +503</option>
+                    <option value="504">🇭🇳 HN +504</option>
+                    <option value="505">🇳🇮 NI +505</option>
+                    <option value="506">🇨🇷 CR +506</option>
+                    <option value="507">🇵🇦 PA +507</option>
+                    <option value="501">🇧🇿 BZ +501</option>
+                    <option value="52">🇲🇽 MX +52</option>
+                    <option value="1">🇺🇸 US +1</option>
                 </select>
                 <input type="tel" id="whatsapp" placeholder="Número">
             </div>
