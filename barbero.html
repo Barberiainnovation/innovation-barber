@@ -24,7 +24,6 @@
         .main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 25px; margin-top: 10px; }
         @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
         
-        /* CALENDARIO ESTILO ELITE */
         #calendar-container { background: var(--card); padding: 20px; border-radius: 35px; border: 1px solid var(--border); }
         .fc { --fc-border-color: #161616; --fc-today-bg-color: rgba(212,175,55,0.02); font-size: 0.8rem; }
         .fc .fc-toolbar-title { font-size: 1rem !important; text-transform: uppercase; color: var(--gold); font-weight: 600; }
@@ -32,15 +31,21 @@
         .fc-v-event { background: linear-gradient(135deg, var(--gold), var(--gold-dark)) !important; border: none !important; border-radius: 6px !important; color: #000 !important; }
         .fc-event-main { font-weight: 600; font-size: 0.85rem !important; line-height: 1.1; display: flex; align-items: center; padding-left: 5px; }
 
-        /* SIDEBAR Y LOGO GRANDE */
         .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 35px; padding: 30px; border-top: 5px solid var(--gold); position: sticky; top: 15px; height: fit-content; }
         .sidebar-logo { width: 90px; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(212,175,55,0.15)); }
         .stat-val { font-size: 2.2rem; font-weight: 600; color: var(--gold); }
         .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #555; letter-spacing: 2px; }
         
-        /* TARJETAS DE FINALIZACIÓN COMPACTAS */
+        /* TARJETAS DE SERVICIOS */
         .citas-list { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 320px)); gap: 15px; padding-bottom: 100px; justify-content: start; }
-        .card { background: #060606; border: 1px solid var(--border); padding: 12px 18px; border-radius: 18px; border-left: 3px solid var(--gold); display: flex; justify-content: space-between; align-items: center; }
+        .card { background: #060606; border: 1px solid var(--border); padding: 12px 18px; border-radius: 18px; border-left: 3px solid var(--gold); display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
+        
+        /* ESTADO FINALIZADO (GRIS) */
+        .card.finalizada { border-left-color: #333; opacity: 0.5; background: #0a0a0a; }
+        .card.finalizada h4 { color: #666; }
+        .card.finalizada .btn-mini { display: none; }
+        .card.finalizada::after { content: 'FINALIZADO'; font-size: 0.5rem; color: #444; font-weight: 700; letter-spacing: 1px; }
+
         .card h4 { margin: 0; font-size: 0.82rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; }
         .btn-mini { width: auto; padding: 8px 12px; border-radius: 10px; font-size: 0.55rem; margin: 0; white-space: nowrap; font-weight: 700; }
 
@@ -153,13 +158,13 @@
                 eventClick: (info) => {
                     const id = info.event.id, meta = info.event.extendedProps;
                     const nombre = info.event.title;
-                    const fechaTxt = info.event.start.toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+                    const fTxt = info.event.start.toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
                     
                     document.getElementById('pop-nombre').innerText = nombre;
                     document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString('es-GT');
                     
                     document.getElementById('pop-whatsapp').onclick = () => {
-                        const msg = encodeURIComponent(`Hola ${nombre}, te saludamos de Innovation Barber Studio. Te recordamos tu cita para el día ${fechaTxt}. ¡Te esperamos!`);
+                        const msg = encodeURIComponent(`Hola ${nombre}, te saludamos de Innovation Barber Studio. Te recordamos tu cita para el día ${fTxt}. ¡Te esperamos!`);
                         window.open(`https://wa.me/${meta.whatsapp.replace(/\D/g,'')}?text=${msg}`);
                     };
 
@@ -190,21 +195,23 @@
             const mesActual = ahora.getMonth(), añoActual = ahora.getFullYear();
 
             if(data){
-                Object.keys(data).forEach(id => {
+                // Ordenar por fecha para que los finalizados no desordenen todo
+                Object.keys(data).sort((a,b) => new Date(data[a].fecha) - new Date(data[b].fecha)).forEach(id => {
                     const c = data[id], fCita = new Date(c.fecha);
+                    const isFinalizada = c.estado === 'Finalizada';
                     
-                    if(c.estado === 'Finalizada' && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) {
+                    if(isFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) {
                         totalServiciosMes++;
                         totalIngresosMes += parseFloat(c.precio || 0);
                     }
 
-                    eventos.push({ id, title: c.nombre, start: c.fecha, backgroundColor: c.estado==='Finalizada'?'#111':'#d4af37', extendedProps: { whatsapp: c.whatsapp } });
+                    eventos.push({ id, title: c.nombre, start: c.fecha, backgroundColor: isFinalizada?'#111':'#d4af37', extendedProps: { whatsapp: c.whatsapp } });
 
-                    if(c.estado === 'Pendiente'){
-                        const div = document.createElement('div'); div.className = 'card';
-                        div.innerHTML = `<h4>${c.nombre}</h4><button class="btn btn-gold btn-mini" onclick="cambiarEstado('${id}','Finalizada')">FINALIZAR SERVICIO</button>`;
-                        lista.appendChild(div);
-                    }
+                    // Solo mostrar en la lista inferior si es de HOY (o si prefieres ver todas, quitamos el filtro de fecha)
+                    const div = document.createElement('div');
+                    div.className = `card ${isFinalizada ? 'finalizada' : ''}`;
+                    div.innerHTML = `<h4>${c.nombre}</h4><button class="btn btn-gold btn-mini" onclick="cambiarEstado('${id}','Finalizada')">FINALIZAR</button>`;
+                    lista.appendChild(div);
                 });
             }
             citasCountEl.innerText = totalServiciosMes;
@@ -212,7 +219,7 @@
             calendar.removeAllEvents(); calendar.addEventSource(eventos);
         }
 
-        window.cambiarEstado = (id, est) => update(ref(db, `citas/${id}`), { estado: est }).then(() => showToast("FINALIZADO Y CONTABILIZADO"));
+        window.cambiarEstado = (id, est) => update(ref(db, `citas/${id}`), { estado: est }).then(() => showToast("FINALIZADO"));
         window.cerrarModalAdd = () => document.getElementById('modalAddCita').style.display = 'none';
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
         
