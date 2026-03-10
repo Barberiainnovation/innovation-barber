@@ -7,8 +7,8 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="logo negro.png">
-    <link rel="icon" type="image/png" href="logo negro.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" type="image/png" href="logo.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -23,8 +23,8 @@
 
         #admin-content { display:none; width: 100%; max-width: 1200px; margin: 0 auto; padding-top: 20px; }
         
-        /* Ajuste de logo para que coincida con el index */
-        .logo-main { width: 80px; height: auto; display: block; margin: 0 auto 15px auto; object-fit: contain; }
+        /* Ajuste de logo */
+        .logo-main { width: 100px; height: auto; display: block; margin: 0 auto 15px auto; object-fit: contain; }
 
         .btn-config-float { 
             position: fixed; bottom: 20px; right: 20px; 
@@ -65,7 +65,7 @@
 
     <div id="login-overlay">
         <div class="login-box">
-            <img src="logo negro.png" alt="Logo" class="logo-main">
+            <img src="logo.png" alt="Logo" class="logo-main">
             <h2 style="color:var(--gold); font-size:0.75rem; letter-spacing:2px; margin-bottom:25px;">INNOVATION ADMIN</h2>
             <button class="btn btn-gold" onclick="loginGoogle()" style="background:#fff; color:#000;">Entrar con Google</button>
         </div>
@@ -77,7 +77,7 @@
         <div class="main-grid">
             <div id="calendar-container"><div id="calendar"></div></div>
             <aside class="sidebar-stats">
-                <img src="logo negro.png" alt="Logo" class="logo-main" style="width: 60px;">
+                <img src="logo.png" alt="Logo" class="logo-main" style="width: 70px;">
                 <div class="stat-card">
                     <span class="stat-label">Citas Finalizadas</span>
                     <span class="stat-val" id="citas-count" style="color:var(--gold);">0</span>
@@ -114,7 +114,7 @@
                         <select id="config-apertura" style="margin:0;"></select>
                         <select id="config-cierre" style="margin:0;"></select>
                     </div>
-                    <button class="btn btn-gold" id="btn-save-hours" style="margin:0; width:100%; padding: 10px;">GUARDAR HORARIO NUEVO</button>
+                    <button class="btn btn-gold" id="btn-save-hours" style="margin:0; width:100%; padding: 10px;">ACTUALIZAR HORARIO</button>
                 </div>
 
                 <input type="text" id="serv-n" placeholder="Nombre Servicio">
@@ -141,7 +141,6 @@
         
         let calendar;
 
-        // Llenar selectores de horas
         const apS = document.getElementById('config-apertura'), ciS = document.getElementById('config-cierre');
         for(let h=0; h<=23; h++){
             let lbl = h === 0 ? "12 AM" : h === 12 ? "12 PM" : h > 12 ? `${h-12} PM` : `${h} AM`;
@@ -173,16 +172,15 @@
                     const meta = info.event.extendedProps;
                     document.getElementById('pop-nombre').innerText = info.event.title;
                     document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString();
-                    document.getElementById('pop-whatsapp').innerHTML = meta.whatsapp ? `<i class="fab fa-whatsapp"></i> WhatsApp: ${meta.whatsapp}` : 'No dejó número';
+                    document.getElementById('pop-whatsapp').innerHTML = meta.whatsapp ? `<i class="fab fa-whatsapp"></i> WhatsApp: ${meta.whatsapp}` : 'Sin número registrado';
                     document.getElementById('pop-whatsapp').onclick = () => { if(meta.whatsapp) window.open(`https://wa.me/${meta.whatsapp.replace(/\D/g,'')}`); };
-                    document.getElementById('pop-nota').innerText = meta.nota ? `NOTA: ${meta.nota}` : 'Sin notas del cliente';
+                    document.getElementById('pop-nota').innerText = meta.nota ? `NOTA CLIENTE: ${meta.nota}` : 'Sin notas adicionales';
                     document.getElementById('modalEvento').style.display = 'flex';
-                    document.getElementById('btn-eliminar-pop').onclick = () => { if(confirm("¿Eliminar cita?")) { remove(ref(db, `citas/${id}`)); cerrarPop(); } };
+                    document.getElementById('btn-eliminar-pop').onclick = () => { if(confirm("¿Eliminar definitivamente?")) { remove(ref(db, `citas/${id}`)); cerrarPop(); } };
                 }
             });
             calendar.render();
 
-            // Cargar configuración de horario
             onValue(ref(db, 'configuracion_horario'), snap => {
                 if(snap.val()){ apS.value = snap.val().apertura; ciS.value = snap.val().cierre; }
             });
@@ -191,10 +189,12 @@
             onValue(ref(db, 'servicios'), snap => renderServicios(snap.val() || {}));
         }
 
-        // --- LÓGICA DE BOTONES (ESCUTA DIRECTA) ---
+        // --- SOLUCIÓN BOTÓN ACTUALIZAR ---
         document.getElementById('btn-save-hours').addEventListener('click', () => {
-            set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value })
-            .then(() => alert("✅ Horario actualizado exitosamente"));
+            const horario = { apertura: apS.value, cierre: ciS.value };
+            set(ref(db, 'configuracion_horario'), horario)
+            .then(() => alert("✅ Horario de barbería actualizado"))
+            .catch(e => alert("Error al guardar: " + e.message));
         });
 
         document.getElementById('btn-add-serv').onclick = () => {
