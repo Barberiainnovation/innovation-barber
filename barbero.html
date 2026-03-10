@@ -91,9 +91,25 @@
 
         <div id="modalConfig" class="modal"><div class="modal-content" style="max-width: 420px; max-height: 90vh; overflow-y: auto;">
             <h3 style="color:var(--gold);">CONFIGURACIÓN</h3>
+            
             <p style="font-size: 0.7rem; color: #555;">HORARIO LABORAL</p>
-            <div style="display:flex; gap:10px; margin-bottom:10px;"><select id="config-apertura"></select><select id="config-cierre"></select></div>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <select id="config-apertura"></select>
+                <select id="config-cierre"></select>
+            </div>
+
+            <p style="font-size: 0.7rem; color: #555; margin-top: 15px;">HORARIO DE ALMUERZO (LUNCH)</p>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <select id="lunch-inicio">
+                    <option value="">Sin lunch</option>
+                </select>
+                <select id="lunch-fin">
+                    <option value="">Sin lunch</option>
+                </select>
+            </div>
+            
             <button class="btn btn-gold" id="btn-save-hours">GUARDAR HORARIO</button>
+            
             <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
             <p style="font-size: 0.7rem; color: #555;">GESTIÓN DE SERVICIOS</p>
             <input type="text" id="serv-n" placeholder="Nombre Servicio">
@@ -128,7 +144,13 @@
         window.confirmarAccion = (t, cb) => { document.getElementById('confirm-text').innerText = t; document.getElementById('modalConfirm').style.display = 'flex'; document.getElementById('confirm-yes').onclick = () => { cb(); document.getElementById('modalConfirm').style.display = 'none'; }; };
 
         const apS = document.getElementById('config-apertura'), ciS = document.getElementById('config-cierre');
-        for(let h=0; h<=23; h++){ apS.innerHTML += `<option value="${h}">${h}:00</option>`; ciS.innerHTML += `<option value="${h}">${h}:00</option>`; }
+        const lIn = document.getElementById('lunch-inicio'), lFi = document.getElementById('lunch-fin');
+
+        for(let h=0; h<=23; h++){ 
+            const opt = `<option value="${h}">${h}:00</option>`;
+            apS.innerHTML += opt; ciS.innerHTML += opt; 
+            lIn.innerHTML += opt; lFi.innerHTML += opt;
+        }
 
         window.loginGoogle = () => signInWithPopup(auth, provider);
         window.toggleConfig = () => { const m = document.getElementById('modalConfig'); m.style.display = (m.style.display==='flex') ? 'none' : 'flex'; };
@@ -139,7 +161,7 @@
         function initDashboard() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'timeGridDay',
-                locale: 'es', // FORZADO A ESPAÑOL
+                locale: 'es',
                 allDaySlot: false,
                 slotDuration: '00:30:00',
                 contentHeight: 'auto',
@@ -171,11 +193,16 @@
                 }
             });
             calendar.render();
+
             onValue(ref(db, 'configuracion_horario'), snap => { 
-                if(snap.val()){ 
-                    calendar.setOption('slotMinTime', snap.val().apertura.padStart(2,'0')+':00:00'); 
-                    calendar.setOption('slotMaxTime', snap.val().cierre.padStart(2,'0')+':00:00');
-                    apS.value = snap.val().apertura; ciS.value = snap.val().cierre;
+                const config = snap.val();
+                if(config){ 
+                    calendar.setOption('slotMinTime', config.apertura.padStart(2,'0')+':00:00'); 
+                    calendar.setOption('slotMaxTime', config.cierre.padStart(2,'0')+':00:00');
+                    apS.value = config.apertura; 
+                    ciS.value = config.cierre;
+                    lIn.value = config.lunch_inicio || "";
+                    lFi.value = config.lunch_fin || "";
                 } 
             });
             onValue(ref(db, 'citas'), snap => renderAdmin(snap.val()));
@@ -230,7 +257,15 @@
             const nom = document.getElementById('add-nombre').value, wa = iti.getNumber(), sKey = document.getElementById('add-servicio-select').value;
             if(!nom || !sKey) return showToast("FALTAN DATOS");
             const s = catalogoGlobal[sKey];
-            push(ref(db, 'citas'), { nombre: nom, whatsapp: wa, servicio: s.nombre, precio: s.precio, fecha: selectedDateTime, estado: "Pendiente" }).then(cerrarModalAdd);
+            push(ref(db, 'citas'), { 
+                nombre: nom, 
+                whatsapp: wa, 
+                servicio: s.nombre, 
+                precio: s.precio, 
+                fecha: selectedDateTime, 
+                estado: "Pendiente",
+                nota: "Agendado por Admin" 
+            }).then(cerrarModalAdd);
         };
 
         document.getElementById('btn-add-serv').onclick = () => {
@@ -241,7 +276,15 @@
             });
         };
 
-        document.getElementById('btn-save-hours').onclick = () => set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value }).then(() => showToast("HORARIO GUARDADO"));
+        // GUARDADO DE CONFIGURACIÓN CON LUNCH
+        document.getElementById('btn-save-hours').onclick = () => {
+            set(ref(db, 'configuracion_horario'), { 
+                apertura: apS.value, 
+                cierre: ciS.value,
+                lunch_inicio: lIn.value,
+                lunch_fin: lFi.value
+            }).then(() => showToast("HORARIO Y LUNCH GUARDADOS"));
+        };
 
         function renderServicios(servs){
             catalogoGlobal = servs;
