@@ -48,7 +48,6 @@
         
         .flatpickr-calendar { background: #0d0d0d !important; border: 1px solid var(--border) !important; box-shadow: none !important; }
         .flatpickr-day.selected { background: var(--gold) !important; border-color: var(--gold) !important; color: #000 !important; }
-        /* Estilo para días deshabilitados/bloqueados */
         .flatpickr-day.flatpickr-disabled, .flatpickr-day.flatpickr-disabled:hover { color: rgba(255,255,255,0.1) !important; background: transparent !important; border-color: transparent !important; cursor: not-allowed !important; }
     </style>
 </head>
@@ -127,7 +126,12 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", authDomain: "innovation-barber-studio.firebaseapp.com", projectId: "innovation-barber-studio", databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", 
+            authDomain: "innovation-barber-studio.firebaseapp.com", 
+            projectId: "innovation-barber-studio", 
+            databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" 
+        };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
@@ -140,13 +144,15 @@
             minDate: "today",
             dateFormat: "Y-m-d",
             "locale": "es",
-            disable: [], // Aquí se cargarán los bloqueos
+            disable: [], // Se llenará con dias_bloqueados de Firebase
             onChange: (selectedDates, dateStr) => {
                 fechaSeleccionada = dateStr;
+                horaSeleccionada = ""; // Resetear hora al cambiar de día
                 window.renderSlots();
             }
         });
 
+        // Renderizar Horas Disponibles
         window.renderSlots = () => {
             const container = document.getElementById('slots-container');
             container.innerHTML = "";
@@ -183,12 +189,17 @@
             }
         };
 
+        // Guardar Cita
         window.enviarCita = () => {
-            const nom = document.getElementById('nombre').value, num = document.getElementById('whatsapp').value, sel = document.getElementById('servicio');
-            if(!nom || !num || !sel.value || !horaSeleccionada) {
+            const nom = document.getElementById('nombre').value;
+            const num = document.getElementById('whatsapp').value;
+            const sel = document.getElementById('servicio');
+
+            if(!nom || !num || !sel.value || !horaSeleccionada || !fechaSeleccionada) {
                 document.getElementById('modalError').style.display = 'flex';
                 return;
             }
+
             push(ref(db, 'citas'), {
                 nombre: nom,
                 whatsapp: document.getElementById('codigo-area').value + num,
@@ -197,17 +208,31 @@
                 nota: document.getElementById('nota').value || "Sin notas",
                 fecha: `${fechaSeleccionada}T${horaSeleccionada}`, 
                 estado: 'Pendiente'
-            }).then(() => { document.getElementById('modalExito').style.display = 'flex'; });
+            })
+            .then(() => { 
+                document.getElementById('modalExito').style.display = 'flex'; 
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error al agendar. Intente de nuevo.");
+            });
         };
 
-        // ESCUCHAR DÍAS BLOQUEADOS
+        // --- LISTENERS DE FIREBASE (TIEMPO REAL) ---
+
+        // 1. Escuchar días bloqueados
         onValue(ref(db, 'dias_bloqueados'), (snapshot) => {
             const bloqueos = snapshot.val() || {};
-            // Convertimos las llaves del objeto (las fechas) en un array para Flatpickr
             const diasADeshabilitar = Object.keys(bloqueos);
             fp.set("disable", diasADeshabilitar);
+            // Si el día seleccionado fue bloqueado mientras el usuario lo veía, limpiar slots
+            if(diasADeshabilitar.includes(fechaSeleccionada)) {
+                fechaSeleccionada = "";
+                window.renderSlots();
+            }
         });
 
+        // 2. Escuchar configuración de horario
         onValue(ref(db, 'configuracion_horario'), (snapshot) => {
             const config = snapshot.val();
             if (config) { 
@@ -219,6 +244,7 @@
             }
         });
 
+        // 3. Escuchar citas ocupadas
         onValue(ref(db, 'citas'), (snap) => {
             ocupados = [];
             snap.forEach(c => { 
@@ -228,12 +254,14 @@
             window.renderSlots(); 
         });
 
+        // 4. Escuchar lista de servicios
         onValue(ref(db, 'servicios'), (snap) => {
             const sel = document.getElementById('servicio');
             sel.innerHTML = '<option value="" disabled selected>Elige un servicio...</option>';
             snap.forEach(s => {
                 const d = s.val(), option = document.createElement('option');
-                option.value = d.nombre; option.text = `${d.nombre} - Q${d.precio}`;
+                option.value = d.nombre; 
+                option.text = `${d.nombre} - Q${d.precio}`;
                 option.setAttribute('data-precio', d.precio);
                 option.setAttribute('data-desc', d.detalle || 'Servicio de alta calidad');
                 sel.appendChild(option);
