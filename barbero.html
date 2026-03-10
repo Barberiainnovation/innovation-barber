@@ -100,17 +100,27 @@
         <div id="modalConfig" class="modal">
             <div class="modal-content">
                 <h3 style="color:var(--gold);">CONFIGURACIÓN</h3>
-                <select id="config-apertura"></select>
-                <select id="config-cierre"></select>
-                <button class="btn btn-gold" id="btn-save-hours">GUARDAR HORAS</button>
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <select id="config-apertura" style="margin:0;"></select>
+                    <select id="config-cierre" style="margin:0;"></select>
+                </div>
+                <button class="btn btn-gold" id="btn-save-hours">GUARDAR HORARIO</button>
+                
                 <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
-                <input type="text" id="serv-n" placeholder="Servicio">
+                
+                <h4 style="color:var(--gold); margin-bottom:15px; font-size:0.8rem;">GESTIÓN DE SERVICIOS</h4>
+                <input type="text" id="serv-n" placeholder="Nombre del Servicio (ej. Corte Elite)">
                 <input type="number" id="serv-p" placeholder="Precio (Q)">
+                <textarea id="serv-d" placeholder="¿Qué incluye? (Separa con comas)" rows="2"></textarea>
+                
                 <button class="btn btn-gold" id="btn-add-serv">AÑADIR SERVICIO</button>
-                <div id="lista-servicios-admin" style="margin-top:20px; max-height:150px; overflow-y:auto;"></div>
+                
+                <div id="lista-servicios-admin" style="margin-top:20px; max-height:150px; overflow-y:auto; border:1px solid #1a1a1a; border-radius:15px; padding:10px;"></div>
+                
                 <button class="btn btn-outline" onclick="toggleConfig()">SALIR</button>
             </div>
         </div>
+
         <div id="modalConfirm" class="modal"><div class="modal-content"><p id="confirm-text"></p><button class="btn btn-red" id="confirm-yes">SÍ</button><button class="btn btn-outline" onclick="document.getElementById('modalConfirm').style.display='none'">NO</button></div></div>
     </div>
 
@@ -144,8 +154,8 @@
         function initDashboard() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'timeGridDay',
-                locale: 'es', // <--- IDIOMA ESPAÑOL
-                firstDay: 1,  // Lunes inicia la semana
+                locale: 'es',
+                firstDay: 1,
                 allDaySlot: false,
                 buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
@@ -160,7 +170,6 @@
                 },
                 eventClick: (info) => {
                     const id = info.event.id, meta = info.event.extendedProps;
-                    // Formato de fecha para el mensaje
                     const fTxt = info.event.start.toLocaleString('es-GT', { weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' });
                     document.getElementById('pop-nombre').innerText = info.event.title;
                     document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString('es-GT');
@@ -170,7 +179,6 @@
                         btnWa.style.display = 'block';
                         btnWa.onclick = () => {
                             const n = meta.whatsapp.replace(/\D/g,'');
-                            // EL MENSAJE SOLICITADO
                             const m = encodeURIComponent(`Te recordamos que tienes una cita en INNOVATION Barber Studio el día ${fTxt}, te esperamos.`);
                             window.open(`https://wa.me/${n}?text=${m}`);
                         };
@@ -210,22 +218,49 @@
         window.cambiarEstado = (id, est) => update(ref(db, `citas/${id}`), { estado: est }).then(() => showToast("FINALIZADA"));
         window.cerrarModalAdd = () => document.getElementById('modalAddCita').style.display = 'none';
         window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
+        
         document.getElementById('btn-save-cita-calendar').onclick = () => {
             const nom = document.getElementById('add-nombre').value, wa = iti.getNumber(), sKey = document.getElementById('add-servicio-select').value;
             if(!nom || !wa || !sKey) return showToast("FALTAN DATOS");
             const s = catalogoGlobal[sKey];
             push(ref(db, 'citas'), { nombre: nom, whatsapp: wa, servicio: s.nombre, precio: s.precio, fecha: selectedDateTime, estado: "Pendiente" }).then(() => { cerrarModalAdd(); showToast("OK"); });
         };
+
         document.getElementById('btn-save-hours').onclick = () => set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value }).then(() => showToast("ACTUALIZADO"));
-        document.getElementById('btn-add-serv').onclick = () => { const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value; if(n && p){ push(ref(db, 'servicios'), { nombre: n, precio: p }).then(() => { showToast("AGREGADO"); }); } };
+
+        // ACTUALIZADO PARA INCLUIR LA DESCRIPCIÓN (INCLUYE)
+        document.getElementById('btn-add-serv').onclick = () => { 
+            const n = document.getElementById('serv-n').value; 
+            const p = document.getElementById('serv-p').value;
+            const d = document.getElementById('serv-d').value; // CAMPO INCLUYE
+            
+            if(n && p){ 
+                push(ref(db, 'servicios'), { 
+                    nombre: n, 
+                    precio: p, 
+                    descripcion: d // SE GUARDA EN FIREBASE
+                }).then(() => { 
+                    showToast("SERVICIO AGREGADO");
+                    document.getElementById('serv-n').value = '';
+                    document.getElementById('serv-p').value = '';
+                    document.getElementById('serv-d').value = '';
+                }); 
+            } else {
+                showToast("FALTAN DATOS");
+            }
+        };
 
         function renderServicios(servs){
             const d = document.getElementById('lista-servicios-admin'), sel = document.getElementById('add-servicio-select');
             d.innerHTML = ''; sel.innerHTML = '<option value="">Elegir servicio...</option>';
             Object.keys(servs).forEach(id => {
                 sel.innerHTML += `<option value="${id}">${servs[id].nombre}</option>`;
-                const r = document.createElement('div'); r.style="display:flex; justify-content:space-between; padding:5px; font-size:0.7rem;";
-                r.innerHTML = `<span>${servs[id].nombre}</span><i class="fas fa-trash" style="color:var(--red);" onclick="remove(ref(db,'servicios/${id}'))"></i>`;
+                const r = document.createElement('div'); r.style="display:flex; justify-content:space-between; padding:8px; font-size:0.7rem; border-bottom:1px solid #111; align-items:center;";
+                r.innerHTML = `<div>
+                    <strong style="color:var(--gold);">${servs[id].nombre}</strong><br>
+                    <small style="color:#555;">${servs[id].descripcion || 'Sin descripción'}</small>
+                </div>
+                <i class="fas fa-trash" style="color:var(--red); cursor:pointer;" onclick="remove(ref(db,'servicios/${id}'))"></i>`;
                 d.appendChild(r);
             });
         }
