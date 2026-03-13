@@ -767,6 +767,31 @@
                     calendar.setOption('slotMaxTime', config.cierre.padStart(2,'0') + ':00:00'); 
                     apS.value = config.apertura;
                     ciS.value = config.cierre;
+                    // --- AQUÍ EMPIEZA LO NUEVO PARA EL LUNCH ---
+                    if(config.lunch_inicio && config.lunch_fin) {
+                        // 1. Borrar el lunch anterior si existe para que no se amontonen
+                        const oldLunch = calendar.getEventById('lunch-block');
+                        if(oldLunch) oldLunch.remove();
+
+                        // 2. Dibujar el nuevo lunch
+                        calendar.addEvent({
+                            id: 'lunch-block',
+                            title: 'LUNCH (BLOQUEADO)',
+                            startTime: config.lunch_inicio,
+                            endTime: config.lunch_fin,
+                            daysOfWeek: [0, 1, 2, 3, 4, 5, 6], 
+                            display: 'background',
+                            backgroundColor: 'rgba(255, 77, 77, 0.3)', 
+                            overlap: false
+                        });
+                        
+                        // 3. Poner los selects en la hora correcta
+                        const lIniInput = document.getElementById('config-lunch-inicio');
+                        const lFinInput = document.getElementById('config-lunch-fin');
+                        if(lIniInput) lIniInput.value = config.lunch_inicio;
+                        if(lFinInput) lFinInput.value = config.lunch_fin;
+                    }
+                    // --- AQUÍ TERMINA LO NUEVO ---
                 } 
             });
 
@@ -1006,11 +1031,17 @@
 
         // --- GUARDAR AJUSTES DE HORARIO ---
         document.getElementById('btn-save-hours').onclick = function() { 
+            // Obtenemos los valores de los selects de lunch
+            const lIni = document.getElementById('config-lunch-inicio').value;
+            const lFin = document.getElementById('config-lunch-fin').value;
+
             set(ref(db, 'configuracion_horario'), { 
                 apertura: apS.value, 
-                cierre: ciS.value 
+                cierre: ciS.value,
+                lunch_inicio: lIni, // Guardamos el inicio del lunch
+                lunch_fin: lFin     // Guardamos el fin del lunch
             }).then(() => {
-                showToast("HORARIOS DE ATENCIÓN ACTUALIZADOS");
+                showToast("HORARIOS Y LUNCH ACTUALIZADOS");
             });
         };
         // --- LÓGICA DE BLOQUEO DE DÍAS ---
