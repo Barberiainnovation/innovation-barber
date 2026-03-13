@@ -38,36 +38,42 @@
     }
 
     /* ==========================================
-       CORRECCIÓN DEFINITIVA DE BANDERAS (MÓVIL Y PC)
+       ARREGLO DE BANDERAS (ESTILO LIMPIO)
        ========================================== */
-    .iti { width: 100%; margin-bottom: 12px; }
+    /* Contenedor principal del input */
+    .iti { width: 100% !important; margin-bottom: 12px !important; display: block !important; }
     
+    /* Input de texto */
+    .iti input {
+        padding-left: 52px !important; /* Espacio para la bandera */
+        width: 100% !important;
+    }
+
+    /* Lista desplegable de países */
     .iti__country-list { 
         background-color: #0a0a0a !important; 
         border: 1px solid var(--gold) !important; 
         color: white !important;
-        z-index: 999999 !important; /* Prioridad máxima sobre modales */
+        z-index: 100000 !important; 
         max-width: 280px !important;
         border-radius: 15px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        position: absolute !important; /* Evita que mueva otros elementos */
+        overflow-x: hidden;
     }
 
+    /* Bandera seleccionada */
     .iti__selected-flag { 
-        background-color: rgba(255,255,255,0.05) !important; 
-        border-radius: 18px 0 0 18px !important; 
+        background-color: transparent !important; 
         padding: 0 10px 0 15px !important;
     }
 
+    /* Estilo de los nombres de países en la lista */
+    .iti__country-name { color: #fff !important; font-size: 0.8rem !important; }
+    .iti__dial-code { color: var(--gold) !important; }
     .iti__country:hover { background-color: #1a1a1a !important; }
-    .iti__dial-code { color: var(--gold) !important; margin-left: auto; }
-    .iti__country-name { color: #fff; font-size: 0.8rem; }
-    
-    /* Evita que el texto de México o Centroamérica se amontone */
-    .iti__flag-box { margin-right: 10px; }
 
     /* ==========================================
-       ESTILOS BASE Y SCROLLBAR
+       ESTILOS BASE
        ========================================== */
     body { 
         font-family: 'Poppins', sans-serif; 
@@ -77,14 +83,6 @@
         padding: 15px; 
         overflow-x: hidden; 
     }
-
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: #000; }
-    ::-webkit-scrollbar-thumb { 
-        background: var(--gold); 
-        border-radius: 10px; 
-    }
-</style>
         /* ==========================================
            LOGIN OVERLAY
            ========================================== */
