@@ -30,6 +30,12 @@
             --glass: rgba(10, 10, 10, 0.98); 
         }
 
+        .block-item-admin { 
+    display: flex; justify-content: space-between; align-items: center; 
+    background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 12px; 
+    margin-bottom: 8px; font-size: 0.8rem; border-left: 3px solid var(--red); 
+}
+        
         /* ==========================================
            ESTILOS BASE Y SCROLLBAR
            ========================================== */
@@ -509,7 +515,12 @@
                     </div>
                 </div>
                 <button class="btn btn-gold" id="btn-save-hours" style="padding: 12px; font-size: 0.6rem;">ACTUALIZAR HORARIO</button>
-
+<h4 style="font-size:0.7rem; color:var(--gold); border-bottom:1px solid #222; text-align:left; margin-top:25px; margin-bottom:10px;">BLOQUEAR DÍA ENTERO</h4>
+<div style="display:flex; gap:10px;">
+    <input type="text" id="input-block-date" placeholder="Elegir fecha" readonly style="cursor:pointer; text-align: center; margin-bottom:0;">
+    <button class="btn btn-red" id="btn-add-block" style="padding:12px; width:auto; margin-bottom:12px;">BLOQUEAR</button>
+</div>
+<div id="lista-bloqueos-admin" style="margin-top:15px; text-align: left; max-height: 120px; overflow-y:auto;"></div>
                 <hr style="border:0; border-top:1px solid #1a1a1a; margin:30px 0;">
 
                 <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px;">GESTIÓN DE SERVICIOS</p>
@@ -955,6 +966,35 @@
             }).then(() => {
                 showToast("HORARIOS DE ATENCIÓN ACTUALIZADOS");
             });
+        };
+        // --- LÓGICA DE BLOQUEO DE DÍAS ---
+        const fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d" });
+
+        onValue(ref(db, 'dias_bloqueados'), snap => {
+            const list = document.getElementById('lista-bloqueos-admin');
+            list.innerHTML = ''; 
+            const bloqueos = snap.val() || {};
+            Object.keys(bloqueos).forEach(f => {
+                list.innerHTML += `<div class="block-item-admin"><span>${f}</span><i class="fas fa-trash" style="color:var(--red); cursor:pointer;" onclick="eliminarBloqueo('${f}')"></i></div>`;
+            });
+        });
+
+        window.eliminarBloqueo = (f) => {
+            if(confirm("¿Desbloquear este día?")) {
+                remove(ref(db, `dias_bloqueados/${f}`));
+            }
+        };
+
+        document.getElementById('btn-add-block').onclick = () => {
+            const f = document.getElementById('input-block-date').value;
+            if(f) {
+                set(ref(db, `dias_bloqueados/${f}`), true).then(() => {
+                    showToast("DÍA BLOQUEADO CORRECTAMENTE");
+                    document.getElementById('input-block-date').value = '';
+                });
+            } else {
+                showToast("SELECCIONA UNA FECHA");
+            }
         };
     </script>
 </body>
