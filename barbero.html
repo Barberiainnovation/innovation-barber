@@ -16,377 +16,39 @@
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/es.global.min.js"></script>
     
     <style>
-        /* ==========================================
-           VARIABLES DE DISEÑO (PALETA ÉLITE)
-           ========================================== */
         :root { 
-            --bg: #000; 
-            --card: #0a0a0a; 
-            --gold: #d4af37; 
-            --gold-dark: #aa8c2c; 
-            --border: #1a1a1a; 
-            --green: #2ecc71; 
-            --red: #ff4d4d; 
-            --glass: rgba(10, 10, 10, 0.98); 
+            --bg: #000; --card: #0a0a0a; --gold: #d4af37; --gold-dark: #aa8c2c; 
+            --border: #1a1a1a; --green: #2ecc71; --red: #ff4d4d; --glass: rgba(10, 10, 10, 0.98); 
         }
 
-        .block-item-admin { 
-    display: flex; justify-content: space-between; align-items: center; 
-    background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 12px; 
-    margin-bottom: 8px; font-size: 0.8rem; border-left: 3px solid var(--red); 
-}
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; overflow-x: hidden; }
         
-        /* ==========================================
-           ESTILOS BASE Y SCROLLBAR
-           ========================================== */
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background: var(--bg); 
-            color: #fff; 
-            margin: 0; 
-            padding: 15px; 
-            overflow-x: hidden; 
-        }
+        #admin-content { display: none; max-width: 1400px; margin: 0 auto; }
+        .main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 25px; margin-top: 10px; }
+        @media (max-width: 1100px) { .main-grid { grid-template-columns: 1fr; } }
 
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #000;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--gold);
-            border-radius: 10px;
-        }
+        #calendar-container { background: var(--card); padding: 20px; border-radius: 35px; border: 1px solid var(--border); }
+        .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 35px; padding: 30px; border-top: 5px solid var(--gold); position: sticky; top: 15px; height: fit-content; }
+        
+        .card { background: #060606; border: 1px solid var(--border); padding: 15px 20px; border-radius: 20px; border-left: 4px solid var(--gold); margin-bottom: 12px; }
 
-        /* ==========================================
-           LOGIN OVERLAY
-           ========================================== */
-        #login-overlay { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: #000; 
-            z-index: 9999; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-        }
+        .modal { display: none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px); align-items: center; justify-content: center; z-index: 10000; }
+        .modal-content { background: var(--glass); padding: 30px; border: 1px solid var(--gold); width: 90%; max-width: 420px; border-radius: 40px; text-align: center; max-height: 90vh; overflow-y: auto; }
+        
+        input, select, textarea { background: rgba(255,255,255,0.03); color: #fff; border: 1px solid #1a1a1a; padding: 12px; border-radius: 15px; width: 100%; margin-bottom: 10px; outline: none; font-size: 0.85rem; box-sizing: border-box; }
+        
+        .btn { width: 100%; padding: 15px; border-radius: 18px; font-weight: 700; cursor: pointer; border: none; font-size: 0.75rem; text-transform: uppercase; transition: 0.3s; }
+        .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #000; }
+        .btn-red { background: rgba(255, 77, 77, 0.1); border: 1px solid var(--red); color: var(--red); }
+        .btn-outline { background: transparent; border: 1px solid #333; color: #777; margin-top: 10px; }
+        .btn-mini { padding: 8px 15px; border-radius: 10px; font-size: 0.7rem; font-weight: 700; border: none; cursor: pointer; }
 
-        .login-box { 
-            width: 320px; 
-            padding: 45px; 
-            text-align: center; 
-            background: var(--card); 
-            border-radius: 35px; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 0 40px rgba(212,175,55,0.05); 
-        }
+        .btn-config-float { position: fixed; bottom: 30px; right: 30px; background: var(--gold); color: #000; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; z-index: 5000; border: none; cursor: pointer; }
+        
+        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 12px 30px; border-radius: 50px; font-weight: 700; z-index: 11000; transition: 0.6s; font-size: 0.85rem; }
+        #toast.show { bottom: 30px; }
 
-        /* ==========================================
-           ESTRUCTURA DASHBOARD
-           ========================================== */
-        #admin-content { 
-            display: none; 
-            max-width: 1400px; 
-            margin: 0 auto; 
-        }
-
-        .main-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 340px; 
-            gap: 25px; 
-            margin-top: 10px; 
-        }
-
-        @media (max-width: 1100px) { 
-            .main-grid { 
-                grid-template-columns: 1fr; 
-            } 
-        }
-
-        /* ==========================================
-           CALENDARIO (MODERN DARK)
-           ========================================== */
-        #calendar-container { 
-            background: var(--card); 
-            padding: 20px; 
-            border-radius: 35px; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .fc { 
-            --fc-border-color: #161616; 
-            --fc-today-bg-color: rgba(212,175,55,0.02); 
-            font-size: 0.85rem; 
-        }
-
-        .fc .fc-toolbar-title { 
-            font-size: 1.1rem !important; 
-            text-transform: uppercase; 
-            color: var(--gold); 
-            font-weight: 600; 
-            letter-spacing: 1px;
-        }
-
-        .fc-event-main { 
-            font-weight: 600; 
-            font-size: 0.75rem !important; 
-            line-height: 1.2; 
-            display: flex; 
-            align-items: center; 
-            padding: 3px 6px; 
-            cursor: pointer; 
-        }
-
-        .fc .fc-button-primary {
-            background-color: #111 !important;
-            border-color: #222 !important;
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-
-        .fc .fc-button-primary:hover {
-            background-color: var(--gold) !important;
-            color: #000 !important;
-        }
-
-        /* ==========================================
-           SIDEBAR STATS
-           ========================================== */
-        .sidebar-stats { 
-            background: var(--card); 
-            border: 1px solid var(--border); 
-            border-radius: 35px; 
-            padding: 30px; 
-            border-top: 5px solid var(--gold); 
-            position: sticky; 
-            top: 15px; 
-            height: fit-content; 
-        }
-
-        .sidebar-logo { 
-            width: 100px; 
-            margin-bottom: 20px; 
-            filter: drop-shadow(0 0 15px rgba(212,175,55,0.2)); 
-        }
-
-        .stat-group {
-            margin-bottom: 25px;
-        }
-
-        .stat-val { 
-            font-size: 2.3rem; 
-            font-weight: 600; 
-            color: var(--gold); 
-            line-height: 1;
-        }
-
-        .stat-label { 
-            font-size: 0.65rem; 
-            text-transform: uppercase; 
-            color: #666; 
-            letter-spacing: 2px; 
-            font-weight: 600;
-        }
-
-        #desglose-servicios { 
-            margin-top: 15px; 
-            border-top: 1px solid #1a1a1a; 
-            padding-top: 10px; 
-        }
-
-        .serv-stat-item { 
-            display: flex; 
-            justify-content: space-between; 
-            font-size: 0.65rem; 
-            color: #888; 
-            margin-top: 6px; 
-            text-transform: uppercase; 
-        }
-
-        /* ==========================================
-           TARJETAS DE CITAS PENDIENTES
-           ========================================== */
-        .citas-list { 
-            margin-top: 40px; 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 15px; 
-            padding-bottom: 120px; 
-        }
-
-        .card { 
-            background: #060606; 
-            border: 1px solid var(--border); 
-            padding: 15px 20px; 
-            border-radius: 20px; 
-            border-left: 4px solid var(--gold); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            transition: transform 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-            border-color: #333;
-        }
-
-        /* ==========================================
-           SISTEMA DE MODALES (VENTANAS ELEGANTES)
-           ========================================== */
-        .modal { 
-            display: none; 
-            position: fixed; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.95); 
-            backdrop-filter: blur(15px); 
-            align-items: center; 
-            justify-content: center; 
-            z-index: 10000; 
-        }
-
-        .modal-content { 
-            background: var(--glass); 
-            padding: 40px; 
-            border: 1px solid var(--gold); 
-            width: 90%; 
-            max-width: 400px; 
-            border-radius: 40px; 
-            text-align: center; 
-            box-shadow: 0 25px 60px rgba(0,0,0,0.8); 
-        }
-
-        .modal-content h3 {
-            margin-top: 0;
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        /* ==========================================
-           ELEMENTOS DE FORMULARIO
-           ========================================== */
-        input, select, textarea { 
-            background: rgba(255,255,255,0.03); 
-            color: #fff; 
-            border: 1px solid #1a1a1a; 
-            padding: 14px; 
-            border-radius: 18px; 
-            width: 100%; 
-            margin-bottom: 12px; 
-            outline: none; 
-            font-family: 'Poppins'; 
-            box-sizing: border-box; 
-            font-size: 0.85rem; 
-            transition: 0.3s;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--gold);
-            background: rgba(212, 175, 55, 0.05);
-        }
-
-        /* ==========================================
-           BOTONES PERSONALIZADOS
-           ========================================== */
-        .btn { 
-            width: 100%; 
-            padding: 18px; 
-            border-radius: 20px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            border: none; 
-            font-size: 0.75rem; 
-            text-transform: uppercase; 
-            letter-spacing: 2px; 
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        }
-
-        .btn-gold { 
-            background: linear-gradient(135deg, var(--gold), var(--gold-dark)); 
-            color: #000; 
-        }
-
-        .btn-gold:hover {
-            transform: scale(1.02);
-            box-shadow: 0 10px 20px rgba(212,175,55,0.2);
-        }
-
-        .btn-outline { 
-            background: transparent; 
-            border: 1px solid #333; 
-            color: #777; 
-            margin-top: 12px; 
-        }
-
-        .btn-red { 
-            background: rgba(255, 77, 77, 0.1); 
-            border: 1px solid var(--red); 
-            color: var(--red); 
-        }
-
-        .btn-mini { 
-            width: auto; 
-            padding: 6px 14px; 
-            border-radius: 10px; 
-            font-size: 0.6rem; 
-            font-weight: 700; 
-            background: var(--green); 
-            color: #000; 
-            border: none; 
-            cursor: pointer; 
-        }
-
-        .btn-config-float { 
-            position: fixed; 
-            bottom: 35px; 
-            right: 35px; 
-            background: var(--gold); 
-            color: #000; 
-            width: 70px; 
-            height: 70px; 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 1.8rem; 
-            z-index: 5000; 
-            border: none; 
-            cursor: pointer; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-        }
-
-        /* ==========================================
-           NOTIFICACIONES (TOAST)
-           ========================================== */
-        #toast { 
-            position: fixed; 
-            bottom: -100px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            background: var(--gold); 
-            color: #000; 
-            padding: 16px 45px; 
-            border-radius: 50px; 
-            font-weight: 700; 
-            z-index: 11000; 
-            transition: 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
-            font-size: 0.85rem; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        #toast.show { 
-            bottom: 40px; 
-        }
+        .block-item-admin { display: flex; justify-content: space-between; background: rgba(255,77,77,0.1); padding: 10px; border-radius: 12px; margin-bottom: 8px; font-size: 0.85rem; border: 1px solid rgba(255,77,77,0.2); }
     </style>
 </head>
 <body>
@@ -394,157 +56,99 @@
     <div id="toast">ACCIÓN EXITOSA</div>
 
     <div id="login-overlay">
-        <div class="login-box">
-            <img src="logo.png" style="width: 90px; margin-bottom: 25px;">
-            <h2 style="font-size: 1rem; color: var(--gold); margin-bottom: 30px; letter-spacing: 2px;">ADMIN PANEL</h2>
-            <button class="btn btn-gold" onclick="loginGoogle()">
-                <i class="fab fa-google" style="margin-right: 10px;"></i> ENTRAR AL SISTEMA
-            </button>
+        <div class="login-box" style="text-align:center; background:var(--card); padding:50px; border-radius:30px; border:1px solid var(--border); margin: 100px auto; max-width: 300px;">
+            <img src="logo.png" style="width: 80px; margin-bottom: 20px;">
+            <h2 style="color:var(--gold); font-size:1rem; letter-spacing:2px;">ADMIN PANEL</h2>
+            <button class="btn btn-gold" onclick="loginGoogle()"><i class="fab fa-google" style="margin-right:10px;"></i> ENTRAR</button>
         </div>
     </div>
 
     <div id="admin-content">
-        
-        <button class="btn-config-float" onclick="toggleConfig()">
-            <i class="fas fa-sliders-h"></i>
-        </button>
+        <button class="btn-config-float" onclick="toggleConfig()"><i class="fas fa-sliders-h"></i></button>
 
         <div class="main-grid">
-            
-            <div id="calendar-container">
-                <div id="calendar"></div>
-            </div>
-
+            <div id="calendar-container"><div id="calendar"></div></div>
             <aside class="sidebar-stats">
-                <header style="text-align: center; margin-bottom:40px;">
-                    <img src="logo.png" class="sidebar-logo">
-                </header>
-
-                <div class="stat-group">
-                    <span class="stat-label">Finalizados Mes</span><br>
-                    <span class="stat-val" id="citas-count">0</span>
-                    <div id="desglose-servicios"></div>
+                <center><img src="logo.png" style="width:80px; margin-bottom:30px;"></center>
+                <div style="margin-bottom:25px;">
+                    <span style="font-size:0.65rem; color:#666;">FINALIZADOS MES</span><br>
+                    <span id="citas-count" style="font-size:2.2rem; color:var(--gold); font-weight:600;">0</span>
                 </div>
-
-                <div class="stat-group" style="background: rgba(212, 175, 55, 0.05); padding: 20px; border-radius: 25px; border: 1px solid rgba(212,175,55,0.1);">
-                    <span class="stat-label" id="label-pendientes">Pendientes Hoy</span><br>
-                    <span class="stat-val" id="count-pendientes" style="font-size: 1.8rem;">0</span>
+                <div style="background:rgba(212,175,55,0.05); padding:20px; border-radius:25px; margin-bottom:15px; border:1px solid rgba(212,175,55,0.1);">
+                    <span style="font-size:0.65rem; color:#666;">PENDIENTES HOY</span><br>
+                    <span id="count-pendientes" style="font-size:1.8rem; color:var(--gold);">0</span>
                 </div>
-
-                <div class="stat-group" style="background: rgba(46, 204, 113, 0.05); padding: 20px; border-radius: 25px;">
-                    <span class="stat-label" style="color:var(--green);">Ingresos Mes</span><br>
-                    <span class="stat-val" id="ingreso-total" style="color:var(--green);">Q0.00</span>
+                <div style="background:rgba(46,204,113,0.05); padding:20px; border-radius:25px;">
+                    <span style="font-size:0.65rem; color:var(--green);">INGRESOS MES</span><br>
+                    <span id="ingreso-total" style="font-size:1.8rem; color:var(--green); font-weight:600;">Q0.00</span>
                 </div>
             </aside>
         </div>
+        <div id="lista-citas" style="margin-top:30px; display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:15px; padding-bottom:100px;"></div>
+    </div>
 
-        <div class="citas-list" id="lista-citas"></div>
-
-        <div id="modalAddCita" class="modal">
-            <div class="modal-content">
-                <h3 style="color:var(--gold);">AGENDAR CITA</h3>
-                <p id="add-fecha-display" style="font-size: 0.8rem; color: #666; margin-bottom: 20px;"></p>
-                
-                <input type="text" id="add-nombre" placeholder="Nombre completo del cliente">
-                <input type="tel" id="add-whatsapp-input">
-                <select id="add-servicio-select"></select>
-                <textarea id="add-nota" placeholder="¿Alguna nota o instrucción especial?" rows="3"></textarea>
-                
-                <button class="btn btn-gold" id="btn-save-cita-calendar">CONFIRMAR CITA</button>
-                <button class="btn btn-outline" onclick="cerrarModalAdd()">CANCELAR</button>
-            </div>
+    <div id="modalAddCita" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title" style="color:var(--gold);">AGENDAR CITA</h3>
+            <p id="add-fecha-display" style="font-size:0.8rem; color:#666;"></p>
+            <input type="text" id="add-nombre" placeholder="Nombre del Cliente">
+            <input type="tel" id="add-whatsapp-input">
+            <select id="add-servicio-select"></select>
+            <textarea id="add-nota" placeholder="Notas o requerimientos..." rows="3"></textarea>
+            <button class="btn btn-gold" id="btn-save-cita-calendar">CONFIRMAR</button>
+            <button class="btn btn-outline" onclick="cerrarModalAdd()">CANCELAR</button>
         </div>
-        
-        <div id="modalEvento" class="modal">
-            <div class="modal-content">
-                
-                <div id="view-mode">
-                    <h3 id="pop-nombre" style="color:var(--gold);">Detalle Cliente</h3>
-                    <p id="pop-fecha" style="font-size:0.85rem; color:#666;"></p>
-                    
-                    <div id="pop-detalle-corte" style="margin: 20px 0;"></div>
-                    
-                    <div id="pop-whatsapp" style="font-size:0.9rem; color:var(--green); font-weight:600; cursor:pointer; background:rgba(46, 204, 113, 0.08); padding:20px; border-radius:25px; margin-bottom:25px; border: 1px solid rgba(46, 204, 113, 0.2);">
-                        <i class="fab fa-whatsapp" style="font-size: 1.2rem; vertical-align: middle; margin-right: 8px;"></i> ENVIAR RECORDATORIO
-                    </div>
-                    
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-                        <button class="btn btn-gold" onclick="entrarModoEdicion()" style="padding:14px; font-size: 0.65rem;">EDITAR</button>
-                        <button class="btn btn-red" id="btn-eliminar-pop" style="padding:14px; font-size: 0.65rem;">ELIMINAR</button>
-                    </div>
-                    <button class="btn btn-outline" onclick="cerrarPop()">CERRAR VENTANA</button>
-                </div>
+    </div>
 
-                <div id="edit-mode" style="display:none;">
-                    <h3 style="color:var(--gold);">EDITAR SERVICIO</h3>
-                    
-                    <label style="display:block; text-align:left; font-size:0.6rem; color:#555; margin-left:10px;">NOMBRE</label>
-                    <input type="text" id="edit-nombre">
-                    
-                    <label style="display:block; text-align:left; font-size:0.6rem; color:#555; margin-left:10px;">WHATSAPP</label>
-                    <input type="text" id="edit-whatsapp">
-                    
-                    <label style="display:block; text-align:left; font-size:0.6rem; color:#555; margin-left:10px;">CAMBIAR SERVICIO</label>
-                    <select id="edit-servicio-select"></select>
-                    
-                    <label style="display:block; text-align:left; font-size:0.6rem; color:#555; margin-left:10px;">PRECIO FINAL (Q)</label>
-                    <input type="number" id="edit-precio">
-                    
-                    <label style="display:block; text-align:left; font-size:0.6rem; color:#555; margin-left:10px;">NOTA INTERNA</label>
-                    <textarea id="edit-nota" rows="2"></textarea>
-                    
-                    <button class="btn btn-gold" id="btn-update-cita">GUARDAR CAMBIOS</button>
-                    <button class="btn btn-outline" onclick="salirModoEdicion()">CANCELAR</button>
-                </div>
+    <div id="modalConfig" class="modal">
+        <div class="modal-content">
+            <h3 style="color:var(--gold);">CONFIGURACIÓN</h3>
+            
+            <p style="font-size: 0.7rem; color: #555; text-align: left;">HORARIO LABORAL</p>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <select id="config-apertura"></select>
+                <select id="config-cierre"></select>
             </div>
+
+            <p style="font-size: 0.7rem; color: #555; margin-top: 15px; text-align: left;">HORARIO DE ALMUERZO (LUNCH)</p>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <select id="config-lunch-inicio"><option value="">Sin lunch</option></select>
+                <select id="config-lunch-fin"><option value="">Sin lunch</option></select>
+            </div>
+            <button class="btn btn-gold" id="btn-save-hours">ACTUALIZAR HORARIOS</button>
+
+            <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
+
+            <p style="font-size: 0.7rem; color: #555; text-align: left;">BLOQUEAR DÍA ENTERO</p>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="input-block-date" placeholder="Elegir fecha" readonly style="cursor:pointer; text-align: center; margin-bottom:0; border:1px solid var(--gold);">
+                <button class="btn btn-red" id="btn-add-block" style="padding:12px; width:auto; margin-bottom:0; background: var(--red); color: white;">BLOQUEAR</button>
+            </div>
+            <div id="lista-bloqueos-admin" style="margin-top:15px; text-align: left; max-height: 120px; overflow-y:auto;"></div>
+
+            <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
+
+            <p style="font-size: 0.7rem; color: #555; text-align: left;">GESTIÓN DE SERVICIOS</p>
+            <input type="text" id="serv-n" placeholder="Nombre (Ej: Corte + Barba)">
+            <input type="number" id="serv-p" placeholder="Precio en Quetzales">
+            <button class="btn btn-gold" id="btn-add-serv">AÑADIR AL CATÁLOGO</button>
+            <div id="lista-servicios-admin" style="margin-top:20px; background: #050505; border-radius: 15px;"></div>
+
+            <button class="btn btn-outline" onclick="toggleConfig()" style="margin-top: 30px;">CERRAR PANEL</button>
         </div>
+    </div>
 
-        <div id="modalConfig" class="modal">
-            <div class="modal-content" style="max-width: 450px; max-height: 85vh; overflow-y: auto;">
-                <h3 style="color:var(--gold);">PANEL DE CONTROL</h3>
-                
-                <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px;">HORARIO DE ATENCIÓN</p>
-                <div style="display:flex; gap:12px; margin-bottom:15px;">
-                    <div style="flex:1">
-                        <span style="font-size: 0.6rem; color: #444;">APERTURA</span>
-                        <select id="config-apertura"></select>
-                    </div>
-                    <div style="flex:1">
-                        <span style="font-size: 0.6rem; color: #444;">CIERRE</span>
-                        <select id="config-cierre"></select>
-                    </div>
-                </div>
-                <button class="btn btn-gold" id="btn-save-hours" style="padding: 12px; font-size: 0.6rem;">ACTUALIZAR HORARIO</button>
-<h4 style="font-size:0.7rem; color:var(--gold); border-bottom:1px solid #222; text-align:left; margin-top:25px; margin-bottom:10px;">BLOQUEAR DÍA ENTERO</h4>
-<div style="display:flex; gap:10px;">
-    <input type="text" id="input-block-date" placeholder="Elegir fecha" readonly style="cursor:pointer; text-align: center; margin-bottom:0;">
-    <button class="btn btn-red" id="btn-add-block" style="padding:12px; width:auto; margin-bottom:12px;">BLOQUEAR</button>
-</div>
-<div id="lista-bloqueos-admin" style="margin-top:15px; text-align: left; max-height: 120px; overflow-y:auto;"></div>
-                <hr style="border:0; border-top:1px solid #1a1a1a; margin:30px 0;">
-
-                <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px;">GESTIÓN DE SERVICIOS</p>
-                <input type="text" id="serv-n" placeholder="Nombre (Ej: Corte + Barba)">
-                <input type="number" id="serv-p" placeholder="Precio en Quetzales">
-                <button class="btn btn-gold" id="btn-add-serv" style="padding: 12px; font-size: 0.6rem;">AÑADIR AL CATÁLOGO</button>
-                
-                <div id="lista-servicios-admin" style="margin-top:25px; text-align: left;"></div>
-
-                <button class="btn btn-outline" onclick="toggleConfig()" style="margin-top: 30px;">CERRAR PANEL</button>
+    <div id="modalEvento" class="modal">
+        <div class="modal-content">
+            <h3 id="pop-nombre" style="color:var(--gold);">Detalle</h3>
+            <p id="pop-fecha" style="font-size:0.8rem; color:#666;"></p>
+            <div id="pop-detalle-corte" style="margin:20px 0; text-align:left; background:rgba(255,255,255,0.02); padding:15px; border-radius:15px;"></div>
+            <button class="btn btn-gold" id="pop-whatsapp" style="background:#25d366; color:#fff; margin-bottom:10px;"><i class="fab fa-whatsapp"></i> WHATSAPP</button>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <button class="btn btn-gold" id="btn-editar-desde-pop">EDITAR</button>
+                <button class="btn btn-red" id="btn-eliminar-pop">ELIMINAR</button>
             </div>
-        </div>
-
-        <div id="modalConfirm" class="modal">
-            <div class="modal-content" style="max-width: 340px;">
-                <div style="color: var(--red); font-size: 3rem; margin-bottom: 20px;">
-                    <i class="fas fa-exclamation-circle"></i>
-                </div>
-                <p id="confirm-text" style="font-size: 0.95rem; margin-bottom: 30px; line-height: 1.5; color: #ccc;"></p>
-                <div style="display:flex; gap:15px;">
-                    <button class="btn btn-red" id="confirm-yes" style="padding: 14px; font-size: 0.65rem;">SÍ, PROCEDER</button>
-                    <button class="btn btn-outline" onclick="document.getElementById('modalConfirm').style.display='none'" style="padding: 14px; font-size: 0.65rem; margin: 0;">CANCELAR</button>
-                </div>
-            </div>
+            <button class="btn btn-outline" onclick="cerrarPop()">CERRAR</button>
         </div>
     </div>
 
@@ -557,443 +161,154 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, set, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // CONFIGURACIÓN DE FIREBASE (TU BASE DE DATOS)
-        const firebaseConfig = { 
-            apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", 
-            authDomain: "innovation-barber-studio.firebaseapp.com", 
-            projectId: "innovation-barber-studio", 
-            databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" 
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", authDomain: "innovation-barber-studio.firebaseapp.com", projectId: "innovation-barber-studio", databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
-        
-        // VARIABLES DE CONTROL GLOBAL
-        let calendar;
-        let selectedDateTime = null;
-        let catalogoGlobal = {};
-        let iti;
-        let currentEditingId = null;
-        let fechaVisualizada = new Date().toISOString().split('T')[0];
 
-        // INICIALIZACIÓN DEL SELECTOR DE TELÉFONO
-        iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { 
-            initialCountry: "gt", 
-            separateDialCode: true,
-            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
-        });
+        let calendar, selectedDateTime, iti, currentEditingId = null, catalogoGlobal = {}, fechaVisualizada = new Date().toISOString().split('T')[0];
 
-        // --- SISTEMA DE NOTIFICACIONES ---
-        window.showToast = function(mensaje) { 
-            const t = document.getElementById('toast'); 
-            t.innerText = mensaje; 
-            t.classList.add('show'); 
-            setTimeout(() => { t.classList.remove('show'); }, 3000); 
-        };
-
-        // --- SISTEMA DE CONFIRMACIÓN MODAL ---
-        window.confirmarAccion = function(texto, callback) { 
-            document.getElementById('confirm-text').innerText = texto; 
-            document.getElementById('modalConfirm').style.display = 'flex'; 
-            document.getElementById('confirm-yes').onclick = function() { 
-                callback(); 
-                document.getElementById('modalConfirm').style.display = 'none'; 
-            }; 
-        };
-
-        // --- LLENAR SELECTS DE HORAS EN CONFIG ---
-        const apS = document.getElementById('config-apertura');
-        const ciS = document.getElementById('config-cierre');
+        // Llenar selectores de horas
+        const apS = document.getElementById('config-apertura'), ciS = document.getElementById('config-cierre'), lIn = document.getElementById('config-lunch-inicio'), lFi = document.getElementById('config-lunch-fin');
         for(let h=0; h<=23; h++){ 
-            const opt = document.createElement('option');
-            opt.value = h;
-            opt.innerText = h.toString().padStart(2, '0') + ":00";
-            apS.appendChild(opt.cloneNode(true));
-            ciS.appendChild(opt);
+            const opt = `<option value="${h}">${h.toString().padStart(2, '0')}:00</option>`;
+            apS.innerHTML += opt; ciS.innerHTML += opt; lIn.innerHTML += opt; lFi.innerHTML += opt;
         }
 
-        // --- GESTIÓN DE AUTENTICACIÓN ---
-        window.loginGoogle = function() {
-            signInWithPopup(auth, provider).catch(() => {
-                showToast("ERROR EN LOGIN");
-            });
-        };
+        iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { initialCountry: "gt", separateDialCode: true, utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js" });
+        flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d" });
 
-        window.toggleConfig = function() { 
-            const m = document.getElementById('modalConfig'); 
-            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
-        };
+        window.showToast = (m) => { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
+        window.loginGoogle = () => signInWithPopup(auth, provider);
+        window.toggleConfig = () => { const m = document.getElementById('modalConfig'); m.style.display = (m.style.display==='flex')?'none':'flex'; };
+        
+        onAuthStateChanged(auth, (u) => { if(u){ document.getElementById('login-overlay').style.display='none'; document.getElementById('admin-content').style.display='block'; initDashboard(); } });
 
-        onAuthStateChanged(auth, (user) => { 
-            if(user){ 
-                document.getElementById('login-overlay').style.display = 'none'; 
-                document.getElementById('admin-content').style.display = 'block'; 
-                initDashboard(); 
-            } 
-        });
-
-        // --- INICIALIZACIÓN DEL DASHBOARD ---
         function initDashboard() {
-            const calendarEl = document.getElementById('calendar');
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridDay', 
-                locale: 'es', 
-                allDaySlot: false, 
-                slotDuration: '00:30:00',
-                nowIndicator: true,
-                headerToolbar: { 
-                    left: 'prev,next today', 
-                    center: 'title', 
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay' 
-                },
-                // DETECCIÓN DINÁMICA DE CAMBIO DE FECHA
-                datesSet: function(info) {
-                    fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
-                    // Forzamos actualización de etiquetas y conteos
-                    onValue(ref(db, 'citas'), (snapshot) => {
-                        renderAdmin(snapshot.val());
-                    }, { onlyOnce: true });
-                },
+            calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+                initialView: 'timeGridDay', locale: 'es', allDaySlot: false, slotDuration: '00:30:00', nowIndicator: true,
+                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+                datesSet: (i) => { fechaVisualizada = i.view.currentStart.toISOString().split('T')[0]; },
                 selectable: true,
-                select: function(info) {
-                    if(info.view.type !== 'dayGridMonth'){
-                        const fecha = info.startStr.split('T')[0];
-                        const hora = info.start.getHours().toString().padStart(2,'0');
-                        const min = info.start.getMinutes().toString().padStart(2,'0');
-                        selectedDateTime = fecha + 'T' + hora + ':' + min;
-                        
-                        document.getElementById('add-fecha-display').innerText = info.start.toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+                select: (i) => {
+                    if(i.view.type !== 'dayGridMonth'){
+                        currentEditingId = null;
+                        selectedDateTime = i.startStr.split('T')[0] + 'T' + i.start.getHours().toString().padStart(2,'0') + ':' + i.start.getMinutes().toString().padStart(2,'0');
+                        document.getElementById('modal-title').innerText = "NUEVA CITA";
+                        document.getElementById('add-fecha-display').innerText = i.start.toLocaleString();
+                        document.getElementById('add-nombre').value = ''; document.getElementById('add-nota').value = '';
                         document.getElementById('modalAddCita').style.display = 'flex';
                     }
                 },
-                eventClick: function(info) {
-                    currentEditingId = info.event.id;
-                    const meta = info.event.extendedProps;
-                    const fTxt = info.event.start.toLocaleString('es-GT', { 
-                        weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' 
-                    });
-                    
-                    // Llenar vista consulta
-                    document.getElementById('pop-nombre').innerText = meta.nombre;
-                    document.getElementById('pop-fecha').innerText = fTxt;
-                    document.getElementById('pop-detalle-corte').innerHTML = `
-                        <div style="color:var(--gold); font-size:1.1rem; font-weight:600; margin-bottom:5px;">
-                            ${meta.servicio}
-                        </div>
-                        <div style="color:var(--green); font-weight:600; font-size:1.2rem;">Q${meta.precio}</div>
-                    ` + (meta.nota ? `<p style="font-size:0.8rem; color:#888; margin-top:15px; background:#111; padding:10px; border-radius:10px;">Nota: ${meta.nota}</p>` : "");
-                    
-                    // Acción WhatsApp
-                    document.getElementById('pop-whatsapp').onclick = function() {
-                        const num = meta.whatsapp.replace(/\D/g,'');
-                        const msg = encodeURIComponent('Hola ' + meta.nombre + ', te recordamos tu cita en Innovation Barber Studio para el ' + fTxt + '. ¡Te esperamos!');
-                        window.open('https://wa.me/' + num + '?text=' + msg);
-                    };
-                    
-                    // Llenar vista edición
-                    document.getElementById('edit-nombre').value = meta.nombre;
-                    document.getElementById('edit-whatsapp').value = meta.whatsapp;
-                    document.getElementById('edit-precio').value = meta.precio;
-                    document.getElementById('edit-nota').value = meta.nota || "";
-                    document.getElementById('edit-servicio-select').value = ""; // Reset select para que elija si desea cambiar
-
+                eventClick: (i) => {
+                    currentEditingId = i.event.id; const m = i.event.extendedProps;
+                    document.getElementById('pop-nombre').innerText = m.nombre;
+                    document.getElementById('pop-fecha').innerText = i.event.start.toLocaleString();
+                    document.getElementById('pop-detalle-corte').innerHTML = `<b>${m.servicio}</b><br><span style="color:var(--green);">Q${m.precio}</span><br><p style="font-size:0.8rem; color:#aaa;">Nota: ${m.nota || 'Sin notas'}</p>`;
+                    document.getElementById('pop-whatsapp').onclick = () => window.open(`https://wa.me/${m.whatsapp.replace(/\D/g,'')}`);
                     document.getElementById('modalEvento').style.display = 'flex';
-                    
-                    document.getElementById('btn-eliminar-pop').onclick = function() {
-                        confirmarAccion("¿Seguro que quieres eliminar permanentemente esta cita?", function() {
-                            remove(ref(db, 'citas/' + currentEditingId)).then(() => {
-                                showToast("CITA ELIMINADA");
-                                cerrarPop();
-                            });
-                        });
-                    };
+                    document.getElementById('btn-eliminar-pop').onclick = () => { if(confirm("¿Eliminar?")) remove(ref(db, `citas/${currentEditingId}`)).then(cerrarPop); };
+                    document.getElementById('btn-editar-desde-pop').onclick = () => { cerrarPop(); window.editarCita(currentEditingId); };
                 }
             });
             calendar.render();
 
-            // SINCRONIZACIÓN DE CONFIGURACIÓN
-            onValue(ref(db, 'configuracion_horario'), (snapshot) => { 
-                const config = snapshot.val();
-                if(config){ 
-                    calendar.setOption('slotMinTime', config.apertura.padStart(2,'0') + ':00:00'); 
-                    calendar.setOption('slotMaxTime', config.cierre.padStart(2,'0') + ':00:00'); 
-                    apS.value = config.apertura;
-                    ciS.value = config.cierre;
-                } 
+            // Sincronización Configuración
+            onValue(ref(db, 'configuracion_horario'), (s) => {
+                const c = s.val();
+                if(c){
+                    calendar.setOption('slotMinTime', c.apertura.padStart(2,'0')+':00:00');
+                    calendar.setOption('slotMaxTime', c.cierre.padStart(2,'0')+':00:00');
+                    apS.value = c.apertura; ciS.value = c.cierre;
+                    lIn.value = c.lunch_inicio || ""; lFi.value = c.lunch_fin || "";
+                }
             });
 
-            // SINCRONIZACIÓN DE CITAS (TIEMPO REAL)
-            onValue(ref(db, 'citas'), (snapshot) => {
-                renderAdmin(snapshot.val());
-            });
-
-            // SINCRONIZACIÓN DE CATÁLOGO
-            onValue(ref(db, 'servicios'), (snapshot) => {
-                renderServicios(snapshot.val() || {});
+            onValue(ref(db, 'citas'), (s) => renderAdmin(s.val()));
+            onValue(ref(db, 'servicios'), (s) => renderServicios(s.val() || {}));
+            onValue(ref(db, 'dias_bloqueados'), (s) => {
+                const list = document.getElementById('lista-bloqueos-admin'), bl = s.val() || {};
+                list.innerHTML = '';
+                Object.keys(bl).forEach(f => {
+                    list.innerHTML += `<div class="block-item-admin"><span>${f}</span><i class="fas fa-trash" style="cursor:pointer; color:var(--red);" onclick="window.eliminarBloqueo('${f}')"></i></div>`;
+                });
             });
         }
 
-        // --- RENDERIZADO MAESTRO DE DATOS ---
         function renderAdmin(data) {
-            const lista = document.getElementById('lista-citas');
-            const cCount = document.getElementById('citas-count');
-            const iTotal = document.getElementById('ingreso-total');
-            const pCount = document.getElementById('count-pendientes');
-            const pLabel = document.getElementById('label-pendientes');
-            const desglose = document.getElementById('desglose-servicios');
-            
-            lista.innerHTML = ''; 
-            desglose.innerHTML = '';
-            
-            let finalizadosMes = 0;
-            let ingresosMes = 0;
-            let pendientesDiaEnPantalla = 0;
-            let eventosCalendar = [];
-            let contadorServicios = {};
-
-            const ahora = new Date();
-            const mesActual = ahora.getMonth();
-            const añoActual = ahora.getFullYear();
-            const hoyRealIso = ahora.toISOString().split('T')[0];
-
-            // ACTUALIZAR ETIQUETA DINÁMICA DE PENDIENTES
-            if (fechaVisualizada === hoyRealIso) {
-                pLabel.innerText = "Pendientes Hoy";
-            } else {
-                const opciones = { day: 'numeric', month: 'short' };
-                const fechaFormateada = new Date(fechaVisualizada + "T00:00:00").toLocaleDateString('es-GT', opciones);
-                pLabel.innerText = "Pendientes " + fechaFormateada;
-            }
+            const list = document.getElementById('lista-citas'); list.innerHTML = '';
+            let finMes = 0, ingMes = 0, pendHoy = 0, events = [];
+            const hoy = new Date();
 
             if(data){
                 Object.keys(data).forEach(id => {
-                    const cita = data[id];
-                    const fCita = new Date(cita.fecha);
-                    const esFinalizada = cita.estado === 'Finalizada';
-
-                    // Lógica de métricas del mes actual
-                    if(esFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) { 
-                        finalizadosMes++; 
-                        ingresosMes += parseFloat(cita.precio || 0); 
-                        contadorServicios[cita.servicio] = (contadorServicios[cita.servicio] || 0) + 1; 
+                    const c = data[id], f = new Date(c.fecha);
+                    const esFin = c.estado === 'Finalizada';
+                    if(esFin && f.getMonth() === hoy.getMonth() && f.getFullYear() === hoy.getFullYear()){ finMes++; ingMes += parseFloat(c.precio || 0); }
+                    if(!esFin && c.fecha.startsWith(fechaVisualizada)){ 
+                        pendHoy++;
+                        list.innerHTML += `<div class="card"><div style="display:flex; justify-content:space-between;"><div><small style="color:var(--gold);">${c.fecha.split('T')[1]}</small><h4>${c.nombre}</h4><p style="font-size:0.75rem; color:#888;">📝 ${c.nota || 'Sin nota'}</p></div><div style="display:flex; gap:5px;"><button class="btn-mini" style="background:#444;" onclick="window.editarCita('${id}')"><i class="fas fa-edit"></i></button><button class="btn-mini" style="background:var(--green); color:#000;" onclick="window.cambiarEstado('${id}','Finalizada')">FIN</button></div></div></div>`;
                     }
-
-                    // CONTEO DINÁMICO SEGÚN DÍA EN PANTALLA
-                    if(!esFinalizada && cita.fecha.startsWith(fechaVisualizada)) {
-                        pendientesDiaEnPantalla++;
-                    }
-
-                    // Preparar objeto para FullCalendar
-                    eventosCalendar.push({ 
-                        id: id, 
-                        title: cita.nombre, 
-                        start: cita.fecha, 
-                        backgroundColor: esFinalizada ? '#1a1a1a' : '#d4af37', 
-                        borderColor: esFinalizada ? '#222' : '#aa8c2c',
-                        textColor: esFinalizada ? '#555' : '#000', 
-                        extendedProps: { ...cita } 
-                    });
-                    
-                    // Renderizar tarjetas de la lista inferior (solo del día visualizado)
-                    if(!esFinalizada && cita.fecha.startsWith(fechaVisualizada)){
-                        const card = document.createElement('div');
-                        card.className = 'card';
-                        card.innerHTML = `
-                            <div style="flex:1">
-                                <div style="font-size:0.6rem; color:var(--gold); font-weight:600; text-transform:uppercase; margin-bottom:2px;">
-                                    ${cita.fecha.split('T')[1]} - ${cita.servicio}
-                                </div>
-                                <h4 style="margin:0; font-size:0.85rem; letter-spacing:0.5px;">${cita.nombre}</h4>
-                                ${cita.nota ? `<p style="margin:4px 0 0; font-size:0.65rem; color:#555; font-style:italic;">"${cita.nota}"</p>` : ""}
-                            </div>
-                            <button class="btn-mini" onclick="cambiarEstado('${id}','Finalizada')">
-                                <i class="fas fa-check"></i> FIN
-                            </button>
-                        `;
-                        lista.appendChild(card);
-                    }
+                    events.push({ id, title: c.nombre, start: c.fecha, backgroundColor: esFin?'#111':'#d4af37', extendedProps: {...c} });
                 });
             }
-
-            // Actualizar Desglose de servicios
-            Object.keys(contadorServicios).forEach(serv => {
-                desglose.innerHTML += `<div class="serv-stat-item"><span>${serv}</span><span>x${contadorServicios[serv]}</span></div>`;
-            });
-
-            // Actualizar Valores en Sidebar
-            cCount.innerText = finalizadosMes;
-            iTotal.innerText = 'Q' + ingresosMes.toLocaleString('es-GT', { minimumFractionDigits: 2 });
-            pCount.innerText = pendientesDiaEnPantalla;
-
-            // Actualizar Calendario
-            calendar.removeAllEvents();
-            calendar.addEventSource(eventosCalendar);
+            document.getElementById('citas-count').innerText = finMes;
+            document.getElementById('ingreso-total').innerText = 'Q' + ingMes.toFixed(2);
+            document.getElementById('count-pendientes').innerText = pendHoy;
+            calendar.removeAllEvents(); calendar.addEventSource(events);
         }
 
-        // --- FUNCIONES DE EDICIÓN ---
-        window.entrarModoEdicion = function() { 
-            document.getElementById('view-mode').style.display = 'none'; 
-            document.getElementById('edit-mode').style.display = 'block'; 
-        };
-
-        window.salirModoEdicion = function() { 
-            document.getElementById('view-mode').style.display = 'block'; 
-            document.getElementById('edit-mode').style.display = 'none'; 
-        };
-
-        document.getElementById('btn-update-cita').onclick = function() {
-            const servSelect = document.getElementById('edit-servicio-select');
-            const updateData = {
-                nombre: document.getElementById('edit-nombre').value,
-                whatsapp: document.getElementById('edit-whatsapp').value,
-                precio: document.getElementById('edit-precio').value,
-                nota: document.getElementById('edit-nota').value
-            };
-
-            // Si se seleccionó un nuevo servicio del catálogo, actualizar nombre y precio
-            if(servSelect.value) {
-                updateData.servicio = catalogoGlobal[servSelect.value].nombre;
-                updateData.precio = catalogoGlobal[servSelect.value].precio;
-            }
-
-            update(ref(db, 'citas/' + currentEditingId), updateData).then(() => { 
-                showToast("CITA ACTUALIZADA"); 
-                cerrarPop(); 
-            });
-        };
-
-        window.cambiarEstado = function(id, nuevoEstado) { 
-            update(ref(db, 'citas/' + id), { estado: nuevoEstado }).then(() => {
-                showToast("SERVICIO COMPLETADO");
-            });
-        };
-
-        window.cerrarPop = function() { 
-            document.getElementById('modalEvento').style.display = 'none'; 
-            salirModoEdicion(); 
-        };
-
-        window.cerrarModalAdd = function() { 
-            document.getElementById('modalAddCita').style.display = 'none'; 
-            // Limpiar campos
-            document.getElementById('add-nombre').value = '';
-            document.getElementById('add-nota').value = '';
-        };
-
-        // --- GESTIÓN DE SERVICIOS (CATÁLOGO) ---
-        function renderServicios(servs){
-            catalogoGlobal = servs;
-            const selAdd = document.getElementById('add-servicio-select');
-            const selEdit = document.getElementById('edit-servicio-select');
-            const listaAdmin = document.getElementById('lista-servicios-admin');
-            
-            selAdd.innerHTML = '<option value="">Selecciona un servicio...</option>';
-            selEdit.innerHTML = '<option value="">(Sin cambios de servicio)</option>';
-            listaAdmin.innerHTML = '';
-
-            Object.keys(servs).forEach(id => {
-                const s = servs[id];
-                const optHtml = `<option value="${id}">${s.nombre} - Q${s.precio}</option>`;
-                selAdd.innerHTML += optHtml;
-                selEdit.innerHTML += optHtml;
-
-                // Elemento visual para configuración
-                const item = document.createElement('div');
-                item.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #111; font-size:0.8rem; background:rgba(255,255,255,0.01); margin-bottom:5px; border-radius:10px;";
-                item.innerHTML = `
-                    <div style="font-weight:600;">${s.nombre} <span style="color:var(--gold); margin-left:10px;">Q${s.precio}</span></div>
-                    <button style="background:none; border:none; color:var(--red); cursor:pointer;" onclick="eliminarServicio('${id}')">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                `;
-                listaAdmin.appendChild(item);
+        function renderServicios(s){
+            catalogoGlobal = s; const sel = document.getElementById('add-servicio-select'), adm = document.getElementById('lista-servicios-admin');
+            sel.innerHTML = '<option value="">Elegir servicio...</option>'; adm.innerHTML = '';
+            Object.keys(s).forEach(id => {
+                sel.innerHTML += `<option value="${id}">${s[id].nombre}</option>`;
+                adm.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #111;"><span>${s[id].nombre} (Q${s[id].precio})</span><i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="window.eliminarServicio('${id}')"></i></div>`;
             });
         }
 
-        window.eliminarServicio = function(id) {
-            confirmarAccion("¿Eliminar este servicio del catálogo? Esto no afectará citas ya agendadas.", function() {
-                remove(ref(db, 'servicios/' + id)).then(() => showToast("CATÁLOGO ACTUALIZADO"));
-            });
+        window.editarCita = (id) => {
+            onValue(ref(db, `citas/${id}`), (snap) => {
+                const c = snap.val();
+                if(c) {
+                    currentEditingId = id; selectedDateTime = c.fecha;
+                    document.getElementById('modal-title').innerText = "EDITAR CITA";
+                    document.getElementById('add-nombre').value = c.nombre;
+                    document.getElementById('add-nota').value = c.nota || '';
+                    iti.setNumber(c.whatsapp);
+                    document.getElementById('modalAddCita').style.display = 'flex';
+                }
+            }, { onlyOnce: true });
         };
 
-        document.getElementById('btn-add-serv').onclick = function() {
-            const n = document.getElementById('serv-n').value;
-            const p = document.getElementById('serv-p').value;
-            if(n && p) {
-                push(ref(db, 'servicios'), { nombre: n, precio: p }).then(() => {
-                    document.getElementById('serv-n').value = '';
-                    document.getElementById('serv-p').value = '';
-                    showToast("NUEVO SERVICIO AÑADIDO");
-                });
-            } else {
-                showToast("LLENA AMBOS CAMPOS");
-            }
+        window.cambiarEstado = (id, e) => update(ref(db, `citas/${id}`), {estado:e});
+        window.eliminarServicio = (id) => remove(ref(db, `servicios/${id}`));
+        window.eliminarBloqueo = (f) => remove(ref(db, `dias_bloqueados/${f}`));
+        window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
+        window.cerrarModalAdd = () => { document.getElementById('modalAddCita').style.display = 'none'; currentEditingId = null; };
+
+        document.getElementById('btn-save-hours').onclick = () => {
+            set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value, lunch_inicio: lIn.value, lunch_fin: lFi.value }).then(() => showToast("GUARDADO"));
         };
 
-        // --- ACCIÓN FINAL: GUARDAR CITA DESDE CALENDARIO ---
-        document.getElementById('btn-save-cita-calendar').onclick = function() {
-            const nombre = document.getElementById('add-nombre').value;
-            const sKey = document.getElementById('add-servicio-select').value;
-            
-            if(!nombre || !sKey) {
-                return showToast("FALTA NOMBRE O SERVICIO");
-            }
-
-            const servicio = catalogoGlobal[sKey];
-            const nuevaCita = {
-                nombre: nombre,
-                whatsapp: iti.getNumber(),
-                servicio: servicio.nombre,
-                precio: servicio.precio,
-                fecha: selectedDateTime,
-                estado: "Pendiente",
-                nota: document.getElementById('add-nota').value
-            };
-
-            push(ref(db, 'citas'), nuevaCita).then(() => {
-                cerrarModalAdd();
-                showToast("CITA AGENDADA CON ÉXITO");
-            });
-        };
-
-        // --- GUARDAR AJUSTES DE HORARIO ---
-        document.getElementById('btn-save-hours').onclick = function() { 
-            set(ref(db, 'configuracion_horario'), { 
-                apertura: apS.value, 
-                cierre: ciS.value 
-            }).then(() => {
-                showToast("HORARIOS DE ATENCIÓN ACTUALIZADOS");
-            });
-        };
-        // --- LÓGICA DE BLOQUEO DE DÍAS ---
-        const fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d" });
-
-        onValue(ref(db, 'dias_bloqueados'), snap => {
-            const list = document.getElementById('lista-bloqueos-admin');
-            list.innerHTML = ''; 
-            const bloqueos = snap.val() || {};
-            Object.keys(bloqueos).forEach(f => {
-                list.innerHTML += `<div class="block-item-admin"><span>${f}</span><i class="fas fa-trash" style="color:var(--red); cursor:pointer;" onclick="eliminarBloqueo('${f}')"></i></div>`;
-            });
-        });
-
-        window.eliminarBloqueo = (f) => {
-            if(confirm("¿Desbloquear este día?")) {
-                remove(ref(db, `dias_bloqueados/${f}`));
-            }
+        document.getElementById('btn-add-serv').onclick = () => {
+            const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value;
+            if(n && p) push(ref(db, 'servicios'), {nombre:n, precio:p}).then(() => { document.getElementById('serv-n').value=''; document.getElementById('serv-p').value=''; });
         };
 
         document.getElementById('btn-add-block').onclick = () => {
             const f = document.getElementById('input-block-date').value;
-            if(f) {
-                set(ref(db, `dias_bloqueados/${f}`), true).then(() => {
-                    showToast("DÍA BLOQUEADO CORRECTAMENTE");
-                    document.getElementById('input-block-date').value = '';
-                });
-            } else {
-                showToast("SELECCIONA UNA FECHA");
+            if(f) set(ref(db, `dias_bloqueados/${f}`), true).then(() => document.getElementById('input-block-date').value = '');
+        };
+
+        document.getElementById('btn-save-cita-calendar').onclick = () => {
+            const nom = document.getElementById('add-nombre').value, sk = document.getElementById('add-servicio-select').value;
+            if(nom && sk) {
+                const s = catalogoGlobal[sk];
+                const data = { nombre: nom, whatsapp: iti.getNumber(), servicio: s.nombre, precio: s.precio, fecha: selectedDateTime, estado: "Pendiente", nota: document.getElementById('add-nota').value };
+                if(currentEditingId) update(ref(db, `citas/${currentEditingId}`), data).then(cerrarModalAdd);
+                else push(ref(db, 'citas'), data).then(cerrarModalAdd);
             }
         };
     </script>
