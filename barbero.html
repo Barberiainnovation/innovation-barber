@@ -500,10 +500,10 @@
         </div>
 
         <div id="modalConfig" class="modal">
-            <div class="modal-content" style="max-width: 450px; max-height: 85vh; overflow-y: auto;">
-                <h3 style="color:var(--gold);">PANEL DE CONTROL</h3>
-                
-                <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px;">HORARIO DE ATENCIÓN</p>
+    <div class="modal-content" style="max-width: 450px; max-height: 85vh; overflow-y: auto;">
+        <h3 style="color:var(--gold);">PANEL DE CONTROL</h3>
+        
+       <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px;">HORARIO DE ATENCIÓN</p>
                 <div style="display:flex; gap:12px; margin-bottom:15px;">
                     <div style="flex:1">
                         <span style="font-size: 0.6rem; color: #444;">APERTURA</span>
@@ -514,7 +514,14 @@
                         <select id="config-cierre"></select>
                     </div>
                 </div>
-                <button class="btn btn-gold" id="btn-save-hours" style="padding: 12px; font-size: 0.6rem;">ACTUALIZAR HORARIO</button>
+
+                <p style="font-size: 0.7rem; color: #555; margin-top: 15px; text-align: left;">HORARIO DE ALMUERZO (LUNCH)</p>
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <select id="config-lunch-inicio"><option value="">Sin lunch</option></select>
+                    <select id="config-lunch-fin"><option value="">Sin lunch</option></select>
+                </div>
+
+        <button class="btn btn-gold" id="btn-save-hours">ACTUALIZAR HORARIOS</button>
 <h4 style="font-size:0.7rem; color:var(--gold); border-bottom:1px solid #222; text-align:left; margin-top:25px; margin-bottom:10px;">BLOQUEAR DÍA ENTERO</h4>
 <div style="display:flex; gap:10px;">
     <input type="text" id="input-block-date" placeholder="Elegir fecha" readonly style="cursor:pointer; text-align: center; margin-bottom:0;">
