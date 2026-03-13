@@ -29,26 +29,27 @@
         margin-bottom: 8px; font-size: 0.8rem; border-left: 3px solid var(--red); 
     }
 
-    /* --- ARREGLO FINAL DE BANDERAS (RESET TOTAL) --- */
-    /* Forzamos que el contenedor no rompa el flujo del formulario */
+ /* --- ARREGLO FINAL DE BANDERAS (CORRECCIÓN ESTRUCTURAL) --- */
+    /* El contenedor debe ser inline-block para que la bandera no flote afuera */
     .iti { 
-        display: block !important; 
+        display: inline-block !important; 
         width: 100% !important; 
         margin-bottom: 12px !important; 
     }
     
-    /* Obligamos al input a ser idéntico a tus otros campos de 18px de radio */
-    .iti input {
+    /* Buscamos los inputs específicamente dentro de .iti para no romper otros */
+    .iti input[type="tel"], 
+    .iti input#add-whatsapp-input, 
+    .iti input#edit-whatsapp {
         width: 100% !important;
-        height: 48px !important; /* Altura estándar de tus otros inputs */
+        height: 48px !important; 
         background: rgba(255,255,255,0.03) !important;
         border: 1px solid var(--border) !important;
         border-radius: 18px !important;
         color: #fff !important;
-        padding-left: 52px !important; 
-        font-family: 'Poppins', sans-serif !important;
-        font-size: 0.9rem !important;
-        box-sizing: border-box !important; /* EVITA QUE SE SALGA DE LA PANTALLA */
+        padding-left: 52px !important; /* Espacio exacto para la bandera */
+        margin-bottom: 0 !important; /* El margen lo lleva el contenedor .iti */
+        box-sizing: border-box !important;
     }
 
     /* La lista de países: Flotante y por encima de todo */
@@ -60,6 +61,7 @@
         border-radius: 15px;
         width: 280px !important;
         position: absolute !important;
+        top: 100% !important; /* Asegura que salga debajo del input */
     }
 
     .iti__selected-flag { background: transparent !important; padding-left: 15px !important; }
