@@ -618,19 +618,26 @@
         };
 
         // --- LLENAR SELECTS DE HORAS EN CONFIG ---
-        const lIniS = document.getElementById('config-lunch-inicio'); 
-        const lFinS = document.getElementById('config-lunch-fin');
+const apS = document.getElementById('config-apertura'); // <--- AGREGA ESTA LÍNEA
+const ciS = document.getElementById('config-cierre');   // <--- AGREGA ESTA LÍNEA
+const lIniS = document.getElementById('config-lunch-inicio'); 
+const lFinS = document.getElementById('config-lunch-fin');
 
-        for(let h=0; h<=23; h++){
-            const hStr = h.toString().padStart(2, '0');
-            [':00', ':30'].forEach(min => {
-                const fullHora = hStr + min;
-                const o = document.createElement('option');
-                o.value = fullHora;
-                o.innerText = fullHora;
-                
-                apS.appendChild(o.cloneNode(true));
-                ciS.appendChild(o.cloneNode(true));
+for(let h=0; h<=23; h++){
+    const hStr = h.toString().padStart(2, '0');
+    [':00', ':30'].forEach(min => {
+        const fullHora = hStr + min;
+        const o = document.createElement('option');
+        o.value = fullHora;
+        o.innerText = fullHora;
+        
+        if(apS) apS.appendChild(o.cloneNode(true)); // Agregado control de seguridad if()
+        if(ciS) ciS.appendChild(o.cloneNode(true));
+        
+        if(lIniS) lIniS.appendChild(o.cloneNode(true)); 
+        if(lFinS) lFinS.appendChild(o.cloneNode(true)); 
+    });
+}
                 
                 // PEGA ESTAS DOS LÍNEAS AQUÍ:
                 if(lIniS) lIniS.appendChild(o.cloneNode(true)); // <--- ESTA
