@@ -17,20 +17,13 @@
     
     <style>
     /* ==========================================
-       VARIABLES DE DISEÑO (PALETA ÉLITE)
+       VARIABLES Y BLOQUEO
        ========================================== */
     :root { 
-        --bg: #000; 
-        --card: #0a0a0a; 
-        --gold: #d4af37; 
-        --gold-dark: #aa8c2c; 
-        --border: #1a1a1a; 
-        --green: #2ecc71; 
-        --red: #ff4d4d; 
-        --glass: rgba(10, 10, 10, 0.98); 
+        --bg: #000; --card: #0a0a0a; --gold: #d4af37; --gold-dark: #aa8c2c; 
+        --border: #1a1a1a; --green: #2ecc71; --red: #ff4d4d; --glass: rgba(10, 10, 10, 0.98); 
     }
 
-    /* BLOQUEO DE DÍAS */
     .block-item-admin { 
         display: flex; justify-content: space-between; align-items: center; 
         background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 12px; 
@@ -38,70 +31,47 @@
     }
 
     /* ==========================================
-       ARREGLO DE BANDERAS (ESTILO PROFESIONAL)
+       ARREGLO DE BANDERAS (SIN ALTERAR DISEÑO)
        ========================================== */
-    /* Contenedor: DEBE ser inline-block para que la bandera no flote afuera */
-    .iti { 
-        width: 100% !important; 
-        margin-bottom: 12px !important; 
-        display: inline-block !important; 
-    }
+    /* Dejamos que la librería use su display original para no romper la alineación */
+    .iti { width: 100%; margin-bottom: 12px; }
     
-    /* Forzamos el diseño de tus inputs para que el de teléfono no se vea distinto */
+    /* Forzamos el estilo de TUS inputs de la barbería */
     .iti input {
+        width: 100% !important;
         background: rgba(255,255,255,0.03) !important;
         border: 1px solid var(--border) !important;
+        padding: 14px 14px 14px 52px !important; /* Espacio para bandera */
         border-radius: 18px !important;
-        padding: 14px 14px 14px 52px !important; /* 52px de espacio para la bandera */
         color: #fff !important;
-        width: 100% !important;
         font-family: 'Poppins', sans-serif !important;
+        font-size: 0.85rem !important;
         outline: none !important;
     }
 
-    /* Lista desplegable de países */
+    /* Lista de países ÉLITE */
     .iti__country-list { 
         background-color: #0a0a0a !important; 
         border: 1px solid var(--gold) !important; 
         color: white !important;
-        z-index: 200000 !important; /* Por encima de cualquier modal */
-        max-width: 280px !important;
+        z-index: 999999 !important; 
         border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        overflow-x: hidden;
-        position: absolute !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,1);
+        width: 280px !important;
     }
 
-    /* Bandera seleccionada y flechita */
-    .iti__selected-flag { 
-        background-color: transparent !important; 
-        padding: 0 10px 0 15px !important;
-        border-radius: 18px 0 0 18px;
-    }
-
-    /* Estilo de los nombres y códigos en la lista */
-    .iti__country-name { color: #fff !important; font-size: 0.8rem !important; }
-    .iti__dial-code { color: var(--gold) !important; }
+    .iti__selected-flag { background: transparent !important; padding-left: 15px !important; }
     .iti__country:hover { background-color: #1a1a1a !important; }
+    .iti__dial-code { color: var(--gold) !important; }
+    .iti__country-name { color: #fff !important; }
 
     /* ==========================================
-       ESTILOS BASE Y SCROLLBAR
+       ESTILOS BASE
        ========================================== */
-    body { 
-        font-family: 'Poppins', sans-serif; 
-        background: var(--bg); 
-        color: #fff; 
-        margin: 0; 
-        padding: 15px; 
-        overflow-x: hidden; 
-    }
-
+    body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; overflow-x: hidden; }
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: #000; }
-    ::-webkit-scrollbar-thumb { 
-        background: var(--gold); 
-        border-radius: 10px; 
-    }
+    ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
 </style>
         /* ==========================================
            LOGIN OVERLAY
