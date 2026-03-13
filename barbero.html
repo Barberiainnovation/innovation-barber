@@ -500,15 +500,41 @@
         </div>
 
         <div id="modalConfig" class="modal">
-            <div class="modal-content" style="max-width: 450px; max-height: 85vh; overflow-y: auto;">
-                <h3 style="color:var(--gold);">PANEL DE CONTROL</h3>
-                
-                <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px;">HORARIO DE ATENCIÓN</p>
-                <div style="display:flex; gap:12px; margin-bottom:15px;">
-                    <div style="flex:1">
-                        <span style="font-size: 0.6rem; color: #444;">APERTURA</span>
-                        <select id="config-apertura"></select>
-                    </div>
+    <div class="modal-content" style="max-width: 420px; max-height: 90vh; overflow-y: auto;">
+        <h3 style="color:var(--gold);">CONFIGURACIÓN</h3>
+        
+        <p style="font-size: 0.7rem; color: #555;">HORARIO LABORAL</p>
+        <div style="display:flex; gap:10px; margin-bottom:10px;">
+            <select id="config-apertura"></select>
+            <select id="config-cierre"></select>
+        </div>
+
+        <p style="font-size: 0.7rem; color: #555; margin-top: 15px;">HORARIO DE ALMUERZO (LUNCH)</p>
+        <div style="display:flex; gap:10px; margin-bottom:10px;">
+            <select id="lunch-inicio"><option value="">Sin lunch</option></select>
+            <select id="lunch-fin"><option value="">Sin lunch</option></select>
+        </div>
+        <button class="btn btn-gold" id="btn-save-hours">GUARDAR HORARIO</button>
+
+        <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
+
+        <p style="font-size: 0.7rem; color: #555;">BLOQUEAR DÍA ESPECÍFICO</p>
+        <input type="text" id="input-block-date" placeholder="Toca para elegir fecha" readonly style="cursor:pointer; border:1px solid var(--gold); text-align: center;">
+        <button class="btn btn-gold" id="btn-add-block" style="margin-top:5px;">BLOQUEAR DÍA</button>
+        <div id="lista-bloqueos-admin" style="margin-top:15px; text-align: left;"></div>
+
+        <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
+
+        <p style="font-size: 0.7rem; color: #555;">GESTIÓN DE SERVICIOS</p>
+        <input type="text" id="serv-n" placeholder="Nombre Servicio">
+        <input type="number" id="serv-p" placeholder="Precio (Q)">
+        <textarea id="serv-d" placeholder="¿Qué incluye?" rows="2"></textarea>
+        <button class="btn btn-gold" id="btn-add-serv">AÑADIR SERVICIO</button>
+        <div id="lista-servicios-admin" style="margin-top:20px; background: #050505; border-radius: 15px;"></div>
+
+        <button class="btn btn-outline" onclick="toggleConfig()">SALIR</button>
+    </div>
+</div>
                     <div style="flex:1">
                         <span style="font-size: 0.6rem; color: #444;">CIERRE</span>
                         <select id="config-cierre"></select>
