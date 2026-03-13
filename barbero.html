@@ -966,6 +966,35 @@
                 showToast("HORARIOS DE ATENCIÓN ACTUALIZADOS");
             });
         };
+        // --- LÓGICA DE BLOQUEO DE DÍAS ---
+        const fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d" });
+
+        onValue(ref(db, 'dias_bloqueados'), snap => {
+            const list = document.getElementById('lista-bloqueos-admin');
+            list.innerHTML = ''; 
+            const bloqueos = snap.val() || {};
+            Object.keys(bloqueos).forEach(f => {
+                list.innerHTML += `<div class="block-item-admin"><span>${f}</span><i class="fas fa-trash" style="color:var(--red); cursor:pointer;" onclick="eliminarBloqueo('${f}')"></i></div>`;
+            });
+        });
+
+        window.eliminarBloqueo = (f) => {
+            if(confirm("¿Desbloquear este día?")) {
+                remove(ref(db, `dias_bloqueados/${f}`));
+            }
+        };
+
+        document.getElementById('btn-add-block').onclick = () => {
+            const f = document.getElementById('input-block-date').value;
+            if(f) {
+                set(ref(db, `dias_bloqueados/${f}`), true).then(() => {
+                    showToast("DÍA BLOQUEADO CORRECTAMENTE");
+                    document.getElementById('input-block-date').value = '';
+                });
+            } else {
+                showToast("SELECCIONA UNA FECHA");
+            }
+        };
     </script>
 </body>
 </html>
