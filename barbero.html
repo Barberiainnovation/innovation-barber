@@ -583,7 +583,13 @@
             separateDialCode: true,
             utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
         });
-
+// INICIALIZACIÓN PARA EL MODAL DE EDICIÓN
+window.itiEdit = window.intlTelInput(document.querySelector("#edit-whatsapp"), { 
+    initialCountry: "gt", 
+    separateDialCode: true,
+    preferredCountries: ["gt", "sv", "hn", "ni", "cr", "pa", "mx", "us"],
+    utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
+});
         // --- SISTEMA DE NOTIFICACIONES ---
         window.showToast = function(mensaje) { 
             const t = document.getElementById('toast'); 
@@ -693,7 +699,10 @@
                     
                     // Llenar vista edición
                     document.getElementById('edit-nombre').value = meta.nombre;
-                    document.getElementById('edit-whatsapp').value = meta.whatsapp;
+                    // Llenar vista edición
+                    document.getElementById('edit-nombre').value = meta.nombre;
+// Cargamos el número y forzamos a que la bandera se actualice
+                    window.itiEdit.setNumber(meta.whatsapp);
                     document.getElementById('edit-precio').value = meta.precio;
                     document.getElementById('edit-nota').value = meta.nota || "";
                     document.getElementById('edit-servicio-select').value = ""; // Reset select para que elija si desea cambiar
