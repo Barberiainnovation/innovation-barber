@@ -381,6 +381,10 @@
         #toast.show { 
             bottom: 40px; 
         }
+
+        /* Fix para intl-tel-input en modales */
+        .iti { width: 100%; margin-bottom: 12px; }
+        .iti__country-list { background-color: #0a0a0a; border: 1px solid #333; color: white; }
     </style>
 </head>
 <body>
@@ -476,7 +480,7 @@
                     <input type="text" id="edit-nombre">
                     
                     <label style="display:block; text-align:left; font-size:0.6rem; color:#555; margin-left:10px;">WHATSAPP</label>
-                    <input type="text" id="edit-whatsapp">
+                    <input type="tel" id="edit-whatsapp-input">
                     
                     <label style="display:block; text-align:left; font-size:0.6rem; color:#555; margin-left:10px;">CAMBIAR SERVICIO</label>
                     <select id="edit-servicio-select"></select>
@@ -546,7 +550,7 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, set, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // CONFIGURACIÓN DE FIREBASE (TU BASE DE DATOS)
+        // CONFIGURACIÓN DE FIREBASE
         const firebaseConfig = { 
             apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", 
             authDomain: "innovation-barber-studio.firebaseapp.com", 
@@ -563,18 +567,20 @@
         let calendar;
         let selectedDateTime = null;
         let catalogoGlobal = {};
-        let iti;
+        let itiAdd, itiEdit;
         let currentEditingId = null;
         let fechaVisualizada = new Date().toISOString().split('T')[0];
 
-        // INICIALIZACIÓN DEL SELECTOR DE TELÉFONO
-        iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { 
-            initialCountry: "gt", 
+        // INICIALIZACIÓN SELECTORES TELÉFONO (CENTROAMÉRICA + USA + MÉXICO)
+        const countryConfig = {
+            initialCountry: "gt",
+            onlyCountries: ["gt", "sv", "hn", "ni", "cr", "pa", "us", "mx"],
             separateDialCode: true,
             utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
-        });
+        };
+        itiAdd = window.intlTelInput(document.querySelector("#add-whatsapp-input"), countryConfig);
+        itiEdit = window.intlTelInput(document.querySelector("#edit-whatsapp-input"), countryConfig);
 
-        // --- SISTEMA DE NOTIFICACIONES ---
         window.showToast = function(mensaje) { 
             const t = document.getElementById('toast'); 
             t.innerText = mensaje; 
@@ -582,7 +588,6 @@
             setTimeout(() => { t.classList.remove('show'); }, 3000); 
         };
 
-        // --- SISTEMA DE CONFIRMACIÓN MODAL ---
         window.confirmarAccion = function(texto, callback) { 
             document.getElementById('confirm-text').innerText = texto; 
             document.getElementById('modalConfirm').style.display = 'flex'; 
@@ -592,7 +597,6 @@
             }; 
         };
 
-        // --- LLENAR SELECTS DE HORAS EN CONFIG ---
         const apS = document.getElementById('config-apertura');
         const ciS = document.getElementById('config-cierre');
         for(let h=0; h<=23; h++){ 
@@ -603,11 +607,8 @@
             ciS.appendChild(opt);
         }
 
-        // --- GESTIÓN DE AUTENTICACIÓN ---
         window.loginGoogle = function() {
-            signInWithPopup(auth, provider).catch(() => {
-                showToast("ERROR EN LOGIN");
-            });
+            signInWithPopup(auth, provider).catch(() => showToast("ERROR EN LOGIN"));
         };
 
         window.toggleConfig = function() { 
@@ -623,7 +624,6 @@
             } 
         });
 
-        // --- INICIALIZACIÓN DEL DASHBOARD ---
         function initDashboard() {
             const calendarEl = document.getElementById('calendar');
             calendar = new FullCalendar.Calendar(calendarEl, {
@@ -637,13 +637,20 @@
                     center: 'title', 
                     right: 'dayGridMonth,timeGridWeek,timeGridDay' 
                 },
-                // DETECCIÓN DINÁMICA DE CAMBIO DE FECHA
+                // ACTUALIZACIÓN AL CAMBIAR DE VISTA O NAVEGAR
                 datesSet: function(info) {
-                    fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
-                    // Forzamos actualización de etiquetas y conteos
-                    onValue(ref(db, 'citas'), (snapshot) => {
-                        renderAdmin(snapshot.val());
-                    }, { onlyOnce: true });
+                    if (info.view.type !== 'dayGridMonth') {
+                        fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
+                        refreshData();
+                    }
+                },
+                // SELECCIÓN DE DÍA EN MODO MES
+                dateClick: function(info) {
+                    if (calendar.view.type === 'dayGridMonth') {
+                        fechaVisualizada = info.dateStr;
+                        refreshData();
+                        showToast("MOSTRANDO: " + info.dateStr);
+                    }
                 },
                 selectable: true,
                 select: function(info) {
@@ -652,7 +659,6 @@
                         const hora = info.start.getHours().toString().padStart(2,'0');
                         const min = info.start.getMinutes().toString().padStart(2,'0');
                         selectedDateTime = fecha + 'T' + hora + ':' + min;
-                        
                         document.getElementById('add-fecha-display').innerText = info.start.toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
                         document.getElementById('modalAddCita').style.display = 'flex';
                     }
@@ -660,38 +666,39 @@
                 eventClick: function(info) {
                     currentEditingId = info.event.id;
                     const meta = info.event.extendedProps;
-                    const fTxt = info.event.start.toLocaleString('es-GT', { 
-                        weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' 
-                    });
+                    const fTxt = info.event.start.toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
                     
-                    // Llenar vista consulta
                     document.getElementById('pop-nombre').innerText = meta.nombre;
                     document.getElementById('pop-fecha').innerText = fTxt;
                     document.getElementById('pop-detalle-corte').innerHTML = `
-                        <div style="color:var(--gold); font-size:1.1rem; font-weight:600; margin-bottom:5px;">
-                            ${meta.servicio}
-                        </div>
+                        <div style="color:var(--gold); font-size:1.1rem; font-weight:600; margin-bottom:5px;">${meta.servicio}</div>
                         <div style="color:var(--green); font-weight:600; font-size:1.2rem;">Q${meta.precio}</div>
                     ` + (meta.nota ? `<p style="font-size:0.8rem; color:#888; margin-top:15px; background:#111; padding:10px; border-radius:10px;">Nota: ${meta.nota}</p>` : "");
                     
-                    // Acción WhatsApp
                     document.getElementById('pop-whatsapp').onclick = function() {
                         const num = meta.whatsapp.replace(/\D/g,'');
                         const msg = encodeURIComponent('Hola ' + meta.nombre + ', te recordamos tu cita en Innovation Barber Studio para el ' + fTxt + '. ¡Te esperamos!');
                         window.open('https://wa.me/' + num + '?text=' + msg);
                     };
                     
-                    // Llenar vista edición
+                    // PREPARAR EDICIÓN
                     document.getElementById('edit-nombre').value = meta.nombre;
-                    document.getElementById('edit-whatsapp').value = meta.whatsapp;
+                    itiEdit.setNumber(meta.whatsapp || "");
                     document.getElementById('edit-precio').value = meta.precio;
                     document.getElementById('edit-nota').value = meta.nota || "";
-                    document.getElementById('edit-servicio-select').value = ""; // Reset select para que elija si desea cambiar
+                    
+                    // ASIGNAR SERVICIO ACTUAL POR DEFECTO
+                    const selectEdicion = document.getElementById('edit-servicio-select');
+                    for (let i = 0; i < selectEdicion.options.length; i++) {
+                        if (selectEdicion.options[i].text.includes(meta.servicio)) {
+                            selectEdicion.selectedIndex = i;
+                            break;
+                        }
+                    }
 
                     document.getElementById('modalEvento').style.display = 'flex';
-                    
                     document.getElementById('btn-eliminar-pop').onclick = function() {
-                        confirmarAccion("¿Seguro que quieres eliminar permanentemente esta cita?", function() {
+                        confirmarAccion("¿Eliminar permanentemente esta cita?", function() {
                             remove(ref(db, 'citas/' + currentEditingId)).then(() => {
                                 showToast("CITA ELIMINADA");
                                 cerrarPop();
@@ -702,7 +709,6 @@
             });
             calendar.render();
 
-            // SINCRONIZACIÓN DE CONFIGURACIÓN
             onValue(ref(db, 'configuracion_horario'), (snapshot) => { 
                 const config = snapshot.val();
                 if(config){ 
@@ -713,18 +719,14 @@
                 } 
             });
 
-            // SINCRONIZACIÓN DE CITAS (TIEMPO REAL)
-            onValue(ref(db, 'citas'), (snapshot) => {
-                renderAdmin(snapshot.val());
-            });
-
-            // SINCRONIZACIÓN DE CATÁLOGO
-            onValue(ref(db, 'servicios'), (snapshot) => {
-                renderServicios(snapshot.val() || {});
-            });
+            onValue(ref(db, 'citas'), (snapshot) => renderAdmin(snapshot.val()));
+            onValue(ref(db, 'servicios'), (snapshot) => renderServicios(snapshot.val() || {}));
         }
 
-        // --- RENDERIZADO MAESTRO DE DATOS ---
+        function refreshData() {
+            onValue(ref(db, 'citas'), (snapshot) => renderAdmin(snapshot.val()), { onlyOnce: true });
+        }
+
         function renderAdmin(data) {
             const lista = document.getElementById('lista-citas');
             const cCount = document.getElementById('citas-count');
@@ -747,12 +749,10 @@
             const añoActual = ahora.getFullYear();
             const hoyRealIso = ahora.toISOString().split('T')[0];
 
-            // ACTUALIZAR ETIQUETA DINÁMICA DE PENDIENTES
             if (fechaVisualizada === hoyRealIso) {
                 pLabel.innerText = "Pendientes Hoy";
             } else {
-                const opciones = { day: 'numeric', month: 'short' };
-                const fechaFormateada = new Date(fechaVisualizada + "T00:00:00").toLocaleDateString('es-GT', opciones);
+                const fechaFormateada = new Date(fechaVisualizada + "T00:00:00").toLocaleDateString('es-GT', { day: 'numeric', month: 'short' });
                 pLabel.innerText = "Pendientes " + fechaFormateada;
             }
 
@@ -762,19 +762,16 @@
                     const fCita = new Date(cita.fecha);
                     const esFinalizada = cita.estado === 'Finalizada';
 
-                    // Lógica de métricas del mes actual
                     if(esFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) { 
                         finalizadosMes++; 
                         ingresosMes += parseFloat(cita.precio || 0); 
                         contadorServicios[cita.servicio] = (contadorServicios[cita.servicio] || 0) + 1; 
                     }
 
-                    // CONTEO DINÁMICO SEGÚN DÍA EN PANTALLA
                     if(!esFinalizada && cita.fecha.startsWith(fechaVisualizada)) {
                         pendientesDiaEnPantalla++;
                     }
 
-                    // Preparar objeto para FullCalendar
                     eventosCalendar.push({ 
                         id: id, 
                         title: cita.nombre, 
@@ -785,7 +782,6 @@
                         extendedProps: { ...cita } 
                     });
                     
-                    // Renderizar tarjetas de la lista inferior (solo del día visualizado)
                     if(!esFinalizada && cita.fecha.startsWith(fechaVisualizada)){
                         const card = document.createElement('div');
                         card.className = 'card';
@@ -806,22 +802,18 @@
                 });
             }
 
-            // Actualizar Desglose de servicios
             Object.keys(contadorServicios).forEach(serv => {
                 desglose.innerHTML += `<div class="serv-stat-item"><span>${serv}</span><span>x${contadorServicios[serv]}</span></div>`;
             });
 
-            // Actualizar Valores en Sidebar
             cCount.innerText = finalizadosMes;
             iTotal.innerText = 'Q' + ingresosMes.toLocaleString('es-GT', { minimumFractionDigits: 2 });
             pCount.innerText = pendientesDiaEnPantalla;
 
-            // Actualizar Calendario
             calendar.removeAllEvents();
             calendar.addEventSource(eventosCalendar);
         }
 
-        // --- FUNCIONES DE EDICIÓN ---
         window.entrarModoEdicion = function() { 
             document.getElementById('view-mode').style.display = 'none'; 
             document.getElementById('edit-mode').style.display = 'block'; 
@@ -836,12 +828,11 @@
             const servSelect = document.getElementById('edit-servicio-select');
             const updateData = {
                 nombre: document.getElementById('edit-nombre').value,
-                whatsapp: document.getElementById('edit-whatsapp').value,
+                whatsapp: itiEdit.getNumber(),
                 precio: document.getElementById('edit-precio').value,
                 nota: document.getElementById('edit-nota').value
             };
 
-            // Si se seleccionó un nuevo servicio del catálogo, actualizar nombre y precio
             if(servSelect.value) {
                 updateData.servicio = catalogoGlobal[servSelect.value].nombre;
                 updateData.precio = catalogoGlobal[servSelect.value].precio;
@@ -854,9 +845,7 @@
         };
 
         window.cambiarEstado = function(id, nuevoEstado) { 
-            update(ref(db, 'citas/' + id), { estado: nuevoEstado }).then(() => {
-                showToast("SERVICIO COMPLETADO");
-            });
+            update(ref(db, 'citas/' + id), { estado: nuevoEstado }).then(() => showToast("SERVICIO COMPLETADO"));
         };
 
         window.cerrarPop = function() { 
@@ -866,20 +855,18 @@
 
         window.cerrarModalAdd = function() { 
             document.getElementById('modalAddCita').style.display = 'none'; 
-            // Limpiar campos
             document.getElementById('add-nombre').value = '';
             document.getElementById('add-nota').value = '';
         };
 
-        // --- GESTIÓN DE SERVICIOS (CATÁLOGO) ---
         function renderServicios(servs){
             catalogoGlobal = servs;
             const selAdd = document.getElementById('add-servicio-select');
             const selEdit = document.getElementById('edit-servicio-select');
             const listaAdmin = document.getElementById('lista-servicios-admin');
             
-            selAdd.innerHTML = '<option value="">Selecciona un servicio...</option>';
-            selEdit.innerHTML = '<option value="">(Sin cambios de servicio)</option>';
+            selAdd.innerHTML = '<option value="">Selecciona servicio...</option>';
+            selEdit.innerHTML = '<option value="">(Sin cambios)</option>';
             listaAdmin.innerHTML = '';
 
             Object.keys(servs).forEach(id => {
@@ -888,21 +875,18 @@
                 selAdd.innerHTML += optHtml;
                 selEdit.innerHTML += optHtml;
 
-                // Elemento visual para configuración
                 const item = document.createElement('div');
                 item.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #111; font-size:0.8rem; background:rgba(255,255,255,0.01); margin-bottom:5px; border-radius:10px;";
                 item.innerHTML = `
                     <div style="font-weight:600;">${s.nombre} <span style="color:var(--gold); margin-left:10px;">Q${s.precio}</span></div>
-                    <button style="background:none; border:none; color:var(--red); cursor:pointer;" onclick="eliminarServicio('${id}')">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
+                    <button style="background:none; border:none; color:var(--red); cursor:pointer;" onclick="eliminarServicio('${id}')"><i class="fas fa-trash-alt"></i></button>
                 `;
                 listaAdmin.appendChild(item);
             });
         }
 
         window.eliminarServicio = function(id) {
-            confirmarAccion("¿Eliminar este servicio del catálogo? Esto no afectará citas ya agendadas.", function() {
+            confirmarAccion("¿Eliminar del catálogo?", function() {
                 remove(ref(db, 'servicios/' + id)).then(() => showToast("CATÁLOGO ACTUALIZADO"));
             });
         };
@@ -914,26 +898,20 @@
                 push(ref(db, 'servicios'), { nombre: n, precio: p }).then(() => {
                     document.getElementById('serv-n').value = '';
                     document.getElementById('serv-p').value = '';
-                    showToast("NUEVO SERVICIO AÑADIDO");
+                    showToast("SERVICIO AÑADIDO");
                 });
-            } else {
-                showToast("LLENA AMBOS CAMPOS");
-            }
+            } else { showToast("LLENA AMBOS CAMPOS"); }
         };
 
-        // --- ACCIÓN FINAL: GUARDAR CITA DESDE CALENDARIO ---
         document.getElementById('btn-save-cita-calendar').onclick = function() {
             const nombre = document.getElementById('add-nombre').value;
             const sKey = document.getElementById('add-servicio-select').value;
-            
-            if(!nombre || !sKey) {
-                return showToast("FALTA NOMBRE O SERVICIO");
-            }
+            if(!nombre || !sKey) return showToast("FALTA NOMBRE O SERVICIO");
 
             const servicio = catalogoGlobal[sKey];
             const nuevaCita = {
                 nombre: nombre,
-                whatsapp: iti.getNumber(),
+                whatsapp: itiAdd.getNumber(),
                 servicio: servicio.nombre,
                 precio: servicio.precio,
                 fecha: selectedDateTime,
@@ -943,18 +921,12 @@
 
             push(ref(db, 'citas'), nuevaCita).then(() => {
                 cerrarModalAdd();
-                showToast("CITA AGENDADA CON ÉXITO");
+                showToast("CITA AGENDADA");
             });
         };
 
-        // --- GUARDAR AJUSTES DE HORARIO ---
         document.getElementById('btn-save-hours').onclick = function() { 
-            set(ref(db, 'configuracion_horario'), { 
-                apertura: apS.value, 
-                cierre: ciS.value 
-            }).then(() => {
-                showToast("HORARIOS DE ATENCIÓN ACTUALIZADOS");
-            });
+            set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value }).then(() => showToast("HORARIOS ACTUALIZADOS"));
         };
     </script>
 </body>
