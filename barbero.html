@@ -29,30 +29,25 @@
         margin-bottom: 8px; font-size: 0.8rem; border-left: 3px solid var(--red); 
     }
 
- /* --- ARREGLO FINAL DE BANDERAS (CORRECCIÓN ESTRUCTURAL) --- */
-    /* El contenedor debe ser inline-block para que la bandera no flote afuera */
+    /* --- ARREGLO FINAL DE BANDERAS --- */
     .iti { 
-        display: inline-block !important; 
+        display: block !important; /* Cambiado a block para asegurar el 100% en el form */
         width: 100% !important; 
         margin-bottom: 12px !important; 
     }
     
-    /* Buscamos los inputs específicamente dentro de .iti para no romper otros */
-    .iti input[type="tel"], 
-    .iti input#add-whatsapp-input, 
-    .iti input#edit-whatsapp {
+    .iti input {
         width: 100% !important;
         height: 48px !important; 
         background: rgba(255,255,255,0.03) !important;
         border: 1px solid var(--border) !important;
         border-radius: 18px !important;
         color: #fff !important;
-        padding-left: 52px !important; /* Espacio exacto para la bandera */
-        margin-bottom: 0 !important; /* El margen lo lleva el contenedor .iti */
+        padding-left: 52px !important; 
         box-sizing: border-box !important;
+        font-family: 'Poppins', sans-serif !important;
     }
 
-    /* La lista de países: Flotante y por encima de todo */
     .iti__country-list { 
         background-color: #0a0a0a !important; 
         border: 1px solid var(--gold) !important; 
@@ -61,46 +56,31 @@
         border-radius: 15px;
         width: 280px !important;
         position: absolute !important;
-        top: 100% !important; /* Asegura que salga debajo del input */
     }
 
     .iti__selected-flag { background: transparent !important; padding-left: 15px !important; }
-    .iti__country:hover { background-color: #1a1a1a !important; }
     .iti__dial-code { color: var(--gold) !important; }
     .iti__country-name { color: #fff !important; }
 
     /* ESTILOS BASE */
     body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; overflow-x: hidden; }
     ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: #000; }
     ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+
+    /* LOGIN OVERLAY (Movido dentro de style) */
+    #login-overlay { 
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: #000; z-index: 9999; display: flex; 
+        align-items: center; justify-content: center; 
+    }
+
+    .login-box { 
+        width: 320px; padding: 45px; text-align: center; 
+        background: var(--card); border-radius: 35px; 
+        border: 1px solid var(--border); 
+        box-shadow: 0 0 40px rgba(212,175,55,0.05); 
+    }
 </style>
-
-    /* ==========================================
-           LOGIN OVERLAY
-           ========================================== */
-        #login-overlay { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: #000; 
-            z-index: 9999; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-        }
-
-        .login-box { 
-            width: 320px; 
-            padding: 45px; 
-            text-align: center; 
-            background: var(--card); 
-            border-radius: 35px; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 0 40px rgba(212,175,55,0.05); 
-        }
 
         /* ==========================================
            ESTRUCTURA DASHBOARD
