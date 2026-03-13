@@ -38,15 +38,25 @@
     }
 
     /* ==========================================
-       ARREGLO DE BANDERAS (ESTILO LIMPIO)
+       ARREGLO DE BANDERAS (ESTILO PROFESIONAL)
        ========================================== */
-    /* Contenedor principal del input */
-    .iti { width: 100% !important; margin-bottom: 12px !important; display: block !important; }
+    /* Contenedor: DEBE ser inline-block para que la bandera no flote afuera */
+    .iti { 
+        width: 100% !important; 
+        margin-bottom: 12px !important; 
+        display: inline-block !important; 
+    }
     
-    /* Input de texto */
+    /* Forzamos el diseño de tus inputs para que el de teléfono no se vea distinto */
     .iti input {
-        padding-left: 52px !important; /* Espacio para la bandera */
+        background: rgba(255,255,255,0.03) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 18px !important;
+        padding: 14px 14px 14px 52px !important; /* 52px de espacio para la bandera */
+        color: #fff !important;
         width: 100% !important;
+        font-family: 'Poppins', sans-serif !important;
+        outline: none !important;
     }
 
     /* Lista desplegable de países */
@@ -54,26 +64,28 @@
         background-color: #0a0a0a !important; 
         border: 1px solid var(--gold) !important; 
         color: white !important;
-        z-index: 100000 !important; 
+        z-index: 200000 !important; /* Por encima de cualquier modal */
         max-width: 280px !important;
         border-radius: 15px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         overflow-x: hidden;
+        position: absolute !important;
     }
 
-    /* Bandera seleccionada */
+    /* Bandera seleccionada y flechita */
     .iti__selected-flag { 
         background-color: transparent !important; 
         padding: 0 10px 0 15px !important;
+        border-radius: 18px 0 0 18px;
     }
 
-    /* Estilo de los nombres de países en la lista */
+    /* Estilo de los nombres y códigos en la lista */
     .iti__country-name { color: #fff !important; font-size: 0.8rem !important; }
     .iti__dial-code { color: var(--gold) !important; }
     .iti__country:hover { background-color: #1a1a1a !important; }
 
     /* ==========================================
-       ESTILOS BASE
+       ESTILOS BASE Y SCROLLBAR
        ========================================== */
     body { 
         font-family: 'Poppins', sans-serif; 
@@ -83,6 +95,14 @@
         padding: 15px; 
         overflow-x: hidden; 
     }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #000; }
+    ::-webkit-scrollbar-thumb { 
+        background: var(--gold); 
+        border-radius: 10px; 
+    }
+</style>
         /* ==========================================
            LOGIN OVERLAY
            ========================================== */
