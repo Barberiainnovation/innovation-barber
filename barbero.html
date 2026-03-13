@@ -615,12 +615,16 @@
         const ciS = document.getElementById('config-cierre');
         const lIn = document.getElementById('config-lunch-inicio');
         const lFi = document.getElementById('config-lunch-fin');
+        
         for(let h=0; h<=23; h++){ 
             const opt = document.createElement('option');
             opt.value = h;
             opt.innerText = h.toString().padStart(2, '0') + ":00";
+            
             apS.appendChild(opt.cloneNode(true));
-            ciS.appendChild(opt);
+            ciS.appendChild(opt.cloneNode(true));
+            lIn.appendChild(opt.cloneNode(true));
+            lFi.appendChild(opt);
         }
 
         // --- GESTIÓN DE AUTENTICACIÓN ---
