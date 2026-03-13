@@ -15,49 +15,51 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/es.global.min.js"></script>
     
-    <style>
-    /* ==========================================
-       VARIABLES Y BLOQUEO
-       ========================================== */
+<style>
+    /* VARIABLES */
     :root { 
         --bg: #000; --card: #0a0a0a; --gold: #d4af37; --gold-dark: #aa8c2c; 
         --border: #1a1a1a; --green: #2ecc71; --red: #ff4d4d; --glass: rgba(10, 10, 10, 0.98); 
     }
 
+    /* BLOQUEO DE DÍAS */
     .block-item-admin { 
         display: flex; justify-content: space-between; align-items: center; 
         background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 12px; 
         margin-bottom: 8px; font-size: 0.8rem; border-left: 3px solid var(--red); 
     }
 
-    /* ==========================================
-       ARREGLO DE BANDERAS (SIN ALTERAR DISEÑO)
-       ========================================== */
-    /* Dejamos que la librería use su display original para no romper la alineación */
-    .iti { width: 100%; margin-bottom: 12px; }
+    /* --- ARREGLO FINAL DE BANDERAS (RESET TOTAL) --- */
+    /* Forzamos que el contenedor no rompa el flujo del formulario */
+    .iti { 
+        display: block !important; 
+        width: 100% !important; 
+        margin-bottom: 12px !important; 
+    }
     
-    /* Forzamos el estilo de TUS inputs de la barbería */
+    /* Obligamos al input a ser idéntico a tus otros campos de 18px de radio */
     .iti input {
         width: 100% !important;
+        height: 48px !important; /* Altura estándar de tus otros inputs */
         background: rgba(255,255,255,0.03) !important;
         border: 1px solid var(--border) !important;
-        padding: 14px 14px 14px 52px !important; /* Espacio para bandera */
         border-radius: 18px !important;
         color: #fff !important;
+        padding-left: 52px !important; 
         font-family: 'Poppins', sans-serif !important;
-        font-size: 0.85rem !important;
-        outline: none !important;
+        font-size: 0.9rem !important;
+        box-sizing: border-box !important; /* EVITA QUE SE SALGA DE LA PANTALLA */
     }
 
-    /* Lista de países ÉLITE */
+    /* La lista de países: Flotante y por encima de todo */
     .iti__country-list { 
         background-color: #0a0a0a !important; 
         border: 1px solid var(--gold) !important; 
         color: white !important;
         z-index: 999999 !important; 
         border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,1);
         width: 280px !important;
+        position: absolute !important;
     }
 
     .iti__selected-flag { background: transparent !important; padding-left: 15px !important; }
@@ -65,15 +67,14 @@
     .iti__dial-code { color: var(--gold) !important; }
     .iti__country-name { color: #fff !important; }
 
-    /* ==========================================
-       ESTILOS BASE
-       ========================================== */
+    /* ESTILOS BASE */
     body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; overflow-x: hidden; }
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: #000; }
     ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
 </style>
-        /* ==========================================
+
+    /* ==========================================
            LOGIN OVERLAY
            ========================================== */
         #login-overlay { 
