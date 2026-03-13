@@ -15,310 +15,349 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/es.global.min.js"></script>
     
-<style>
-    /* VARIABLES */
-    :root { 
-        --bg: #000; --card: #0a0a0a; --gold: #d4af37; --gold-dark: #aa8c2c; 
-        --border: #1a1a1a; --green: #2ecc71; --red: #ff4d4d; --glass: rgba(10, 10, 10, 0.98); 
-    }
+    <style>
+        /* ==========================================
+           VARIABLES DE DISEÑO (PALETA ÉLITE)
+           ========================================== */
+        :root { 
+            --bg: #000; 
+            --card: #0a0a0a; 
+            --gold: #d4af37; 
+            --gold-dark: #aa8c2c; 
+            --border: #1a1a1a; 
+            --green: #2ecc71; 
+            --red: #ff4d4d; 
+            --glass: rgba(10, 10, 10, 0.98); 
+        }
 
-    /* BLOQUEO DE DÍAS */
-    .block-item-admin { 
-        display: flex; justify-content: space-between; align-items: center; 
-        background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 12px; 
-        margin-bottom: 8px; font-size: 0.8rem; border-left: 3px solid var(--red); 
-    }
+        /* ==========================================
+           ESTILOS BASE Y SCROLLBAR
+           ========================================== */
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: var(--bg); 
+            color: #fff; 
+            margin: 0; 
+            padding: 15px; 
+            overflow-x: hidden; 
+        }
 
-    /* --- ARREGLO DE BANDERAS (MÁXIMA PRIORIDAD) --- */
-    .iti.iti--allow-dropdown { 
-        display: block !important; 
-        width: 100% !important; 
-        margin-bottom: 15px !important; 
-    }
-    
-    .iti.iti--allow-dropdown input[type="tel"] {
-        width: 100% !important;
-        height: 50px !important; 
-        background: rgba(255,255,255,0.03) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 18px !important;
-        color: #fff !important;
-        padding-left: 55px !important; 
-        font-family: 'Poppins', sans-serif !important;
-        font-size: 0.9rem !important;
-        box-sizing: border-box !important;
-        display: block !important;
-    }
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--gold);
+            border-radius: 10px;
+        }
 
-    .iti__country-list { 
-        background-color: #0a0a0a !important; 
-        border: 1px solid var(--gold) !important; 
-        color: white !important;
-        z-index: 1000000 !important; 
-        border-radius: 15px;
-        width: 300px !important;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.9) !important;
-    }
+        /* ==========================================
+           LOGIN OVERLAY
+           ========================================== */
+        #login-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: #000; 
+            z-index: 9999; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
 
-    .iti__selected-flag { background: transparent !important; padding-left: 15px !important; }
-    .iti__country:hover { background-color: #1a1a1a !important; }
-    .iti__dial-code { color: var(--gold) !important; }
-    .iti__country-name { color: #fff !important; }
+        .login-box { 
+            width: 320px; 
+            padding: 45px; 
+            text-align: center; 
+            background: var(--card); 
+            border-radius: 35px; 
+            border: 1px solid var(--border); 
+            box-shadow: 0 0 40px rgba(212,175,55,0.05); 
+        }
 
-    /* ESTILOS BASE */
-    body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; overflow-x: hidden; }
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: #000; }
-    ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+        /* ==========================================
+           ESTRUCTURA DASHBOARD
+           ========================================== */
+        #admin-content { 
+            display: none; 
+            max-width: 1400px; 
+            margin: 0 auto; 
+        }
 
-    /* LOGIN OVERLAY */
-    #login-overlay { 
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-        background: #000; z-index: 9999; display: flex; 
-        align-items: center; justify-content: center; 
-    }
-    .login-box { 
-        width: 320px; padding: 45px; text-align: center; 
-        background: var(--card); border-radius: 35px; 
-        border: 1px solid var(--border); 
-        box-shadow: 0 0 40px rgba(212,175,55,0.05); 
-    } /* <--- AQUÍ FALTABA ESTA LLAVE */
-
-    /* ==========================================
-       ESTRUCTURA DASHBOARD
-       ========================================== */
-    #admin-content { 
-        display: none; 
-        max-width: 1400px; 
-        margin: 0 auto; 
-    }
-
-    .main-grid { 
-        display: grid; 
-        grid-template-columns: 1fr 340px; 
-        gap: 25px; 
-        margin-top: 10px; 
-    }
-
-    @media (max-width: 1100px) { 
         .main-grid { 
-            grid-template-columns: 1fr; 
-        } 
-    }
+            display: grid; 
+            grid-template-columns: 1fr 340px; 
+            gap: 25px; 
+            margin-top: 10px; 
+        }
 
-    /* ==========================================
-       CALENDARIO (MODERN DARK)
-       ========================================== */
-    #calendar-container { 
-        background: var(--card); 
-        padding: 20px; 
-        border-radius: 35px; 
-        border: 1px solid var(--border); 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
+        @media (max-width: 1100px) { 
+            .main-grid { 
+                grid-template-columns: 1fr; 
+            } 
+        }
 
-    .fc { 
-        --fc-border-color: #161616; 
-        --fc-today-bg-color: rgba(212,175,55,0.02); 
-        font-size: 0.85rem; 
-    }
+        /* ==========================================
+           CALENDARIO (MODERN DARK)
+           ========================================== */
+        #calendar-container { 
+            background: var(--card); 
+            padding: 20px; 
+            border-radius: 35px; 
+            border: 1px solid var(--border); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
 
-    .fc .fc-toolbar-title { 
-        font-size: 1.1rem !important; 
-        text-transform: uppercase; 
-        color: var(--gold); 
-        font-weight: 600; 
-        letter-spacing: 1px;
-    }
+        .fc { 
+            --fc-border-color: #161616; 
+            --fc-today-bg-color: rgba(212,175,55,0.02); 
+            font-size: 0.85rem; 
+        }
 
-    .fc-event-main { 
-        font-weight: 600; 
-        font-size: 0.75rem !important; 
-        line-height: 1.2; 
-        display: flex; 
-        align-items: center; 
-        padding: 3px 6px; 
-        cursor: pointer; 
-    }
+        .fc .fc-toolbar-title { 
+            font-size: 1.1rem !important; 
+            text-transform: uppercase; 
+            color: var(--gold); 
+            font-weight: 600; 
+            letter-spacing: 1px;
+        }
 
-    .fc .fc-button-primary {
-        background-color: #111 !important;
-        border-color: #222 !important;
-        text-transform: uppercase;
-        font-size: 0.7rem;
-        font-weight: 600;
-    }
+        .fc-event-main { 
+            font-weight: 600; 
+            font-size: 0.75rem !important; 
+            line-height: 1.2; 
+            display: flex; 
+            align-items: center; 
+            padding: 3px 6px; 
+            cursor: pointer; 
+        }
 
-    .fc .fc-button-primary:hover {
-        background-color: var(--gold) !important;
-        color: #000 !important;
-    }
+        .fc .fc-button-primary {
+            background-color: #111 !important;
+            border-color: #222 !important;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
 
-    /* ==========================================
-       SIDEBAR STATS
-       ========================================== */
-    .sidebar-stats { 
-        background: var(--card); 
-        border: 1px solid var(--border); 
-        border-radius: 35px; 
-        padding: 30px; 
-        border-top: 5px solid var(--gold); 
-        position: sticky; 
-        top: 15px; 
-        height: fit-content; 
-    }
+        .fc .fc-button-primary:hover {
+            background-color: var(--gold) !important;
+            color: #000 !important;
+        }
 
-    .sidebar-logo { 
-        width: 100px; 
-        margin-bottom: 20px; 
-        filter: drop-shadow(0 0 15px rgba(212,175,55,0.2)); 
-    }
+        /* ==========================================
+           SIDEBAR STATS
+           ========================================== */
+        .sidebar-stats { 
+            background: var(--card); 
+            border: 1px solid var(--border); 
+            border-radius: 35px; 
+            padding: 30px; 
+            border-top: 5px solid var(--gold); 
+            position: sticky; 
+            top: 15px; 
+            height: fit-content; 
+        }
 
-    .stat-val { 
-        font-size: 2.3rem; 
-        font-weight: 600; 
-        color: var(--gold); 
-        line-height: 1;
-    }
+        .sidebar-logo { 
+            width: 100px; 
+            margin-bottom: 20px; 
+            filter: drop-shadow(0 0 15px rgba(212,175,55,0.2)); 
+        }
 
-    .stat-label { 
-        font-size: 0.65rem; 
-        text-transform: uppercase; 
-        color: #666; 
-        letter-spacing: 2px; 
-        font-weight: 600;
-    }
+        .stat-group {
+            margin-bottom: 25px;
+        }
 
-    #desglose-servicios { 
-        margin-top: 15px; 
-        border-top: 1px solid #1a1a1a; 
-        padding-top: 10px; 
-    }
+        .stat-val { 
+            font-size: 2.3rem; 
+            font-weight: 600; 
+            color: var(--gold); 
+            line-height: 1;
+        }
 
-    .serv-stat-item { 
-        display: flex; 
-        justify-content: space-between; 
-        font-size: 0.65rem; 
-        color: #888; 
-        margin-top: 6px; 
-        text-transform: uppercase; 
-    }
+        .stat-label { 
+            font-size: 0.65rem; 
+            text-transform: uppercase; 
+            color: #666; 
+            letter-spacing: 2px; 
+            font-weight: 600;
+        }
 
-    /* ==========================================
-       TARJETAS DE CITAS PENDIENTES
-       ========================================== */
-    .citas-list { 
-        margin-top: 40px; 
-        display: grid; 
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-        gap: 15px; 
-        padding-bottom: 120px; 
-    }
+        #desglose-servicios { 
+            margin-top: 15px; 
+            border-top: 1px solid #1a1a1a; 
+            padding-top: 10px; 
+        }
 
-    .card { 
-        background: #060606; 
-        border: 1px solid var(--border); 
-        padding: 15px 20px; 
-        border-radius: 20px; 
-        border-left: 4px solid var(--gold); 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        transition: transform 0.3s ease;
-    }
+        .serv-stat-item { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 0.65rem; 
+            color: #888; 
+            margin-top: 6px; 
+            text-transform: uppercase; 
+        }
 
-    .card:hover {
-        transform: translateY(-3px);
-        border-color: #333;
-    }
+        /* ==========================================
+           TARJETAS DE CITAS PENDIENTES
+           ========================================== */
+        .citas-list { 
+            margin-top: 40px; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+            gap: 15px; 
+            padding-bottom: 120px; 
+        }
 
-    /* ==========================================
-       SISTEMA DE MODALES
-       ========================================== */
-    .modal { 
-        display: none; 
-        position: fixed; 
-        left: 0; 
-        top: 0; 
-        width: 100%; 
-        height: 100%; 
-        background: rgba(0,0,0,0.95); 
-        backdrop-filter: blur(15px); 
-        align-items: center; 
-        justify-content: center; 
-        z-index: 10000; 
-    }
+        .card { 
+            background: #060606; 
+            border: 1px solid var(--border); 
+            padding: 15px 20px; 
+            border-radius: 20px; 
+            border-left: 4px solid var(--gold); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            transition: transform 0.3s ease;
+        }
 
-    .modal-content { 
-        background: var(--glass); 
-        padding: 40px; 
-        border: 1px solid var(--gold); 
-        width: 90%; 
-        max-width: 400px; 
-        border-radius: 40px; 
-        text-align: center; 
-        box-shadow: 0 25px 60px rgba(0,0,0,0.8); 
-    }
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: #333;
+        }
 
-    /* ==========================================
-       ELEMENTOS DE FORMULARIO
-       ========================================== */
-    input, select, textarea { 
-        background: rgba(255,255,255,0.03); 
-        color: #fff; 
-        border: 1px solid #1a1a1a; 
-        padding: 14px; 
-        border-radius: 18px; 
-        width: 100%; 
-        margin-bottom: 12px; 
-        outline: none; 
-        font-family: 'Poppins'; 
-        box-sizing: border-box; 
-        font-size: 0.85rem; 
-        transition: 0.3s;
-    }
+        /* ==========================================
+           SISTEMA DE MODALES (VENTANAS ELEGANTES)
+           ========================================== */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.95); 
+            backdrop-filter: blur(15px); 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 10000; 
+        }
 
-    input:focus, select:focus {
-        border-color: var(--gold);
-        background: rgba(212, 175, 55, 0.05);
-    }
+        .modal-content { 
+            background: var(--glass); 
+            padding: 40px; 
+            border: 1px solid var(--gold); 
+            width: 90%; 
+            max-width: 400px; 
+            border-radius: 40px; 
+            text-align: center; 
+            box-shadow: 0 25px 60px rgba(0,0,0,0.8); 
+        }
 
-    /* ==========================================
-       BOTONES
-       ========================================== */
-    .btn { 
-        width: 100%; 
-        padding: 18px; 
-        border-radius: 20px; 
-        font-weight: 700; 
-        cursor: pointer; 
-        border: none; 
-        font-size: 0.75rem; 
-        text-transform: uppercase; 
-        letter-spacing: 2px; 
-        transition: 0.4s; 
-    }
+        .modal-content h3 {
+            margin-top: 0;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
 
-    .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #000; }
-    .btn-red { background: rgba(255, 77, 77, 0.1); border: 1px solid var(--red); color: var(--red); }
+        /* ==========================================
+           ELEMENTOS DE FORMULARIO
+           ========================================== */
+        input, select, textarea { 
+            background: rgba(255,255,255,0.03); 
+            color: #fff; 
+            border: 1px solid #1a1a1a; 
+            padding: 14px; 
+            border-radius: 18px; 
+            width: 100%; 
+            margin-bottom: 12px; 
+            outline: none; 
+            font-family: 'Poppins'; 
+            box-sizing: border-box; 
+            font-size: 0.85rem; 
+            transition: 0.3s;
+        }
 
-    .btn-config-float { 
-        position: fixed; 
-        bottom: 35px; 
-        right: 35px; 
-        background: var(--gold); 
-        color: #000; 
-        width: 70px; 
-        height: 70px; 
-        border-radius: 50%; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        font-size: 1.8rem; 
-        z-index: 5000; 
-        border: none; 
-        cursor: pointer; 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        /* ==========================================
+           BOTONES PERSONALIZADOS
+           ========================================== */
+        .btn { 
+            width: 100%; 
+            padding: 18px; 
+            border-radius: 20px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            border: none; 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+
+        .btn-gold { 
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark)); 
+            color: #000; 
+        }
+
+        .btn-gold:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(212,175,55,0.2);
+        }
+
+        .btn-outline { 
+            background: transparent; 
+            border: 1px solid #333; 
+            color: #777; 
+            margin-top: 12px; 
+        }
+
+        .btn-red { 
+            background: rgba(255, 77, 77, 0.1); 
+            border: 1px solid var(--red); 
+            color: var(--red); 
+        }
+
+        .btn-mini { 
+            width: auto; 
+            padding: 6px 14px; 
+            border-radius: 10px; 
+            font-size: 0.6rem; 
+            font-weight: 700; 
+            background: var(--green); 
+            color: #000; 
+            border: none; 
+            cursor: pointer; 
+        }
+
+        .btn-config-float { 
+            position: fixed; 
+            bottom: 35px; 
+            right: 35px; 
+            background: var(--gold); 
+            color: #000; 
+            width: 70px; 
+            height: 70px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 1.8rem; 
+            z-index: 5000; 
+            border: none; 
+            cursor: pointer; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
 
         /* ==========================================
            NOTIFICACIONES (TOAST)
@@ -470,13 +509,7 @@
                     </div>
                 </div>
                 <button class="btn btn-gold" id="btn-save-hours" style="padding: 12px; font-size: 0.6rem;">ACTUALIZAR HORARIO</button>
-<h4 style="font-size:0.7rem; color:var(--gold); border-bottom:1px solid #222; text-align:left; margin-top:25px; margin-bottom:10px;">BLOQUEAR DÍA ENTERO</h4>
-<div style="display:flex; gap:10px;">
-    <input type="text" id="input-block-date" placeholder="Elegir fecha" readonly style="cursor:pointer; text-align: center; margin-bottom:0;">
-    <button class="btn btn-red" id="btn-add-block" style="padding:12px; width:auto; margin-bottom:12px;">BLOQUEAR</button>
-</div>
-<div id="lista-bloqueos-admin" style="margin-top:15px; text-align: left; max-height: 120px; overflow-y:auto;"></div>
-                
+
                 <hr style="border:0; border-top:1px solid #1a1a1a; margin:30px 0;">
 
                 <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px;">GESTIÓN DE SERVICIOS</p>
@@ -535,22 +568,12 @@
         let fechaVisualizada = new Date().toISOString().split('T')[0];
 
         // INICIALIZACIÓN DEL SELECTOR DE TELÉFONO
-        // Para el modal de Agregar Cita
-// AGREGAR CITA
-iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), {
-    initialCountry: "gt",
-    separateDialCode: true,
-    onlyCountries: ["gt", "sv", "hn", "ni", "cr", "pa", "mx", "us"],
-    utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
-});
+        iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { 
+            initialCountry: "gt", 
+            separateDialCode: true,
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
+        });
 
-// EDITAR CITA
-window.itiEdit = window.intlTelInput(document.querySelector("#edit-whatsapp"), {
-    initialCountry: "gt",
-    separateDialCode: true,
-    onlyCountries: ["gt", "sv", "hn", "ni", "cr", "pa", "mx", "us"],
-    utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
-});
         // --- SISTEMA DE NOTIFICACIONES ---
         window.showToast = function(mensaje) { 
             const t = document.getElementById('toast'); 
@@ -660,10 +683,7 @@ window.itiEdit = window.intlTelInput(document.querySelector("#edit-whatsapp"), {
                     
                     // Llenar vista edición
                     document.getElementById('edit-nombre').value = meta.nombre;
-                    // Llenar vista edición
-                    document.getElementById('edit-nombre').value = meta.nombre;
-// Cargamos el número y forzamos a que la bandera se actualice
-                    window.itiEdit.setNumber(meta.whatsapp);
+                    document.getElementById('edit-whatsapp').value = meta.whatsapp;
                     document.getElementById('edit-precio').value = meta.precio;
                     document.getElementById('edit-nota').value = meta.nota || "";
                     document.getElementById('edit-servicio-select').value = ""; // Reset select para que elija si desea cambiar
@@ -935,35 +955,6 @@ window.itiEdit = window.intlTelInput(document.querySelector("#edit-whatsapp"), {
             }).then(() => {
                 showToast("HORARIOS DE ATENCIÓN ACTUALIZADOS");
             });
-        };
-        // --- LÓGICA DE BLOQUEO DE DÍAS ---
-        const fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d" });
-
-        onValue(ref(db, 'dias_bloqueados'), snap => {
-            const list = document.getElementById('lista-bloqueos-admin');
-            list.innerHTML = ''; 
-            const bloqueos = snap.val() || {};
-            Object.keys(bloqueos).forEach(f => {
-                list.innerHTML += `<div class="block-item-admin"><span>${f}</span><i class="fas fa-trash" style="color:var(--red); cursor:pointer;" onclick="eliminarBloqueo('${f}')"></i></div>`;
-            });
-        });
-
-        window.eliminarBloqueo = (f) => {
-            if(confirm("¿Desbloquear este día?")) {
-                remove(ref(db, `dias_bloqueados/${f}`));
-            }
-        };
-
-        document.getElementById('btn-add-block').onclick = () => {
-            const f = document.getElementById('input-block-date').value;
-            if(f) {
-                set(ref(db, `dias_bloqueados/${f}`), true).then(() => {
-                    showToast("DÍA BLOQUEADO CORRECTAMENTE");
-                    document.getElementById('input-block-date').value = '';
-                });
-            } else {
-                showToast("SELECCIONA UNA FECHA");
-            }
         };
     </script>
 </body>
