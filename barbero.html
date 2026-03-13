@@ -640,21 +640,16 @@
         });
         // Esta parte es la "magia" para que el diseño se vea como la Imagen 1
         // Solo agrega las horas de lunch si están dentro del horario de trabajo
-        onValue(ref(db, 'configuracion_horario'), (snapshot) => {
+       onValue(ref(db, 'configuracion_horario'), (snapshot) => {
             const config = snapshot.val();
             if(config) {
+                // 1. Esto recorta el calendario visualmente (Lógica Imagen 1)
+                calendar.setOption('slotMinTime', config.apertura.padStart(2, '0') + ':00:00');
+                calendar.setOption('slotMaxTime', config.cierre.padStart(2, '0') + ':00:00');
+
+                // 2. Sincroniza los valores del panel
                 apS.value = config.apertura;
                 ciS.value = config.cierre;
-                
-                // Filtramos las horas de lunch para que el diseño sea igual a la Imagen 1
-                for(let h = parseInt(config.apertura); h <= parseInt(config.cierre); h++) {
-                    const optL = document.createElement('option');
-                    optL.value = h;
-                    optL.innerText = h.toString().padStart(2, '0') + ":00";
-                    lIn.appendChild(optL.cloneNode(true));
-                    lFi.appendChild(optL);
-                }
-                
                 lIn.value = config.lunch_inicio || "";
                 lFi.value = config.lunch_fin || "";
             }
