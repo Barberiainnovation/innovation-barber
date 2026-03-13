@@ -17,7 +17,7 @@
     
     <style>
         /* ==========================================
-           VARIABLES Y DISEÑO ÉLITE
+           VARIABLES DE DISEÑO (PALETA ÉLITE)
            ========================================== */
         :root { 
             --bg: #000; 
@@ -30,65 +30,51 @@
             --glass: rgba(10, 10, 10, 0.98); 
         }
 
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; overflow-x: hidden; }
-
-        /* FIX WHATSAPP MOVIL Y BANDERAS */
-        .iti { width: 100% !important; margin-bottom: 12px; }
-        .iti__country-list { 
-            background-color: #0a0a0a !important; 
-            border: 1px solid #333 !important; 
-            color: white !important; 
-            max-width: 300px !important; 
-            z-index: 11000 !important;
+        /* ==========================================
+           ESTILOS BASE Y SCROLLBAR
+           ========================================== */
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: var(--bg); 
+            color: #fff; 
+            margin: 0; 
+            padding: 15px; 
+            overflow-x: hidden; 
         }
 
-        /* ESTRUCTURA DASHBOARD */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .login-box { width: 320px; padding: 45px; text-align: center; background: var(--card); border-radius: 35px; border: 1px solid var(--border); box-shadow: 0 0 40px rgba(212,175,55,0.05); }
+
         #admin-content { display: none; max-width: 1400px; margin: 0 auto; }
         .main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 25px; margin-top: 10px; }
         @media (max-width: 1100px) { .main-grid { grid-template-columns: 1fr; } }
 
-        #calendar-container { 
-            background: var(--card); padding: 20px; border-radius: 35px; 
-            border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
+        #calendar-container { background: var(--card); padding: 20px; border-radius: 35px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .fc { --fc-border-color: #161616; --fc-today-bg-color: rgba(212,175,55,0.02); font-size: 0.85rem; }
-        .fc .fc-toolbar-title { font-size: 1.1rem !important; text-transform: uppercase; color: var(--gold); font-weight: 600; letter-spacing: 1px;}
-        
-        /* SIDEBAR STATS */
-        .sidebar-stats { 
-            background: var(--card); border: 1px solid var(--border); border-radius: 35px; 
-            padding: 30px; border-top: 5px solid var(--gold); position: sticky; top: 15px; height: fit-content; 
-        }
+        .fc .fc-toolbar-title { font-size: 1.1rem !important; text-transform: uppercase; color: var(--gold); font-weight: 600; letter-spacing: 1px; }
+
+        .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 35px; padding: 30px; border-top: 5px solid var(--gold); position: sticky; top: 15px; height: fit-content; }
+        .sidebar-logo { width: 100px; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(212,175,55,0.2)); }
         .stat-val { font-size: 2.3rem; font-weight: 600; color: var(--gold); line-height: 1; }
         .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #666; letter-spacing: 2px; font-weight: 600; }
 
-        /* MODALES */
-        .modal { 
-            display: none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.95); backdrop-filter: blur(15px); align-items: center; justify-content: center; z-index: 10000; 
-        }
-        .modal-content { 
-            background: var(--glass); padding: 35px; border: 1px solid var(--gold); width: 90%; 
-            max-width: 450px; border-radius: 40px; text-align: center; max-height: 90vh; overflow-y: auto;
-        }
+        .modal { display: none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px); align-items: center; justify-content: center; z-index: 10000; }
+        .modal-content { background: var(--glass); padding: 40px; border: 1px solid var(--gold); width: 90%; max-width: 400px; border-radius: 40px; text-align: center; max-height: 85vh; overflow-y: auto; }
 
-        input, select, textarea { 
-            background: rgba(255,255,255,0.03); color: #fff; border: 1px solid #1a1a1a; 
-            padding: 14px; border-radius: 18px; width: 100%; margin-bottom: 12px; outline: none; font-family: 'Poppins'; box-sizing: border-box;
-        }
-
-        .btn { 
-            width: 100%; padding: 18px; border-radius: 20px; font-weight: 700; cursor: pointer; 
-            border: none; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; 
-        }
+        input, select, textarea { background: rgba(255,255,255,0.03); color: #fff; border: 1px solid #1a1a1a; padding: 14px; border-radius: 18px; width: 100%; margin-bottom: 12px; font-family: 'Poppins'; box-sizing: border-box; font-size: 0.85rem; }
+        
+        .btn { width: 100%; padding: 18px; border-radius: 20px; font-weight: 700; cursor: pointer; border: none; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; transition: 0.4s; }
         .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #000; }
         .btn-red { background: rgba(255, 77, 77, 0.1); border: 1px solid var(--red); color: var(--red); }
-        .btn-outline { background: transparent; border: 1px solid #333; color: #777; margin-top: 10px; }
+        .btn-outline { background: transparent; border: 1px solid #333; color: #777; margin-top: 12px; }
         
-        .btn-config-float { position: fixed; bottom: 35px; right: 35px; background: var(--gold); color: #000; width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; z-index: 5000; border: none; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        .btn-config-float { position: fixed; bottom: 35px; right: 35px; background: var(--gold); color: #000; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; z-index: 5000; border: none; cursor: pointer; }
 
-        /* LISTA BLOQUEOS */
+        /* LISTA BLOQUEOS RESTAURADA */
         .item-bloqueo { display: flex; justify-content: space-between; align-items: center; background: #111; padding: 12px; border-radius: 15px; margin-bottom: 8px; font-size: 0.8rem; border-left: 3px solid var(--red); }
         .btn-x { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1.1rem; }
 
@@ -102,14 +88,13 @@
 
     <div id="login-overlay">
         <div class="login-box">
-            <img src="logo.png" style="width: 80px; margin-bottom: 20px;">
-            <h2 style="color: var(--gold); letter-spacing: 2px; font-size: 1rem;">ELITE MANAGEMENT</h2>
+            <img src="logo.png" style="width: 90px; margin-bottom: 25px;">
+            <h2 style="font-size: 1rem; color: var(--gold); margin-bottom: 30px; letter-spacing: 2px;">ADMIN PANEL</h2>
             <button class="btn btn-gold" onclick="loginGoogle()">ENTRAR AL SISTEMA</button>
         </div>
     </div>
 
     <div id="admin-content">
-        
         <button class="btn-config-float" onclick="toggleConfig()">
             <i class="fas fa-sliders-h"></i>
         </button>
@@ -120,17 +105,18 @@
             </div>
 
             <aside class="sidebar-stats">
+                <header style="text-align: center; margin-bottom:40px;"><img src="logo.png" class="sidebar-logo"></header>
                 <div class="stat-group">
                     <span class="stat-label">Finalizados Mes</span><br>
                     <span class="stat-val" id="citas-count">0</span>
-                    <div id="desglose-servicios" style="margin-top:10px;"></div>
+                    <div id="desglose-servicios"></div>
                 </div>
-                <div class="stat-group" style="background: rgba(212, 175, 55, 0.05); padding: 20px; border-radius: 25px; margin: 20px 0;">
+                <div class="stat-group" style="background: rgba(212, 175, 55, 0.05); padding: 20px; border-radius: 25px; border: 1px solid rgba(212,175,55,0.1);">
                     <span class="stat-label" id="label-pendientes">Pendientes Hoy</span><br>
-                    <span class="stat-val" id="count-pendientes">0</span>
+                    <span class="stat-val" id="count-pendientes" style="font-size: 1.8rem;">0</span>
                 </div>
-                <div class="stat-group">
-                    <span class="stat-label">Ingresos Mes</span><br>
+                <div class="stat-group" style="background: rgba(46, 204, 113, 0.05); padding: 20px; border-radius: 25px;">
+                    <span class="stat-label" style="color:var(--green);">Ingresos Mes</span><br>
                     <span class="stat-val" id="ingreso-total" style="color:var(--green);">Q0.00</span>
                 </div>
             </aside>
@@ -140,14 +126,51 @@
 
         <div id="modalAddCita" class="modal">
             <div class="modal-content">
-                <h3 style="color:var(--gold);">NUEVA CITA</h3>
-                <p id="add-fecha-display" style="font-size: 0.8rem; color: #666;"></p>
-                <input type="text" id="add-nombre" placeholder="Nombre del Cliente">
+                <h3 style="color:var(--gold);">AGENDAR CITA</h3>
+                <p id="add-fecha-display" style="font-size: 0.8rem; color: #666; margin-bottom: 20px;"></p>
+                <input type="text" id="add-nombre" placeholder="Nombre completo del cliente">
                 <input type="tel" id="add-whatsapp-input">
                 <select id="add-servicio-select"></select>
-                <textarea id="add-nota" placeholder="Notas especiales..." rows="2"></textarea>
-                <button class="btn btn-gold" id="btn-save-cita-main">AGENDAR CITA</button>
+                <textarea id="add-nota" placeholder="Notas..." rows="3"></textarea>
+                <button class="btn btn-gold" id="btn-save-cita-calendar">CONFIRMAR CITA</button>
                 <button class="btn btn-outline" onclick="cerrarModalAdd()">CANCELAR</button>
+            </div>
+        </div>
+
+        <div id="modalConfig" class="modal">
+            <div class="modal-content" style="max-width: 450px;">
+                <h3 style="color:var(--gold);">PANEL DE CONTROL</h3>
+                
+                <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; margin-top: 20px;">HORARIO LABORAL</p>
+                <div style="display:flex; gap:12px; margin-bottom:10px;">
+                    <select id="config-apertura"></select>
+                    <select id="config-cierre"></select>
+                </div>
+
+                <p style="font-size: 0.7rem; color: #666; text-transform: uppercase;">HORARIO DE LUNCH (BLOQUEO)</p>
+                <div style="display:flex; gap:12px; margin-bottom:10px;">
+                    <select id="config-lunch-ini"></select>
+                    <select id="config-lunch-fin"></select>
+                </div>
+                <button class="btn btn-gold" id="btn-save-hours" style="padding: 12px; font-size: 0.6rem;">ACTUALIZAR HORARIOS</button>
+
+                <hr style="border:0; border-top:1px solid #1a1a1a; margin:25px 0;">
+
+                <p style="font-size: 0.7rem; color: #666; text-transform: uppercase;">BLOQUEAR DÍA ENTERO</p>
+                <div style="display:flex; gap:10px;">
+                    <input type="date" id="cfg-bloquear-fecha" style="margin-bottom:0;">
+                    <button class="btn btn-red" id="btn-bloquear-dia" style="padding:12px; width:auto;">BLOQUEAR</button>
+                </div>
+                <div id="lista-bloqueos-admin" style="margin-top:15px; text-align: left; max-height: 120px; overflow-y:auto;"></div>
+
+                <hr style="border:0; border-top:1px solid #1a1a1a; margin:25px 0;">
+
+                <p style="font-size: 0.7rem; color: #666; text-transform: uppercase;">AÑADIR SERVICIO</p>
+                <input type="text" id="serv-n" placeholder="Nombre">
+                <input type="number" id="serv-p" placeholder="Precio (Q)">
+                <button class="btn btn-gold" id="btn-add-serv" style="padding: 12px; font-size: 0.6rem;">AÑADIR SERVICIO</button>
+                
+                <button class="btn btn-outline" onclick="toggleConfig()" style="margin-top: 30px;">CERRAR PANEL</button>
             </div>
         </div>
 
@@ -155,63 +178,28 @@
             <div class="modal-content">
                 <div id="view-mode">
                     <h3 id="pop-nombre" style="color:var(--gold);"></h3>
-                    <p id="pop-fecha" style="font-size:0.85rem; color:#888;"></p>
-                    <div id="pop-detalle-corte" style="margin: 20px 0; font-size: 1.1rem; font-weight: 600;"></div>
-                    <div id="pop-whatsapp" style="background:rgba(46, 204, 113, 0.1); padding:15px; border-radius:20px; cursor:pointer; color:var(--green); font-weight: 600;">
+                    <p id="pop-fecha" style="font-size:0.85rem; color:#666;"></p>
+                    <div id="pop-detalle-corte" style="margin: 20px 0;"></div>
+                    <div id="pop-whatsapp" style="font-size:0.9rem; color:var(--green); font-weight:600; cursor:pointer; background:rgba(46, 204, 113, 0.08); padding:20px; border-radius:25px; margin-bottom:25px;">
                         <i class="fab fa-whatsapp"></i> ENVIAR RECORDATORIO
                     </div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:20px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                         <button class="btn btn-gold" onclick="entrarModoEdicion()">EDITAR</button>
-                        <button class="btn btn-red" id="btn-eliminar-pop">BORRAR</button>
+                        <button class="btn btn-red" id="btn-eliminar-pop">ELIMINAR</button>
                     </div>
                     <button class="btn btn-outline" onclick="cerrarPop()">CERRAR</button>
                 </div>
 
                 <div id="edit-mode" style="display:none;">
-                    <h3 style="color:var(--gold);">MODIFICAR CITA</h3>
+                    <h3 style="color:var(--gold);">EDITAR CITA</h3>
                     <input type="text" id="edit-nombre">
-                    <input type="tel" id="edit-whatsapp-input">
+                    <input type="text" id="edit-whatsapp">
                     <select id="edit-servicio-select"></select>
                     <input type="number" id="edit-precio">
                     <textarea id="edit-nota" rows="2"></textarea>
                     <button class="btn btn-gold" id="btn-update-cita">GUARDAR CAMBIOS</button>
-                    <button class="btn btn-outline" onclick="salirModoEdicion()">VOLVER</button>
+                    <button class="btn btn-outline" onclick="salirModoEdicion()">CANCELAR</button>
                 </div>
-            </div>
-        </div>
-
-        <div id="modalConfig" class="modal">
-            <div class="modal-content" style="max-width: 500px;">
-                <h3 style="color:var(--gold);">ADMINISTRACIÓN</h3>
-                
-                <h4 style="font-size:0.7rem; color:var(--gold); border-bottom:1px solid #222; text-align:left; margin-bottom:10px;">HORARIO LABORAL</h4>
-                <div style="display:flex; gap:10px; margin-bottom:20px;">
-                    <select id="cfg-abrir"></select>
-                    <select id="cfg-cerrar"></select>
-                </div>
-
-                <h4 style="font-size:0.7rem; color:var(--gold); border-bottom:1px solid #222; text-align:left; margin-bottom:10px;">HORARIO DE LUNCH (BLOQUEO)</h4>
-                <div style="display:flex; gap:10px;">
-                    <select id="cfg-lunch-ini"></select>
-                    <select id="cfg-lunch-fin"></select>
-                </div>
-                <button class="btn btn-gold" id="btn-save-cfg" style="margin-top:10px; padding:12px;">ACTUALIZAR HORARIOS</button>
-
-                <h4 style="font-size:0.7rem; color:var(--gold); border-bottom:1px solid #222; text-align:left; margin-top:25px; margin-bottom:10px;">BLOQUEAR DÍA ESPECÍFICO</h4>
-                <div style="display:flex; gap:10px;">
-                    <input type="date" id="cfg-bloquear-fecha" style="margin-bottom:0;">
-                    <button class="btn btn-red" id="btn-bloquear-dia" style="padding:12px; width:auto;">BLOQUEAR</button>
-                </div>
-                <div id="lista-bloqueos" style="margin-top:15px; text-align:left; max-height: 120px; overflow-y:auto;"></div>
-
-                <hr style="border:1px solid #111; margin:25px 0;">
-                
-                <h4 style="font-size:0.7rem; color:var(--gold); border-bottom:1px solid #222; text-align:left; margin-bottom:10px;">AÑADIR SERVICIO AL CATÁLOGO</h4>
-                <input type="text" id="serv-n" placeholder="Nombre (Ej: Barba Estilizada)">
-                <input type="number" id="serv-p" placeholder="Precio (Q)">
-                <button class="btn btn-gold" id="btn-add-serv" style="padding:12px;">AÑADIR SERVICIO</button>
-
-                <button class="btn btn-outline" onclick="toggleConfig()" style="margin-top:30px;">CERRAR PANEL</button>
             </div>
         </div>
     </div>
@@ -235,27 +223,19 @@
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
         
-        let calendar, selectedDateTime, currentEditingId;
-        let catalogoGlobal = {}, itiAdd, itiEdit;
+        let calendar, selectedDateTime, currentEditingId, iti;
+        let catalogoGlobal = {};
         let fechaVisualizada = new Date().toISOString().split('T')[0];
 
-        // CONFIGURACIÓN TELÉFONO CON FIX MÓVIL
-        const itc = { 
-            initialCountry: "gt", 
-            onlyCountries: ["gt", "sv", "hn", "ni", "cr", "pa", "us", "mx"], 
-            separateDialCode: true, 
-            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js" 
-        };
-        itiAdd = window.intlTelInput(document.querySelector("#add-whatsapp-input"), itc);
-        itiEdit = window.intlTelInput(document.querySelector("#edit-whatsapp-input"), itc);
+        iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { initialCountry: "gt", separateDialCode: true, utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js" });
 
         window.showToast = (m) => { const t = document.getElementById('toast'); t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3000); };
         window.loginGoogle = () => signInWithPopup(auth, provider);
         window.toggleConfig = () => { const m = document.getElementById('modalConfig'); m.style.display = (m.style.display==='flex')?'none':'flex'; };
 
-        // Llenar horas en selectores
-        const idsS = ['cfg-abrir', 'cfg-cerrar', 'cfg-lunch-ini', 'cfg-lunch-fin'];
-        idsS.forEach(id => {
+        // Llenar horas
+        const selects = ['config-apertura', 'config-cierre', 'config-lunch-ini', 'config-lunch-fin'];
+        selects.forEach(id => {
             const s = document.getElementById(id);
             for(let h=0; h<=23; h++){
                 const opt = document.createElement('option'); opt.value = h; opt.innerText = h.toString().padStart(2,'0')+":00";
@@ -263,184 +243,122 @@
             }
         });
 
-        onAuthStateChanged(auth, (user) => { 
-            if(user){ 
-                document.getElementById('login-overlay').style.display='none'; 
-                document.getElementById('admin-content').style.display='block'; 
-                initDashboard(); 
-            } 
-        });
+        onAuthStateChanged(auth, (user) => { if(user){ document.getElementById('login-overlay').style.display='none'; document.getElementById('admin-content').style.display='block'; initDashboard(); } });
 
         function initDashboard() {
             calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'timeGridDay', locale: 'es', allDaySlot: false, slotDuration: '00:30:00', nowIndicator: true,
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+                datesSet: (info) => { fechaVisualizada = info.view.currentStart.toISOString().split('T')[0]; },
                 events: (info, success) => {
-                    // ESCUCHA MAESTRA DE FIREBASE
                     onValue(ref(db, '/'), (snapshot) => {
                         const root = snapshot.val() || {};
                         const citas = root.citas || {};
-                        const config = root.configuracion || {};
+                        const config = root.configuracion_horario || {};
                         const bloqueos = root.bloqueos || {};
                         let evs = [];
 
-                        // 1. BLOQUEOS DINÁMICOS (LUNCH Y DÍAS)
+                        // 1. Bloqueo Lunch Dinámico
                         let d = new Date(info.start);
                         while(d < info.end){
                             const fISO = d.toISOString().split('T')[0];
-                            // Bloqueo Lunch
                             if(config.lunch_ini && config.lunch_fin){
-                                evs.push({
-                                    title: 'LUNCH 🍱', 
-                                    start: fISO + 'T' + config.lunch_ini.padStart(2,'0') + ':00:00',
-                                    end: fISO + 'T' + config.lunch_fin.padStart(2,'0') + ':00:00',
-                                    display: 'background', color: '#111', overlap: false
-                                });
+                                evs.push({ title: 'LUNCH 🍱', start: fISO+'T'+config.lunch_ini.padStart(2,'0')+':00:00', end: fISO+'T'+config.lunch_fin.padStart(2,'0')+':00:00', display: 'background', color: '#111', overlap: false });
                             }
-                            // Bloqueo Día Completo
-                            if(bloqueos[fISO]){
-                                evs.push({ start: fISO, end: fISO, display: 'background', color: 'rgba(255,0,0,0.12)' });
-                            }
+                            if(bloqueos[fISO]){ evs.push({ start: fISO, end: fISO, display: 'background', color: 'rgba(255,0,0,0.1)' }); }
                             d.setDate(d.getDate() + 1);
                         }
 
-                        // 2. CITAS
+                        // 2. Citas
                         Object.keys(citas).forEach(id => {
                             const c = citas[id];
-                            evs.push({ 
-                                id: id, 
-                                title: c.nombre, 
-                                start: c.fecha, 
-                                backgroundColor: c.estado === 'Finalizada' ? '#1a1a1a' : '#d4af37',
-                                borderColor: c.estado === 'Finalizada' ? '#222' : '#aa8c2c',
-                                extendedProps: c 
-                            });
+                            evs.push({ id, title: c.nombre, start: c.fecha, backgroundColor: c.estado==='Finalizada'?'#1a1a1a':'#d4af37', extendedProps: c });
                         });
                         success(evs);
-                        renderListAndStats(citas);
+                        renderAdmin(citas);
                         renderBloqueosLista(bloqueos);
                     });
                 },
-                dateClick: (info) => { if(calendar.view.type === 'dayGridMonth'){ fechaVisualizada = info.dateStr; calendar.refetchEvents(); } },
                 selectable: true,
                 select: (info) => {
                     if(info.view.type !== 'dayGridMonth'){
                         selectedDateTime = info.startStr.substring(0,16);
                         document.getElementById('add-fecha-display').innerText = info.start.toLocaleString();
-                        document.getElementById('modalAddCita').style.display='flex';
+                        document.getElementById('modalAddCita').style.display = 'flex';
                     }
                 },
                 eventClick: (info) => {
                     if(info.event.display === 'background') return;
                     currentEditingId = info.event.id;
                     const m = info.event.extendedProps;
-                    
                     document.getElementById('pop-nombre').innerText = m.nombre;
-                    document.getElementById('pop-fecha').innerText = new Date(m.fecha).toLocaleString();
                     document.getElementById('pop-detalle-corte').innerText = m.servicio + " - Q" + m.precio;
-                    
-                    // PREPARAR EDICIÓN
                     document.getElementById('edit-nombre').value = m.nombre;
+                    document.getElementById('edit-whatsapp').value = m.whatsapp;
                     document.getElementById('edit-precio').value = m.precio;
-                    document.getElementById('edit-nota').value = m.nota || "";
-                    itiEdit.setNumber(m.whatsapp || "");
-
-                    // Auto-seleccionar servicio actual por default
-                    const sel = document.getElementById('edit-servicio-select');
-                    for(let i=0; i<sel.options.length; i++) if(sel.options[i].text.includes(m.servicio)) sel.selectedIndex = i;
-
-                    document.getElementById('modalEvento').style.display='flex';
-                    document.getElementById('pop-whatsapp').onclick = () => {
-                        const n = m.whatsapp.replace(/\D/g,'');
-                        window.open(`https://wa.me/${n}?text=Hola ${m.nombre}, recordatorio de tu cita en Innovation Barber Studio.`);
-                    };
+                    document.getElementById('modalEvento').style.display = 'flex';
+                    document.getElementById('pop-whatsapp').onclick = () => window.open(`https://wa.me/${m.whatsapp.replace(/\D/g,'')}?text=Hola ${m.nombre}, recordatorio de cita.`);
                 }
             });
             calendar.render();
 
-            // Sincronizar Configuración
-            onValue(ref(db, 'configuracion'), s => {
+            onValue(ref(db, 'configuracion_horario'), s => {
                 const c = s.val(); if(c){
-                    calendar.setOption('slotMinTime', c.abrir.padStart(2,'0')+':00:00');
-                    calendar.setOption('slotMaxTime', c.cerrar.padStart(2,'0')+':00:00');
-                    document.getElementById('cfg-abrir').value = c.abrir;
-                    document.getElementById('cfg-cerrar').value = c.cerrar;
-                    document.getElementById('cfg-lunch-ini').value = c.lunch_ini;
-                    document.getElementById('cfg-lunch-fin').value = c.lunch_fin;
+                    calendar.setOption('slotMinTime', c.apertura.padStart(2,'0')+':00:00');
+                    calendar.setOption('slotMaxTime', c.cierre.padStart(2,'0')+':00:00');
+                    document.getElementById('config-apertura').value = c.apertura;
+                    document.getElementById('config-cierre').value = c.cierre;
+                    document.getElementById('config-lunch-ini').value = c.lunch_ini || 12;
+                    document.getElementById('config-lunch-fin').value = c.lunch_fin || 13;
                 }
             });
 
-            // Sincronizar Catálogo
-            onValue(ref(db, 'servicios'), s => {
-                catalogoGlobal = s.val() || {};
-                const sA = document.getElementById('add-servicio-select');
-                const sE = document.getElementById('edit-servicio-select');
-                sA.innerHTML = '<option value="">Selecciona Servicio...</option>';
-                sE.innerHTML = '<option value="">(Sin cambios)</option>';
-                Object.keys(catalogoGlobal).forEach(id => {
-                    const opt = `<option value="${id}">${catalogoGlobal[id].nombre} - Q${catalogoGlobal[id].precio}</option>`;
-                    sA.innerHTML += opt; sE.innerHTML += opt;
-                });
-            });
+            onValue(ref(db, 'servicios'), s => renderServicios(s.val() || {}));
         }
 
-        function renderListAndStats(data) {
+        function renderAdmin(data) {
             const lista = document.getElementById('lista-citas');
-            const desglose = document.getElementById('desglose-servicios');
-            lista.innerHTML = ''; desglose.innerHTML = '';
-            
-            let finMes = 0, ingMes = 0, pendDia = 0;
+            lista.innerHTML = ''; let finMes = 0, ingMes = 0, pendDia = 0;
             const mesActual = new Date().getMonth();
-            const añoActual = new Date().getFullYear();
 
             Object.keys(data).forEach(id => {
                 const c = data[id];
                 const f = new Date(c.fecha);
-                
-                if(c.estado==='Finalizada' && f.getMonth()===mesActual && f.getFullYear()===añoActual){
-                    finMes++; ingMes += parseFloat(c.precio);
-                }
-
+                if(c.estado==='Finalizada' && f.getMonth()===mesActual){ finMes++; ingMes+=parseFloat(c.precio); }
                 if(c.estado!=='Finalizada' && c.fecha.startsWith(fechaVisualizada)){
                     pendDia++;
                     const card = document.createElement('div');
-                    card.style.background="#0a0a0a"; card.style.padding="15px"; card.style.borderRadius="20px"; card.style.borderLeft="4px solid var(--gold)"; card.style.display="flex"; card.style.justifyContent="space-between"; card.style.alignItems="center";
-                    card.innerHTML = `<div><b style="color:var(--gold);">${c.fecha.split('T')[1]}</b><br>${c.nombre}</div><button onclick="cambiarEstado('${id}','Finalizada')" style="background:var(--green); border:none; padding:8px 15px; border-radius:10px; font-weight:bold; cursor:pointer;">FIN</button>`;
+                    card.className = 'card';
+                    card.innerHTML = `<div><b>${c.fecha.split('T')[1]}</b><br>${c.nombre}</div><button class="btn-mini" onclick="cambiarEstado('${id}','Finalizada')">FIN</button>`;
                     lista.appendChild(card);
                 }
             });
-
             document.getElementById('citas-count').innerText = finMes;
-            document.getElementById('ingreso-total').innerText = 'Q' + ingMes.toFixed(2);
+            document.getElementById('ingreso-total').innerText = 'Q'+ingMes.toFixed(2);
             document.getElementById('count-pendientes').innerText = pendDia;
-            document.getElementById('label-pendientes').innerText = "Pendientes " + fechaVisualizada.split('-').reverse().slice(0,2).join('/');
         }
 
         function renderBloqueosLista(bloqueos){
-            const cont = document.getElementById('lista-bloqueos');
+            const cont = document.getElementById('lista-bloqueos-admin');
             cont.innerHTML = '';
-            Object.keys(bloqueos).forEach(fecha => {
-                const div = document.createElement('div');
-                div.className = 'item-bloqueo';
-                div.innerHTML = `<span><i class="fas fa-calendar-times"></i> ${fecha}</span><button class="btn-x" onclick="eliminarBloqueo('${fecha}')"><i class="fas fa-times-circle"></i></button>`;
-                cont.appendChild(div);
+            Object.keys(bloqueos).forEach(f => {
+                cont.innerHTML += `<div class="item-bloqueo"><span>${f}</span><button class="btn-x" onclick="eliminarBloqueo('${f}')">X</button></div>`;
             });
         }
 
-        // FUNCIONES DE ACCIÓN
         window.eliminarBloqueo = (f) => remove(ref(db, 'bloqueos/'+f));
         window.cambiarEstado = (id, e) => update(ref(db, 'citas/'+id), {estado: e});
-        window.cerrarModalAdd = () => document.getElementById('modalAddCita').style.display='none';
         window.cerrarPop = () => { document.getElementById('modalEvento').style.display='none'; salirModoEdicion(); };
+        window.cerrarModalAdd = () => document.getElementById('modalAddCita').style.display='none';
         window.entrarModoEdicion = () => { document.getElementById('view-mode').style.display='none'; document.getElementById('edit-mode').style.display='block'; };
         window.salirModoEdicion = () => { document.getElementById('view-mode').style.display='block'; document.getElementById('edit-mode').style.display='none'; };
 
-        document.getElementById('btn-save-cfg').onclick = () => {
-            set(ref(db, 'configuracion'), {
-                abrir: document.getElementById('cfg-abrir').value,
-                cerrar: document.getElementById('cfg-cerrar').value,
-                lunch_ini: document.getElementById('cfg-lunch-ini').value,
-                lunch_fin: document.getElementById('cfg-lunch-fin').value
+        document.getElementById('btn-save-hours').onclick = () => {
+            set(ref(db, 'configuracion_horario'), {
+                apertura: document.getElementById('config-apertura').value,
+                cierre: document.getElementById('config-cierre').value,
+                lunch_ini: document.getElementById('config-lunch-ini').value,
+                lunch_fin: document.getElementById('config-lunch-fin').value
             }).then(() => showToast("HORARIOS ACTUALIZADOS"));
         };
 
@@ -449,49 +367,26 @@
             if(f) set(ref(db, 'bloqueos/'+f), true).then(() => showToast("DÍA BLOQUEADO"));
         };
 
-        document.getElementById('btn-save-cita-main').onclick = () => {
+        document.getElementById('btn-save-cita-calendar').onclick = () => {
             const sk = document.getElementById('add-servicio-select').value;
-            const nom = document.getElementById('add-nombre').value;
-            if(!sk || !nom) return showToast("FALTAN DATOS");
-            
-            const cita = {
-                nombre: nom,
-                whatsapp: itiAdd.getNumber(),
-                servicio: catalogoGlobal[sk].nombre,
-                precio: catalogoGlobal[sk].precio,
-                fecha: selectedDateTime,
-                estado: "Pendiente",
-                nota: document.getElementById('add-nota').value
-            };
-            push(ref(db, 'citas'), cita).then(() => { cerrarModalAdd(); showToast("CITA AGENDADA"); });
+            if(!sk) return;
+            const cita = { nombre: document.getElementById('add-nombre').value, whatsapp: iti.getNumber(), servicio: catalogoGlobal[sk].nombre, precio: catalogoGlobal[sk].precio, fecha: selectedDateTime, estado: "Pendiente", nota: document.getElementById('add-nota').value };
+            push(ref(db, 'citas'), cita).then(() => { cerrarModalAdd(); showToast("AGENDADO"); });
         };
 
-        document.getElementById('btn-update-cita').onclick = () => {
-            const sk = document.getElementById('edit-servicio-select').value;
-            const up = { 
-                nombre: document.getElementById('edit-nombre').value, 
-                whatsapp: itiEdit.getNumber(), 
-                precio: document.getElementById('edit-precio').value,
-                nota: document.getElementById('edit-nota').value
-            };
-            if(sk){ 
-                up.servicio = catalogoGlobal[sk].nombre; 
-                up.precio = catalogoGlobal[sk].precio; 
-            }
-            update(ref(db, 'citas/'+currentEditingId), up).then(() => { cerrarPop(); showToast("CITA ACTUALIZADA"); });
-        };
+        document.getElementById('btn-eliminar-pop').onclick = () => { if(confirm("¿Eliminar?")) remove(ref(db, 'citas/'+currentEditingId)).then(cerrarPop); };
 
-        document.getElementById('btn-eliminar-pop').onclick = () => {
-            if(confirm("¿Seguro que deseas eliminar esta cita?")){
-                remove(ref(db, 'citas/'+currentEditingId)).then(cerrarPop);
-            }
-        };
-
-        document.getElementById('btn-add-serv').onclick = () => {
-            const n = document.getElementById('serv-n').value;
-            const p = document.getElementById('serv-p').value;
-            if(n && p) push(ref(db, 'servicios'), { nombre: n, precio: p }).then(()=>showToast("SERVICIO AÑADIDO"));
-        };
+        function renderServicios(s){
+            catalogoGlobal = s;
+            const sA = document.getElementById('add-servicio-select');
+            const sE = document.getElementById('edit-servicio-select');
+            sA.innerHTML = '<option value="">Servicio...</option>';
+            sE.innerHTML = '<option value="">(Sin cambios)</option>';
+            Object.keys(s).forEach(id => {
+                const opt = `<option value="${id}">${s[id].nombre} - Q${s[id].precio}</option>`;
+                sA.innerHTML += opt; sE.innerHTML += opt;
+            });
+        }
     </script>
 </body>
 </html>
