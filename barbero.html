@@ -677,12 +677,14 @@
         // --- INICIALIZACIÓN DEL DASHBOARD ---
         function initDashboard() {
             const calendarEl = document.getElementById('calendar');
-            calendar = new FullCalendar.Calendar(calendarEl, {
+            calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'timeGridDay', 
                 locale: 'es', 
                 allDaySlot: false, 
-                slotDuration: '00:30:00',
-                nowIndicator: true,
+                slotDuration: '00:30:00', 
+                height: 'auto', // <--- CAMBIA ESTO (antes decía contentHeight)
+                handleWindowResize: true,
+                expandRows: false, // <--- AGREGA ESTO para que las filas no se estiren
                 headerToolbar: { 
                     left: 'prev,next today', 
                     center: 'title', 
