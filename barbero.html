@@ -56,7 +56,20 @@
         .fc-view-harness {
             background: #000000 !important;
         }
-        
+
+        /* --- ELIMINAR EL CUADRITO BLANCO DE LA ESQUINA --- */
+
+/* 1. Fondo negro para el rincón superior izquierdo */
+.fc .fc-timegrid-axis-frame, 
+.fc-theme-standard .fc-timegrid-axis {
+    background-color: #000000 !important;
+}
+
+/* 2. Por si acaso queda un borde o fondo en la celda de la esquina */
+.fc-theme-standard .fc-scrollgrid-section-header th {
+    background-color: #000000 !important;
+    border: 1px solid #1a1a1a !important;
+}
         /* ==========================================
            ESTILOS BASE Y SCROLLBAR
            ========================================== */
