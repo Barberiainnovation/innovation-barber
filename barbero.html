@@ -971,13 +971,13 @@
         };
 
         // --- GUARDAR AJUSTES DE HORARIO ---
-        document.getElementById('btn-save-hours').onclick = function() { 
+        document.getElementById('btn-save-hours').onclick = () => {
             set(ref(db, 'configuracion_horario'), { 
                 apertura: apS.value, 
-                cierre: ciS.value 
-            }).then(() => {
-                showToast("HORARIOS DE ATENCIÓN ACTUALIZADOS");
-            });
+                cierre: ciS.value,
+                lunch_inicio: lIn.value,
+                lunch_fin: lFi.value 
+            }).then(() => showToast("GUARDADO"));
         };
         // --- LÓGICA DE BLOQUEO DE DÍAS ---
         const fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d" });
