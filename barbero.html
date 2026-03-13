@@ -615,17 +615,43 @@
         const ciS = document.getElementById('config-cierre');
         const lIn = document.getElementById('config-lunch-inicio');
         const lFi = document.getElementById('config-lunch-fin');
+
+        // Limpiamos los selectores primero para que no se dupliquen
+        apS.innerHTML = ""; ciS.innerHTML = "";
+        lIn.innerHTML = '<option value="">Sin lunch</option>';
+        lFi.innerHTML = '<option value="">Sin lunch</option>';
         
         for(let h=0; h<=23; h++){ 
             const opt = document.createElement('option');
             opt.value = h;
             opt.innerText = h.toString().padStart(2, '0') + ":00";
             
+            // Apertura y Cierre siempre muestran todo el rango
             apS.appendChild(opt.cloneNode(true));
             ciS.appendChild(opt.cloneNode(true));
-            lIn.appendChild(opt.cloneNode(true));
-            lFi.appendChild(opt);
         }
+
+        // Esta parte es la "magia" para que el diseño se vea como la Imagen 1
+        // Solo agrega las horas de lunch si están dentro del horario de trabajo
+        onValue(ref(db, 'configuracion_horario'), (snapshot) => {
+            const config = snapshot.val();
+            if(config) {
+                apS.value = config.apertura;
+                ciS.value = config.cierre;
+                
+                // Filtramos las horas de lunch para que el diseño sea igual a la Imagen 1
+                for(let h = parseInt(config.apertura); h <= parseInt(config.cierre); h++) {
+                    const optL = document.createElement('option');
+                    optL.value = h;
+                    optL.innerText = h.toString().padStart(2, '0') + ":00";
+                    lIn.appendChild(optL.cloneNode(true));
+                    lFi.appendChild(optL);
+                }
+                
+                lIn.value = config.lunch_inicio || "";
+                lFi.value = config.lunch_fin || "";
+            }
+        });
         // --- GESTIÓN DE AUTENTICACIÓN ---
         window.loginGoogle = function() {
             signInWithPopup(auth, provider).catch(() => {
