@@ -30,14 +30,12 @@
     }
 
     /* --- ARREGLO DE BANDERAS (MÁXIMA PRIORIDAD) --- */
-    /* Forzamos el contenedor para que no rompa el formulario */
     .iti.iti--allow-dropdown { 
         display: block !important; 
         width: 100% !important; 
         margin-bottom: 15px !important; 
     }
     
-    /* Forzamos el input para que ignore cualquier otra regla de la página */
     .iti.iti--allow-dropdown input[type="tel"] {
         width: 100% !important;
         height: 50px !important; 
@@ -45,14 +43,13 @@
         border: 1px solid var(--border) !important;
         border-radius: 18px !important;
         color: #fff !important;
-        padding-left: 55px !important; /* Espacio para la bandera */
+        padding-left: 55px !important; 
         font-family: 'Poppins', sans-serif !important;
         font-size: 0.9rem !important;
         box-sizing: border-box !important;
         display: block !important;
     }
 
-    /* Lista de países */
     .iti__country-list { 
         background-color: #0a0a0a !important; 
         border: 1px solid var(--gold) !important; 
@@ -70,7 +67,6 @@
 
     /* ESTILOS BASE */
     body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; overflow-x: hidden; }
-    
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: #000; }
     ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
@@ -86,286 +82,243 @@
         background: var(--card); border-radius: 35px; 
         border: 1px solid var(--border); 
         box-shadow: 0 0 40px rgba(212,175,55,0.05); 
+    } /* <--- AQUÍ FALTABA ESTA LLAVE */
 
-        /* ==========================================
-           ESTRUCTURA DASHBOARD
-           ========================================== */
-        #admin-content { 
-            display: none; 
-            max-width: 1400px; 
-            margin: 0 auto; 
-        }
+    /* ==========================================
+       ESTRUCTURA DASHBOARD
+       ========================================== */
+    #admin-content { 
+        display: none; 
+        max-width: 1400px; 
+        margin: 0 auto; 
+    }
 
+    .main-grid { 
+        display: grid; 
+        grid-template-columns: 1fr 340px; 
+        gap: 25px; 
+        margin-top: 10px; 
+    }
+
+    @media (max-width: 1100px) { 
         .main-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 340px; 
-            gap: 25px; 
-            margin-top: 10px; 
-        }
+            grid-template-columns: 1fr; 
+        } 
+    }
 
-        @media (max-width: 1100px) { 
-            .main-grid { 
-                grid-template-columns: 1fr; 
-            } 
-        }
+    /* ==========================================
+       CALENDARIO (MODERN DARK)
+       ========================================== */
+    #calendar-container { 
+        background: var(--card); 
+        padding: 20px; 
+        border-radius: 35px; 
+        border: 1px solid var(--border); 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
 
-        /* ==========================================
-           CALENDARIO (MODERN DARK)
-           ========================================== */
-        #calendar-container { 
-            background: var(--card); 
-            padding: 20px; 
-            border-radius: 35px; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
+    .fc { 
+        --fc-border-color: #161616; 
+        --fc-today-bg-color: rgba(212,175,55,0.02); 
+        font-size: 0.85rem; 
+    }
 
-        .fc { 
-            --fc-border-color: #161616; 
-            --fc-today-bg-color: rgba(212,175,55,0.02); 
-            font-size: 0.85rem; 
-        }
+    .fc .fc-toolbar-title { 
+        font-size: 1.1rem !important; 
+        text-transform: uppercase; 
+        color: var(--gold); 
+        font-weight: 600; 
+        letter-spacing: 1px;
+    }
 
-        .fc .fc-toolbar-title { 
-            font-size: 1.1rem !important; 
-            text-transform: uppercase; 
-            color: var(--gold); 
-            font-weight: 600; 
-            letter-spacing: 1px;
-        }
+    .fc-event-main { 
+        font-weight: 600; 
+        font-size: 0.75rem !important; 
+        line-height: 1.2; 
+        display: flex; 
+        align-items: center; 
+        padding: 3px 6px; 
+        cursor: pointer; 
+    }
 
-        .fc-event-main { 
-            font-weight: 600; 
-            font-size: 0.75rem !important; 
-            line-height: 1.2; 
-            display: flex; 
-            align-items: center; 
-            padding: 3px 6px; 
-            cursor: pointer; 
-        }
+    .fc .fc-button-primary {
+        background-color: #111 !important;
+        border-color: #222 !important;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
 
-        .fc .fc-button-primary {
-            background-color: #111 !important;
-            border-color: #222 !important;
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
+    .fc .fc-button-primary:hover {
+        background-color: var(--gold) !important;
+        color: #000 !important;
+    }
 
-        .fc .fc-button-primary:hover {
-            background-color: var(--gold) !important;
-            color: #000 !important;
-        }
+    /* ==========================================
+       SIDEBAR STATS
+       ========================================== */
+    .sidebar-stats { 
+        background: var(--card); 
+        border: 1px solid var(--border); 
+        border-radius: 35px; 
+        padding: 30px; 
+        border-top: 5px solid var(--gold); 
+        position: sticky; 
+        top: 15px; 
+        height: fit-content; 
+    }
 
-        /* ==========================================
-           SIDEBAR STATS
-           ========================================== */
-        .sidebar-stats { 
-            background: var(--card); 
-            border: 1px solid var(--border); 
-            border-radius: 35px; 
-            padding: 30px; 
-            border-top: 5px solid var(--gold); 
-            position: sticky; 
-            top: 15px; 
-            height: fit-content; 
-        }
+    .sidebar-logo { 
+        width: 100px; 
+        margin-bottom: 20px; 
+        filter: drop-shadow(0 0 15px rgba(212,175,55,0.2)); 
+    }
 
-        .sidebar-logo { 
-            width: 100px; 
-            margin-bottom: 20px; 
-            filter: drop-shadow(0 0 15px rgba(212,175,55,0.2)); 
-        }
+    .stat-val { 
+        font-size: 2.3rem; 
+        font-weight: 600; 
+        color: var(--gold); 
+        line-height: 1;
+    }
 
-        .stat-group {
-            margin-bottom: 25px;
-        }
+    .stat-label { 
+        font-size: 0.65rem; 
+        text-transform: uppercase; 
+        color: #666; 
+        letter-spacing: 2px; 
+        font-weight: 600;
+    }
 
-        .stat-val { 
-            font-size: 2.3rem; 
-            font-weight: 600; 
-            color: var(--gold); 
-            line-height: 1;
-        }
+    #desglose-servicios { 
+        margin-top: 15px; 
+        border-top: 1px solid #1a1a1a; 
+        padding-top: 10px; 
+    }
 
-        .stat-label { 
-            font-size: 0.65rem; 
-            text-transform: uppercase; 
-            color: #666; 
-            letter-spacing: 2px; 
-            font-weight: 600;
-        }
+    .serv-stat-item { 
+        display: flex; 
+        justify-content: space-between; 
+        font-size: 0.65rem; 
+        color: #888; 
+        margin-top: 6px; 
+        text-transform: uppercase; 
+    }
 
-        #desglose-servicios { 
-            margin-top: 15px; 
-            border-top: 1px solid #1a1a1a; 
-            padding-top: 10px; 
-        }
+    /* ==========================================
+       TARJETAS DE CITAS PENDIENTES
+       ========================================== */
+    .citas-list { 
+        margin-top: 40px; 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+        gap: 15px; 
+        padding-bottom: 120px; 
+    }
 
-        .serv-stat-item { 
-            display: flex; 
-            justify-content: space-between; 
-            font-size: 0.65rem; 
-            color: #888; 
-            margin-top: 6px; 
-            text-transform: uppercase; 
-        }
+    .card { 
+        background: #060606; 
+        border: 1px solid var(--border); 
+        padding: 15px 20px; 
+        border-radius: 20px; 
+        border-left: 4px solid var(--gold); 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        transition: transform 0.3s ease;
+    }
 
-        /* ==========================================
-           TARJETAS DE CITAS PENDIENTES
-           ========================================== */
-        .citas-list { 
-            margin-top: 40px; 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 15px; 
-            padding-bottom: 120px; 
-        }
+    .card:hover {
+        transform: translateY(-3px);
+        border-color: #333;
+    }
 
-        .card { 
-            background: #060606; 
-            border: 1px solid var(--border); 
-            padding: 15px 20px; 
-            border-radius: 20px; 
-            border-left: 4px solid var(--gold); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            transition: transform 0.3s ease;
-        }
+    /* ==========================================
+       SISTEMA DE MODALES
+       ========================================== */
+    .modal { 
+        display: none; 
+        position: fixed; 
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: rgba(0,0,0,0.95); 
+        backdrop-filter: blur(15px); 
+        align-items: center; 
+        justify-content: center; 
+        z-index: 10000; 
+    }
 
-        .card:hover {
-            transform: translateY(-3px);
-            border-color: #333;
-        }
+    .modal-content { 
+        background: var(--glass); 
+        padding: 40px; 
+        border: 1px solid var(--gold); 
+        width: 90%; 
+        max-width: 400px; 
+        border-radius: 40px; 
+        text-align: center; 
+        box-shadow: 0 25px 60px rgba(0,0,0,0.8); 
+    }
 
-        /* ==========================================
-           SISTEMA DE MODALES (VENTANAS ELEGANTES)
-           ========================================== */
-        .modal { 
-            display: none; 
-            position: fixed; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.95); 
-            backdrop-filter: blur(15px); 
-            align-items: center; 
-            justify-content: center; 
-            z-index: 10000; 
-        }
+    /* ==========================================
+       ELEMENTOS DE FORMULARIO
+       ========================================== */
+    input, select, textarea { 
+        background: rgba(255,255,255,0.03); 
+        color: #fff; 
+        border: 1px solid #1a1a1a; 
+        padding: 14px; 
+        border-radius: 18px; 
+        width: 100%; 
+        margin-bottom: 12px; 
+        outline: none; 
+        font-family: 'Poppins'; 
+        box-sizing: border-box; 
+        font-size: 0.85rem; 
+        transition: 0.3s;
+    }
 
-        .modal-content { 
-            background: var(--glass); 
-            padding: 40px; 
-            border: 1px solid var(--gold); 
-            width: 90%; 
-            max-width: 400px; 
-            border-radius: 40px; 
-            text-align: center; 
-            box-shadow: 0 25px 60px rgba(0,0,0,0.8); 
-        }
+    input:focus, select:focus {
+        border-color: var(--gold);
+        background: rgba(212, 175, 55, 0.05);
+    }
 
-        .modal-content h3 {
-            margin-top: 0;
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
+    /* ==========================================
+       BOTONES
+       ========================================== */
+    .btn { 
+        width: 100%; 
+        padding: 18px; 
+        border-radius: 20px; 
+        font-weight: 700; 
+        cursor: pointer; 
+        border: none; 
+        font-size: 0.75rem; 
+        text-transform: uppercase; 
+        letter-spacing: 2px; 
+        transition: 0.4s; 
+    }
 
-        /* ==========================================
-           ELEMENTOS DE FORMULARIO
-           ========================================== */
-        input, select, textarea { 
-            background: rgba(255,255,255,0.03); 
-            color: #fff; 
-            border: 1px solid #1a1a1a; 
-            padding: 14px; 
-            border-radius: 18px; 
-            width: 100%; 
-            margin-bottom: 12px; 
-            outline: none; 
-            font-family: 'Poppins'; 
-            box-sizing: border-box; 
-            font-size: 0.85rem; 
-            transition: 0.3s;
-        }
+    .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #000; }
+    .btn-red { background: rgba(255, 77, 77, 0.1); border: 1px solid var(--red); color: var(--red); }
 
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--gold);
-            background: rgba(212, 175, 55, 0.05);
-        }
-
-        /* ==========================================
-           BOTONES PERSONALIZADOS
-           ========================================== */
-        .btn { 
-            width: 100%; 
-            padding: 18px; 
-            border-radius: 20px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            border: none; 
-            font-size: 0.75rem; 
-            text-transform: uppercase; 
-            letter-spacing: 2px; 
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        }
-
-        .btn-gold { 
-            background: linear-gradient(135deg, var(--gold), var(--gold-dark)); 
-            color: #000; 
-        }
-
-        .btn-gold:hover {
-            transform: scale(1.02);
-            box-shadow: 0 10px 20px rgba(212,175,55,0.2);
-        }
-
-        .btn-outline { 
-            background: transparent; 
-            border: 1px solid #333; 
-            color: #777; 
-            margin-top: 12px; 
-        }
-
-        .btn-red { 
-            background: rgba(255, 77, 77, 0.1); 
-            border: 1px solid var(--red); 
-            color: var(--red); 
-        }
-
-        .btn-mini { 
-            width: auto; 
-            padding: 6px 14px; 
-            border-radius: 10px; 
-            font-size: 0.6rem; 
-            font-weight: 700; 
-            background: var(--green); 
-            color: #000; 
-            border: none; 
-            cursor: pointer; 
-        }
-
-        .btn-config-float { 
-            position: fixed; 
-            bottom: 35px; 
-            right: 35px; 
-            background: var(--gold); 
-            color: #000; 
-            width: 70px; 
-            height: 70px; 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 1.8rem; 
-            z-index: 5000; 
-            border: none; 
-            cursor: pointer; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-        }
+    .btn-config-float { 
+        position: fixed; 
+        bottom: 35px; 
+        right: 35px; 
+        background: var(--gold); 
+        color: #000; 
+        width: 70px; 
+        height: 70px; 
+        border-radius: 50%; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        font-size: 1.8rem; 
+        z-index: 5000; 
+        border: none; 
+        cursor: pointer; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 
         /* ==========================================
            NOTIFICACIONES (TOAST)
