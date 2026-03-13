@@ -512,6 +512,20 @@
                     <div style="flex:1">
                         <span style="font-size: 0.6rem; color: #444;">CIERRE</span>
                         <select id="config-cierre"></select>
+                        <div style="text-align:left; margin-top:20px; margin-bottom:20px;">
+    <label style="font-size:0.7rem; color:var(--gold);">HORARIO DE LUNCH (BLOQUEADO)</label>
+    <div style="display:flex; gap:10px;">
+        <select id="config-lunch-inicio"></select>
+        <select id="config-lunch-fin"></select>
+    </div>
+</div>
+                        <div style="text-align:left; margin-top:15px; margin-bottom:20px;">
+    <label style="font-size:0.7rem; color:var(--gold);">HORARIO DE LUNCH (BLOQUEADO)</label>
+    <div style="display:flex; gap:10px;">
+        <select id="config-lunch-inicio"></select>
+        <select id="config-lunch-fin"></select>
+    </div>
+</div>
                     </div>
                 </div>
                 <button class="btn btn-gold" id="btn-save-hours" style="padding: 12px; font-size: 0.6rem;">ACTUALIZAR HORARIO</button>
@@ -604,14 +618,24 @@
         };
 
         // --- LLENAR SELECTS DE HORAS EN CONFIG ---
-        const apS = document.getElementById('config-apertura');
-        const ciS = document.getElementById('config-cierre');
-        for(let h=0; h<=23; h++){ 
-            const opt = document.createElement('option');
-            opt.value = h;
-            opt.innerText = h.toString().padStart(2, '0') + ":00";
-            apS.appendChild(opt.cloneNode(true));
-            ciS.appendChild(opt);
+        const lIniS = document.getElementById('config-lunch-inicio'); 
+        const lFinS = document.getElementById('config-lunch-fin');
+
+        for(let h=0; h<=23; h++){
+            const hStr = h.toString().padStart(2, '0');
+            [':00', ':30'].forEach(min => {
+                const fullHora = hStr + min;
+                const o = document.createElement('option');
+                o.value = fullHora;
+                o.innerText = fullHora;
+                
+                apS.appendChild(o.cloneNode(true));
+                ciS.appendChild(o.cloneNode(true));
+                
+                // PEGA ESTAS DOS LÍNEAS AQUÍ:
+                if(lIniS) lIniS.appendChild(o.cloneNode(true)); // <--- ESTA
+                if(lFinS) lFinS.appendChild(o.cloneNode(true)); // <--- Y ESTA
+            });
         }
 
         // --- GESTIÓN DE AUTENTICACIÓN ---
@@ -712,7 +736,29 @@
                 }
             });
             calendar.render();
+// PINTAR LUNCH EN EL CALENDARIO
+    onValue(ref(db, 'config'), snap => {
+        const data = snap.val();
+        if (data && data.lunch_inicio && data.lunch_fin) {
+            // Borrar si ya existe para no duplicar
+            const oldEvent = calendar.getEventById('lunch-block');
+            if(oldEvent) oldEvent.remove();
 
+            calendar.addEvent({
+                id: 'lunch-block',
+                title: 'LUNCH (BLOQUEADO)',
+                startTime: data.lunch_inicio,
+                endTime: data.lunch_fin,
+                daysOfWeek: [0, 1, 2, 3, 4, 5, 6], 
+                display: 'background',
+                backgroundColor: 'rgba(255, 77, 77, 0.2)', 
+                overlap: false
+            });
+            // Sincroniza los selects con lo que hay en la base de datos
+            document.getElementById('config-lunch-inicio').value = data.lunch_inicio;
+            document.getElementById('config-lunch-fin').value = data.lunch_fin;
+        }
+    });
             // SINCRONIZACIÓN DE CONFIGURACIÓN
             onValue(ref(db, 'configuracion_horario'), (snapshot) => { 
                 const config = snapshot.val();
