@@ -726,15 +726,17 @@
             calendar.render();
 
             // SINCRONIZACIÓN DE CONFIGURACIÓN
-            onValue(ref(db, 'configuracion_horario'), (snapshot) => { 
-                const config = snapshot.val();
-                if(config){ 
-                    calendar.setOption('slotMinTime', config.apertura.padStart(2,'0') + ':00:00'); 
-                    calendar.setOption('slotMaxTime', config.cierre.padStart(2,'0') + ':00:00'); 
-                    apS.value = config.apertura;
-                    ciS.value = config.cierre;
-                } 
-            });
+            onValue(ref(db, 'configuracion_horario'), (snapshot) => {
+            const config = snapshot.val();
+            if(config) {
+                apS.value = config.apertura;
+                ciS.value = config.cierre;
+                
+                // PEGA ESTAS DOS AQUÍ:
+                lIn.value = config.lunch_inicio || ""; 
+                lFi.value = config.lunch_fin || "";    
+            }
+        });
 
             // SINCRONIZACIÓN DE CITAS (TIEMPO REAL)
             onValue(ref(db, 'citas'), (snapshot) => {
