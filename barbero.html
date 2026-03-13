@@ -578,16 +578,20 @@
         let fechaVisualizada = new Date().toISOString().split('T')[0];
 
         // INICIALIZACIÓN DEL SELECTOR DE TELÉFONO
-        iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { 
-            initialCountry: "gt", 
-            separateDialCode: true,
-            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
-        });
-// INICIALIZACIÓN PARA EL MODAL DE EDICIÓN
-window.itiEdit = window.intlTelInput(document.querySelector("#edit-whatsapp"), { 
-    initialCountry: "gt", 
+        // Para el modal de Agregar Cita
+iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), {
+    initialCountry: "gt",
     separateDialCode: true,
-    preferredCountries: ["gt", "sv", "hn", "ni", "cr", "pa", "mx", "us"],
+    // Con 'onlyCountries' eliminamos el resto del mundo
+    onlyCountries: ["gt", "sv", "hn", "ni", "cr", "pa", "mx", "us"],
+    utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
+});
+// INICIALIZACIÓN PARA EL MODAL DE EDICIÓN
+// Para el modal de Editar Cita
+window.itiEdit = window.intlTelInput(document.querySelector("#edit-whatsapp"), {
+    initialCountry: "gt",
+    separateDialCode: true,
+    onlyCountries: ["gt", "sv", "hn", "ni", "cr", "pa", "mx", "us"],
     utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
 });
         // --- SISTEMA DE NOTIFICACIONES ---
