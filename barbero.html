@@ -31,13 +31,17 @@
         .fc { --fc-border-color: #161616; --fc-today-bg-color: rgba(212,175,55,0.02); font-size: 0.8rem; }
         .fc .fc-toolbar-title { font-size: 1rem !important; text-transform: uppercase; color: var(--gold); font-weight: 600; }
         
-        .fc-event-main { font-weight: 600; font-size: 0.75rem !important; line-height: 1.1; display: flex; align-items: center; padding: 2px 5px; white-space: normal !important; }
+        .fc-event-main { font-weight: 600; font-size: 0.75rem !important; line-height: 1.1; display: flex; align-items: center; padding: 2px 5px; white-space: normal !important; cursor: pointer; }
 
         .sidebar-stats { background: var(--card); border: 1px solid var(--border); border-radius: 35px; padding: 30px; border-top: 5px solid var(--gold); position: sticky; top: 15px; height: fit-content; }
         .sidebar-logo { width: 90px; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(212,175,55,0.15)); }
         .stat-val { font-size: 2.2rem; font-weight: 600; color: var(--gold); }
         .stat-label { font-size: 0.65rem; text-transform: uppercase; color: #555; letter-spacing: 2px; }
         
+        /* Contenedor para el desglose de servicios en el sidebar */
+        #desglose-servicios { margin-top: 10px; border-top: 1px solid #1a1a1a; padding-top: 10px; }
+        .serv-stat-item { display:flex; justify-content:space-between; font-size:0.65rem; color:#888; margin-top:4px; text-transform: uppercase; }
+
         .citas-list { margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 320px)); gap: 15px; padding-bottom: 100px; justify-content: start; }
         .card { background: #060606; border: 1px solid var(--border); padding: 10px 15px; border-radius: 18px; border-left: 3px solid var(--gold); display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
         
@@ -62,6 +66,8 @@
         #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; padding: 14px 40px; border-radius: 50px; font-weight: 700; z-index: 11000; transition: 0.6s; }
         #toast.show { bottom: 40px; }
         .block-item { background: rgba(255, 77, 77, 0.1); padding: 8px 12px; border-radius: 12px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; border: 1px solid rgba(255, 77, 77, 0.2); }
+        
+        .serv-item-admin { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #111; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -81,7 +87,10 @@
             <div id="calendar-container"><div id="calendar"></div></div>
             <aside class="sidebar-stats">
                 <header style="text-align: center; margin-bottom:30px;"><img src="logo.png" class="sidebar-logo"></header>
-                <div style="margin-bottom:30px;"><span class="stat-label">Servicios Mes</span><br><span class="stat-val" id="citas-count">0</span></div>
+                <div style="margin-bottom:20px;">
+                    <span class="stat-label">Servicios Mes</span><br>
+                    <span class="stat-val" id="citas-count">0</span>
+                    <div id="desglose-servicios"></div> </div>
                 <div style="background: rgba(46, 204, 113, 0.05); padding: 20px; border-radius: 20px;"><span class="stat-label" style="color:var(--green);">Ingresos Mes</span><br><span class="stat-val" id="ingreso-total" style="color:var(--green);">Q0.00</span></div>
             </aside>
         </div>
@@ -104,7 +113,9 @@
             <div class="modal-content">
                 <h3 id="pop-nombre" style="color:var(--gold);">Cita</h3>
                 <p id="pop-fecha" style="font-size:0.8rem; color:#555;"></p>
-                <p id="pop-nota" style="font-size:0.85rem; color:#aaa; font-style: italic; margin-bottom: 15px;"></p>
+                
+                <div id="pop-detalle-corte" style="margin: 15px 0;"></div>
+                
                 <div id="pop-whatsapp" style="font-size:0.9rem; color:var(--green); font-weight:600; cursor:pointer; background:rgba(46, 204, 113, 0.05); padding:18px; border-radius:20px; margin-bottom:20px;"><i class="fab fa-whatsapp"></i> RECORDATORIO</div>
                 <div style="display:flex; gap:12px;"><button class="btn btn-red" id="btn-eliminar-pop" style="flex:1;">BORRAR</button><button class="btn btn-outline" onclick="cerrarPop()" style="flex:1; margin:0;">CERRAR</button></div>
             </div>
@@ -126,7 +137,7 @@
             <p style="font-size: 0.7rem; color: #555;">GESTIÓN DE SERVICIOS</p>
             <input type="text" id="serv-n" placeholder="Nombre Servicio">
             <input type="number" id="serv-p" placeholder="Precio (Q)">
-            <textarea id="serv-d" placeholder="¿Qué incluye?" rows="2"></textarea>
+            <textarea id="serv-n-detalle" placeholder="¿Qué incluye?" rows="2"></textarea>
             <button class="btn btn-gold" id="btn-add-serv">AÑADIR SERVICIO</button>
             <div id="lista-servicios-admin" style="margin-top:20px; background: #050505; border-radius: 15px;"></div>
             <button class="btn btn-outline" onclick="toggleConfig()">SALIR</button>
@@ -172,7 +183,7 @@
                 buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' }, selectable: true,
                 select: (info) => {
                     if(info.view.type !== 'dayGridMonth'){
-                        selectedDateTime = info.startStr.split('T')[0]+'T'+info.start.getHours().toString().padStart(2,'0')+':00';
+                        selectedDateTime = info.startStr.split('T')[0]+'T'+info.start.getHours().toString().padStart(2,'0')+':'+info.start.getMinutes().toString().padStart(2,'0');
                         document.getElementById('add-fecha-display').innerText = info.start.toLocaleString('es-GT');
                         document.getElementById('modalAddCita').style.display = 'flex';
                     }
@@ -181,13 +192,16 @@
                     const id = info.event.id, meta = info.event.extendedProps;
                     const fTxt = info.event.start.toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
                     
-                    // CORRECCIÓN: Usar meta.nombreReal para que el recordatorio sea limpio
                     document.getElementById('pop-nombre').innerText = meta.nombreReal;
-                    document.getElementById('pop-fecha').innerText = info.event.start.toLocaleString('es-GT');
-                    document.getElementById('pop-nota').innerText = meta.nota ? `Nota: ${meta.nota}` : "";
+                    document.getElementById('pop-fecha').innerText = fTxt;
+                    
+                    // MOSTRAR CORTE, PRECIO Y NOTAS
+                    const infoCorte = `<div style="color:var(--gold); font-weight:600; margin:10px 0; font-size:0.9rem;">${meta.servicio} - Q${meta.precio}</div>`;
+                    const notaHtml = meta.nota ? `<p style="font-size:0.8rem; color:#aaa; font-style: italic; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 15px; border: 1px solid #111;">Nota: ${meta.nota}</p>` : "";
+                    document.getElementById('pop-detalle-corte').innerHTML = infoCorte + notaHtml;
                     
                     document.getElementById('pop-whatsapp').onclick = () => {
-                        const msg = encodeURIComponent(`Hola ${meta.nombreReal}, te saludamos de Innovation Barber Studio. Te recordamos tu cita para el día ${fTxt}. ¡Te esperamos!`);
+                        const msg = encodeURIComponent(`Hola ${meta.nombreReal}, te saludamos de *Innovation Barber Studio*. Te recordamos tu cita para *${meta.servicio}* el día ${fTxt}. ¡Te esperamos! ✂️`);
                         window.open(`https://wa.me/${meta.whatsapp.replace(/\D/g,'')}?text=${msg}`);
                     };
                     document.getElementById('modalEvento').style.display = 'flex';
@@ -217,32 +231,53 @@
 
         function renderAdmin(data) {
             const lista = document.getElementById('lista-citas'), cCount = document.getElementById('citas-count'), iTotal = document.getElementById('ingreso-total');
-            lista.innerHTML = ''; let tMes = 0, iMes = 0, eventos = [], ahora = new Date(), mesActual = ahora.getMonth(), añoActual = ahora.getFullYear();
+            const desgloseContainer = document.getElementById('desglose-servicios');
+            
+            lista.innerHTML = ''; 
+            desgloseContainer.innerHTML = '';
+            
+            let tMes = 0, iMes = 0, eventos = [], contadorServicios = {};
+            const ahora = new Date(), mesActual = ahora.getMonth(), añoActual = ahora.getFullYear();
+
             if(data){
                 Object.keys(data).sort((a,b) => new Date(data[a].fecha) - new Date(data[b].fecha)).forEach(id => {
                     const c = data[id], fCita = new Date(c.fecha), isFinalizada = c.estado === 'Finalizada';
-                    if(isFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) { tMes++; iMes += parseFloat(c.precio || 0); }
                     
-                    const titulo = c.nota ? `${c.nombre} (${c.nota})` : c.nombre;
+                    if(isFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) { 
+                        tMes++; 
+                        iMes += parseFloat(c.precio || 0); 
+                        // Conteo por tipo de servicio
+                        contadorServicios[c.servicio] = (contadorServicios[c.servicio] || 0) + 1;
+                    }
                     
                     eventos.push({ 
                         id, 
-                        title: titulo, 
+                        title: c.nombre, 
                         start: c.fecha, 
-                        backgroundColor: isFinalizada ? '#333333' : '#d4af37', 
-                        textColor: isFinalizada ? '#777777' : '#000000', 
+                        backgroundColor: isFinalizada ? '#1a1a1a' : '#d4af37', 
+                        textColor: isFinalizada ? '#555' : '#000', 
                         extendedProps: { 
                             whatsapp: c.whatsapp, 
                             nota: c.nota, 
-                            nombreReal: c.nombre // Guardamos el nombre sin la nota para el recordatorio
+                            nombreReal: c.nombre,
+                            servicio: c.servicio,
+                            precio: c.precio
                         } 
                     });
                     
-                    const div = document.createElement('div'); div.className = `card ${isFinalizada ? 'finalizada' : ''}`;
-                    div.innerHTML = `<h4>${c.nombre}</h4><button class="btn-mini" onclick="cambiarEstado('${id}','Finalizada')">FINALIZAR</button>`;
-                    lista.appendChild(div);
+                    if(!isFinalizada){
+                        const div = document.createElement('div'); div.className = `card`;
+                        div.innerHTML = `<h4>${c.nombre}</h4><button class="btn-mini" onclick="cambiarEstado('${id}','Finalizada')">FINALIZAR</button>`;
+                        lista.appendChild(div);
+                    }
                 });
             }
+
+            // Renderizar conteo detallado en el Sidebar
+            Object.keys(contadorServicios).forEach(sName => {
+                desgloseContainer.innerHTML += `<div class="serv-stat-item"><span>${sName}</span><span>x${contadorServicios[sName]}</span></div>`;
+            });
+
             cCount.innerText = tMes; iTotal.innerText = `Q${iMes.toFixed(2)}`;
             calendar.removeAllEvents(); calendar.addEventSource(eventos);
         }
@@ -275,8 +310,8 @@
         }
         window.eliminarServicio = (id) => confirmarAccion("¿Eliminar?", () => remove(ref(db, `servicios/${id}`)));
         document.getElementById('btn-add-serv').onclick = () => {
-            const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value, d = document.getElementById('serv-d').value;
-            if(n && p) push(ref(db, 'servicios'), { nombre: n, precio: p, detalle: d }).then(() => { document.getElementById('serv-n').value=''; document.getElementById('serv-p').value=''; document.getElementById('serv-d').value=''; });
+            const n = document.getElementById('serv-n').value, p = document.getElementById('serv-p').value, d = document.getElementById('serv-n-detalle').value;
+            if(n && p) push(ref(db, 'servicios'), { nombre: n, precio: p, detalle: d }).then(() => { document.getElementById('serv-n').value=''; document.getElementById('serv-p').value=''; document.getElementById('serv-n-detalle').value=''; });
         };
         document.getElementById('btn-save-hours').onclick = () => {
             set(ref(db, 'configuracion_horario'), { apertura: apS.value, cierre: ciS.value, lunch_inicio: lIn.value, lunch_fin: lFi.value }).then(() => showToast("GUARDADO"));
