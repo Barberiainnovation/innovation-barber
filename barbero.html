@@ -503,84 +503,52 @@
     <div class="modal-content" style="max-width: 420px; max-height: 90vh; overflow-y: auto;">
         <h3 style="color:var(--gold);">CONFIGURACIÓN</h3>
         
-        <p style="font-size: 0.7rem; color: #555;">HORARIO LABORAL</p>
-        <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <p style="font-size: 0.7rem; color: #555; text-align: left;">HORARIO LABORAL</p>
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
             <select id="config-apertura"></select>
             <select id="config-cierre"></select>
         </div>
 
-        <p style="font-size: 0.7rem; color: #555; margin-top: 15px;">HORARIO DE ALMUERZO (LUNCH)</p>
-        <div style="display:flex; gap:10px; margin-bottom:10px;">
-            <select id="lunch-inicio"><option value="">Sin lunch</option></select>
-            <select id="lunch-fin"><option value="">Sin lunch</option></select>
+        <p style="font-size: 0.7rem; color: #555; margin-top: 15px; text-align: left;">HORARIO DE ALMUERZO (LUNCH)</p>
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <select id="config-lunch-inicio"><option value="">Sin lunch</option></select>
+            <select id="config-lunch-fin"><option value="">Sin lunch</option></select>
         </div>
-        <button class="btn btn-gold" id="btn-save-hours">GUARDAR HORARIO</button>
+        <button class="btn btn-gold" id="btn-save-hours">GUARDAR CONFIGURACIÓN</button>
 
         <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
 
-        <p style="font-size: 0.7rem; color: #555;">BLOQUEAR DÍA ESPECÍFICO</p>
-        <input type="text" id="input-block-date" placeholder="Toca para elegir fecha" readonly style="cursor:pointer; border:1px solid var(--gold); text-align: center;">
-        <button class="btn btn-gold" id="btn-add-block" style="margin-top:5px;">BLOQUEAR DÍA</button>
+        <p style="font-size: 0.7rem; color: #555; text-align: left;">BLOQUEAR DÍA ESPECÍFICO</p>
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="input-block-date" placeholder="Elegir fecha" readonly style="cursor:pointer; text-align: center; margin-bottom:0; border:1px solid var(--gold);">
+            <button class="btn btn-red" id="btn-add-block" style="padding:12px; width:auto; margin-bottom:0;">BLOQUEAR</button>
+        </div>
         <div id="lista-bloqueos-admin" style="margin-top:15px; text-align: left;"></div>
 
         <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
 
-        <p style="font-size: 0.7rem; color: #555;">GESTIÓN DE SERVICIOS</p>
-        <input type="text" id="serv-n" placeholder="Nombre Servicio">
+        <p style="font-size: 0.7rem; color: #555; text-align: left;">GESTIÓN DE SERVICIOS</p>
+        <input type="text" id="serv-n" placeholder="Nombre (Ej: Corte + Barba)">
         <input type="number" id="serv-p" placeholder="Precio (Q)">
-        <textarea id="serv-d" placeholder="¿Qué incluye?" rows="2"></textarea>
         <button class="btn btn-gold" id="btn-add-serv">AÑADIR SERVICIO</button>
         <div id="lista-servicios-admin" style="margin-top:20px; background: #050505; border-radius: 15px;"></div>
 
-        <button class="btn btn-outline" onclick="toggleConfig()">SALIR</button>
+        <button class="btn btn-outline" onclick="toggleConfig()" style="margin-top: 30px;">SALIR</button>
     </div>
 </div>
-                    <div style="flex:1">
-                        <span style="font-size: 0.6rem; color: #444;">CIERRE</span>
-                        <select id="config-cierre"></select>
-            
-                        <div style="text-align:left; margin-top:15px; margin-bottom:20px;">
-    <label style="font-size:0.7rem; color:var(--gold);">HORARIO DE LUNCH (BLOQUEADO)</label>
-    <div style="display:flex; gap:10px;">
-        <select id="config-lunch-inicio"></select>
-        <select id="config-lunch-fin"></select>
-    </div>
-</div>
-                    </div>
-                </div>
-                <button class="btn btn-gold" id="btn-save-hours" style="padding: 12px; font-size: 0.6rem;">ACTUALIZAR HORARIO</button>
-<h4 style="font-size:0.7rem; color:var(--gold); border-bottom:1px solid #222; text-align:left; margin-top:25px; margin-bottom:10px;">BLOQUEAR DÍA ENTERO</h4>
-<div style="display:flex; gap:10px;">
-    <input type="text" id="input-block-date" placeholder="Elegir fecha" readonly style="cursor:pointer; text-align: center; margin-bottom:0;">
-    <button class="btn btn-red" id="btn-add-block" style="padding:12px; width:auto; margin-bottom:12px;">BLOQUEAR</button>
-</div>
-<div id="lista-bloqueos-admin" style="margin-top:15px; text-align: left; max-height: 120px; overflow-y:auto;"></div>
-                <hr style="border:0; border-top:1px solid #1a1a1a; margin:30px 0;">
 
-                <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px;">GESTIÓN DE SERVICIOS</p>
-                <input type="text" id="serv-n" placeholder="Nombre (Ej: Corte + Barba)">
-                <input type="number" id="serv-p" placeholder="Precio en Quetzales">
-                <button class="btn btn-gold" id="btn-add-serv" style="padding: 12px; font-size: 0.6rem;">AÑADIR AL CATÁLOGO</button>
-                
-                <div id="lista-servicios-admin" style="margin-top:25px; text-align: left;"></div>
-
-                <button class="btn btn-outline" onclick="toggleConfig()" style="margin-top: 30px;">CERRAR PANEL</button>
-            </div>
+<div id="modalConfirm" class="modal">
+    <div class="modal-content" style="max-width: 340px;">
+        <div style="color: var(--red); font-size: 3rem; margin-bottom: 20px;">
+            <i class="fas fa-exclamation-circle"></i>
         </div>
-
-        <div id="modalConfirm" class="modal">
-            <div class="modal-content" style="max-width: 340px;">
-                <div style="color: var(--red); font-size: 3rem; margin-bottom: 20px;">
-                    <i class="fas fa-exclamation-circle"></i>
-                </div>
-                <p id="confirm-text" style="font-size: 0.95rem; margin-bottom: 30px; line-height: 1.5; color: #ccc;"></p>
-                <div style="display:flex; gap:15px;">
-                    <button class="btn btn-red" id="confirm-yes" style="padding: 14px; font-size: 0.65rem;">SÍ, PROCEDER</button>
-                    <button class="btn btn-outline" onclick="document.getElementById('modalConfirm').style.display='none'" style="padding: 14px; font-size: 0.65rem; margin: 0;">CANCELAR</button>
-                </div>
-            </div>
+        <p id="confirm-text" style="font-size: 0.95rem; margin-bottom: 30px; line-height: 1.5; color: #ccc;"></p>
+        <div style="display:flex; gap:15px;">
+            <button class="btn btn-red" id="confirm-yes" style="padding: 14px; font-size: 0.65rem;">SÍ, PROCEDER</button>
+            <button class="btn btn-outline" onclick="document.getElementById('modalConfirm').style.display='none'" style="padding: 14px; font-size: 0.65rem; margin: 0;">CANCELAR</button>
         </div>
     </div>
+</div>
 
     <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
