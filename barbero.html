@@ -16,6 +16,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/es.global.min.js"></script>
     
     <style>
+        /* ==========================================
+           VARIABLES DE DISEÑO (PALETA ÉLITE)
+           ========================================== */
         :root { 
             --bg: #000; 
             --card: #0a0a0a; 
@@ -27,7 +30,9 @@
             --glass: rgba(10, 10, 10, 0.98); 
         }
 
-        /* ESTILOS BASE */
+        /* ==========================================
+           ESTILOS BASE Y SCROLLBAR
+           ========================================== */
         body { 
             font-family: 'Poppins', sans-serif; 
             background: var(--bg); 
@@ -37,7 +42,20 @@
             overflow-x: hidden; 
         }
 
-        /* LOGIN OVERLAY */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--gold);
+            border-radius: 10px;
+        }
+
+        /* ==========================================
+           LOGIN OVERLAY
+           ========================================== */
         #login-overlay { 
             position: fixed; 
             top: 0; 
@@ -61,10 +79,12 @@
             box-shadow: 0 0 40px rgba(212,175,55,0.05); 
         }
 
-        /* CONTENIDO PRINCIPAL */
+        /* ==========================================
+           ESTRUCTURA DASHBOARD
+           ========================================== */
         #admin-content { 
             display: none; 
-            max-width: 1300px; 
+            max-width: 1400px; 
             margin: 0 auto; 
         }
 
@@ -75,44 +95,63 @@
             margin-top: 10px; 
         }
 
-        @media (max-width: 1000px) { 
+        @media (max-width: 1100px) { 
             .main-grid { 
                 grid-template-columns: 1fr; 
             } 
         }
 
-        /* CALENDARIO */
+        /* ==========================================
+           CALENDARIO (MODERN DARK)
+           ========================================== */
         #calendar-container { 
             background: var(--card); 
             padding: 20px; 
             border-radius: 35px; 
             border: 1px solid var(--border); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .fc { 
             --fc-border-color: #161616; 
             --fc-today-bg-color: rgba(212,175,55,0.02); 
-            font-size: 0.8rem; 
+            font-size: 0.85rem; 
         }
 
         .fc .fc-toolbar-title { 
-            font-size: 1rem !important; 
+            font-size: 1.1rem !important; 
             text-transform: uppercase; 
             color: var(--gold); 
             font-weight: 600; 
+            letter-spacing: 1px;
         }
 
         .fc-event-main { 
             font-weight: 600; 
             font-size: 0.75rem !important; 
-            line-height: 1.1; 
+            line-height: 1.2; 
             display: flex; 
             align-items: center; 
-            padding: 2px 5px; 
+            padding: 3px 6px; 
             cursor: pointer; 
         }
 
-        /* SIDEBAR Y ESTADÍSTICAS */
+        .fc .fc-button-primary {
+            background-color: #111 !important;
+            border-color: #222 !important;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .fc .fc-button-primary:hover {
+            background-color: var(--gold) !important;
+            color: #000 !important;
+        }
+
+        /* ==========================================
+           SIDEBAR STATS
+           ========================================== */
         .sidebar-stats { 
             background: var(--card); 
             border: 1px solid var(--border); 
@@ -125,26 +164,32 @@
         }
 
         .sidebar-logo { 
-            width: 90px; 
-            margin-bottom: 15px; 
-            filter: drop-shadow(0 0 10px rgba(212,175,55,0.15)); 
+            width: 100px; 
+            margin-bottom: 20px; 
+            filter: drop-shadow(0 0 15px rgba(212,175,55,0.2)); 
+        }
+
+        .stat-group {
+            margin-bottom: 25px;
         }
 
         .stat-val { 
-            font-size: 2.2rem; 
+            font-size: 2.3rem; 
             font-weight: 600; 
             color: var(--gold); 
+            line-height: 1;
         }
 
         .stat-label { 
             font-size: 0.65rem; 
             text-transform: uppercase; 
-            color: #555; 
+            color: #666; 
             letter-spacing: 2px; 
+            font-weight: 600;
         }
 
         #desglose-servicios { 
-            margin-top: 10px; 
+            margin-top: 15px; 
             border-top: 1px solid #1a1a1a; 
             padding-top: 10px; 
         }
@@ -154,32 +199,41 @@
             justify-content: space-between; 
             font-size: 0.65rem; 
             color: #888; 
-            margin-top: 4px; 
+            margin-top: 6px; 
             text-transform: uppercase; 
         }
 
-        /* LISTADO DE CITAS (CARDS) */
+        /* ==========================================
+           TARJETAS DE CITAS PENDIENTES
+           ========================================== */
         .citas-list { 
             margin-top: 40px; 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(280px, 320px)); 
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
             gap: 15px; 
-            padding-bottom: 100px; 
-            justify-content: start; 
+            padding-bottom: 120px; 
         }
 
         .card { 
             background: #060606; 
             border: 1px solid var(--border); 
-            padding: 12px 15px; 
-            border-radius: 18px; 
-            border-left: 3px solid var(--gold); 
+            padding: 15px 20px; 
+            border-radius: 20px; 
+            border-left: 4px solid var(--gold); 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
+            transition: transform 0.3s ease;
         }
 
-        /* MODALES */
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: #333;
+        }
+
+        /* ==========================================
+           SISTEMA DE MODALES (VENTANAS ELEGANTES)
+           ========================================== */
         .modal { 
             display: none; 
             position: fixed; 
@@ -187,8 +241,8 @@
             top: 0; 
             width: 100%; 
             height: 100%; 
-            background: rgba(0,0,0,0.94); 
-            backdrop-filter: blur(12px); 
+            background: rgba(0,0,0,0.95); 
+            backdrop-filter: blur(15px); 
             align-items: center; 
             justify-content: center; 
             z-index: 10000; 
@@ -196,42 +250,59 @@
 
         .modal-content { 
             background: var(--glass); 
-            padding: 35px; 
+            padding: 40px; 
             border: 1px solid var(--gold); 
             width: 90%; 
-            max-width: 380px; 
+            max-width: 400px; 
             border-radius: 40px; 
             text-align: center; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+            box-shadow: 0 25px 60px rgba(0,0,0,0.8); 
         }
 
-        /* FORMULARIOS */
+        .modal-content h3 {
+            margin-top: 0;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* ==========================================
+           ELEMENTOS DE FORMULARIO
+           ========================================== */
         input, select, textarea { 
             background: rgba(255,255,255,0.03); 
             color: #fff; 
             border: 1px solid #1a1a1a; 
-            padding: 12px; 
-            border-radius: 15px; 
+            padding: 14px; 
+            border-radius: 18px; 
             width: 100%; 
-            margin-bottom: 10px; 
+            margin-bottom: 12px; 
             outline: none; 
             font-family: 'Poppins'; 
             box-sizing: border-box; 
-            font-size: 0.8rem; 
+            font-size: 0.85rem; 
+            transition: 0.3s;
         }
 
-        /* BOTONES */
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--gold);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        /* ==========================================
+           BOTONES PERSONALIZADOS
+           ========================================== */
         .btn { 
             width: 100%; 
-            padding: 16px; 
-            border-radius: 18px; 
+            padding: 18px; 
+            border-radius: 20px; 
             font-weight: 700; 
             cursor: pointer; 
             border: none; 
-            font-size: 0.7rem; 
+            font-size: 0.75rem; 
             text-transform: uppercase; 
             letter-spacing: 2px; 
-            transition: 0.3s; 
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
         }
 
         .btn-gold { 
@@ -239,11 +310,16 @@
             color: #000; 
         }
 
+        .btn-gold:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(212,175,55,0.2);
+        }
+
         .btn-outline { 
             background: transparent; 
             border: 1px solid #333; 
             color: #777; 
-            margin-top: 10px; 
+            margin-top: 12px; 
         }
 
         .btn-red { 
@@ -254,9 +330,9 @@
 
         .btn-mini { 
             width: auto; 
-            padding: 5px 10px; 
-            border-radius: 8px; 
-            font-size: 0.55rem; 
+            padding: 6px 14px; 
+            border-radius: 10px; 
+            font-size: 0.6rem; 
             font-weight: 700; 
             background: var(--green); 
             color: #000; 
@@ -266,23 +342,26 @@
 
         .btn-config-float { 
             position: fixed; 
-            bottom: 30px; 
-            right: 30px; 
+            bottom: 35px; 
+            right: 35px; 
             background: var(--gold); 
             color: #000; 
-            width: 65px; 
-            height: 65px; 
+            width: 70px; 
+            height: 70px; 
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            font-size: 1.5rem; 
+            font-size: 1.8rem; 
             z-index: 5000; 
             border: none; 
             cursor: pointer; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
         }
 
-        /* NOTIFICACIONES TOAST */
+        /* ==========================================
+           NOTIFICACIONES (TOAST)
+           ========================================== */
         #toast { 
             position: fixed; 
             bottom: -100px; 
@@ -290,12 +369,13 @@
             transform: translateX(-50%); 
             background: var(--gold); 
             color: #000; 
-            padding: 14px 40px; 
+            padding: 16px 45px; 
             border-radius: 50px; 
             font-weight: 700; 
             z-index: 11000; 
-            transition: 0.6s; 
-            font-size: 0.8rem; 
+            transition: 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
+            font-size: 0.85rem; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         #toast.show { 
@@ -305,42 +385,47 @@
 </head>
 <body>
 
-    <div id="toast">MENSAJE</div>
+    <div id="toast">ACCIÓN EXITOSA</div>
 
     <div id="login-overlay">
         <div class="login-box">
-            <img src="logo.png" style="width: 80px; margin-bottom: 20px;">
-            <button class="btn btn-gold" onclick="loginGoogle()">Entrar al Sistema</button>
+            <img src="logo.png" style="width: 90px; margin-bottom: 25px;">
+            <h2 style="font-size: 1rem; color: var(--gold); margin-bottom: 30px; letter-spacing: 2px;">ADMIN PANEL</h2>
+            <button class="btn btn-gold" onclick="loginGoogle()">
+                <i class="fab fa-google" style="margin-right: 10px;"></i> ENTRAR AL SISTEMA
+            </button>
         </div>
     </div>
 
     <div id="admin-content">
+        
         <button class="btn-config-float" onclick="toggleConfig()">
-            <i class="fas fa-cog"></i>
+            <i class="fas fa-sliders-h"></i>
         </button>
 
         <div class="main-grid">
+            
             <div id="calendar-container">
                 <div id="calendar"></div>
             </div>
 
             <aside class="sidebar-stats">
-                <header style="text-align: center; margin-bottom:30px;">
+                <header style="text-align: center; margin-bottom:40px;">
                     <img src="logo.png" class="sidebar-logo">
                 </header>
 
-                <div style="margin-bottom:20px;">
+                <div class="stat-group">
                     <span class="stat-label">Finalizados Mes</span><br>
                     <span class="stat-val" id="citas-count">0</span>
                     <div id="desglose-servicios"></div>
                 </div>
 
-                <div style="margin-bottom:20px; background: rgba(212, 175, 55, 0.05); padding: 15px; border-radius: 20px;">
-                    <span class="stat-label">Pendientes Hoy</span><br>
-                    <span class="stat-val" id="count-pendientes" style="font-size: 1.5rem;">0</span>
+                <div class="stat-group" style="background: rgba(212, 175, 55, 0.05); padding: 20px; border-radius: 25px; border: 1px solid rgba(212,175,55,0.1);">
+                    <span class="stat-label" id="label-pendientes">Pendientes Hoy</span><br>
+                    <span class="stat-val" id="count-pendientes" style="font-size: 1.8rem;">0</span>
                 </div>
 
-                <div style="background: rgba(46, 204, 113, 0.05); padding: 20px; border-radius: 20px;">
+                <div class="stat-group" style="background: rgba(46, 204, 113, 0.05); padding: 20px; border-radius: 25px;">
                     <span class="stat-label" style="color:var(--green);">Ingresos Mes</span><br>
                     <span class="stat-val" id="ingreso-total" style="color:var(--green);">Q0.00</span>
                 </div>
@@ -351,40 +436,57 @@
 
         <div id="modalAddCita" class="modal">
             <div class="modal-content">
-                <h3 style="color:var(--gold);">NUEVA CITA</h3>
-                <p id="add-fecha-display" style="font-size: 0.8rem; color: #666;"></p>
-                <input type="text" id="add-nombre" placeholder="Nombre Cliente">
+                <h3 style="color:var(--gold);">AGENDAR CITA</h3>
+                <p id="add-fecha-display" style="font-size: 0.8rem; color: #666; margin-bottom: 20px;"></p>
+                
+                <input type="text" id="add-nombre" placeholder="Nombre completo del cliente">
                 <input type="tel" id="add-whatsapp-input">
                 <select id="add-servicio-select"></select>
-                <textarea id="add-nota" placeholder="Nota especial" rows="2"></textarea>
-                <button class="btn btn-gold" id="btn-save-cita-calendar">AGENDAR</button>
+                <textarea id="add-nota" placeholder="¿Alguna nota o instrucción especial?" rows="3"></textarea>
+                
+                <button class="btn btn-gold" id="btn-save-cita-calendar">CONFIRMAR CITA</button>
                 <button class="btn btn-outline" onclick="cerrarModalAdd()">CANCELAR</button>
             </div>
         </div>
         
         <div id="modalEvento" class="modal">
             <div class="modal-content">
+                
                 <div id="view-mode">
-                    <h3 id="pop-nombre" style="color:var(--gold);">Cita</h3>
-                    <p id="pop-fecha" style="font-size:0.8rem; color:#555;"></p>
-                    <div id="pop-detalle-corte" style="margin: 15px 0;"></div>
-                    <div id="pop-whatsapp" style="font-size:0.9rem; color:var(--green); font-weight:600; cursor:pointer; background:rgba(46, 204, 113, 0.05); padding:18px; border-radius:20px; margin-bottom:20px;">
-                        <i class="fab fa-whatsapp"></i> RECORDATORIO
+                    <h3 id="pop-nombre" style="color:var(--gold);">Detalle Cliente</h3>
+                    <p id="pop-fecha" style="font-size:0.85rem; color:#666;"></p>
+                    
+                    <div id="pop-detalle-corte" style="margin: 20px 0;"></div>
+                    
+                    <div id="pop-whatsapp" style="font-size:0.9rem; color:var(--green); font-weight:600; cursor:pointer; background:rgba(46, 204, 113, 0.08); padding:20px; border-radius:25px; margin-bottom:25px; border: 1px solid rgba(46, 204, 113, 0.2);">
+                        <i class="fab fa-whatsapp" style="font-size: 1.2rem; vertical-align: middle; margin-right: 8px;"></i> ENVIAR RECORDATORIO
                     </div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                        <button class="btn btn-gold" onclick="entrarModoEdicion()" style="padding:12px;">EDITAR</button>
-                        <button class="btn btn-red" id="btn-eliminar-pop" style="padding:12px;">BORRAR</button>
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                        <button class="btn btn-gold" onclick="entrarModoEdicion()" style="padding:14px; font-size: 0.65rem;">EDITAR</button>
+                        <button class="btn btn-red" id="btn-eliminar-pop" style="padding:14px; font-size: 0.65rem;">ELIMINAR</button>
                     </div>
-                    <button class="btn btn-outline" onclick="cerrarPop()">CERRAR</button>
+                    <button class="btn btn-outline" onclick="cerrarPop()">CERRAR VENTANA</button>
                 </div>
 
                 <div id="edit-mode" style="display:none;">
-                    <h3 style="color:var(--gold);">EDITAR DATOS</h3>
-                    <input type="text" id="edit-nombre" placeholder="Nombre">
-                    <input type="text" id="edit-whatsapp" placeholder="WhatsApp">
+                    <h3 style="color:var(--gold);">EDITAR SERVICIO</h3>
+                    
+                    <label style="display:block; text-align:left; font-size:0.6rem; color:#555; margin-left:10px;">NOMBRE</label>
+                    <input type="text" id="edit-nombre">
+                    
+                    <label style="display:block; text-align:left; font-size:0.6rem; color:#555; margin-left:10px;">WHATSAPP</label>
+                    <input type="text" id="edit-whatsapp">
+                    
+                    <label style="display:block; text-align:left; font-size:0.6rem; color:#555; margin-left:10px;">CAMBIAR SERVICIO</label>
                     <select id="edit-servicio-select"></select>
-                    <input type="number" id="edit-precio" placeholder="Precio (Q)">
-                    <textarea id="edit-nota" placeholder="Nota" rows="2"></textarea>
+                    
+                    <label style="display:block; text-align:left; font-size:0.6rem; color:#555; margin-left:10px;">PRECIO FINAL (Q)</label>
+                    <input type="number" id="edit-precio">
+                    
+                    <label style="display:block; text-align:left; font-size:0.6rem; color:#555; margin-left:10px;">NOTA INTERNA</label>
+                    <textarea id="edit-nota" rows="2"></textarea>
+                    
                     <button class="btn btn-gold" id="btn-update-cita">GUARDAR CAMBIOS</button>
                     <button class="btn btn-outline" onclick="salirModoEdicion()">CANCELAR</button>
                 </div>
@@ -392,34 +494,44 @@
         </div>
 
         <div id="modalConfig" class="modal">
-            <div class="modal-content" style="max-width: 420px; max-height: 90vh; overflow-y: auto;">
-                <h3 style="color:var(--gold);">CONFIGURACIÓN</h3>
+            <div class="modal-content" style="max-width: 450px; max-height: 85vh; overflow-y: auto;">
+                <h3 style="color:var(--gold);">PANEL DE CONTROL</h3>
                 
-                <p style="font-size: 0.7rem; color: #555;">HORARIO LABORAL</p>
-                <div style="display:flex; gap:10px; margin-bottom:10px;">
-                    <select id="config-apertura"></select>
-                    <select id="config-cierre"></select>
+                <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px;">HORARIO DE ATENCIÓN</p>
+                <div style="display:flex; gap:12px; margin-bottom:15px;">
+                    <div style="flex:1">
+                        <span style="font-size: 0.6rem; color: #444;">APERTURA</span>
+                        <select id="config-apertura"></select>
+                    </div>
+                    <div style="flex:1">
+                        <span style="font-size: 0.6rem; color: #444;">CIERRE</span>
+                        <select id="config-cierre"></select>
+                    </div>
                 </div>
-                <button class="btn btn-gold" id="btn-save-hours">GUARDAR HORARIO</button>
+                <button class="btn btn-gold" id="btn-save-hours" style="padding: 12px; font-size: 0.6rem;">ACTUALIZAR HORARIO</button>
 
-                <hr style="border:0; border-top:1px solid #1a1a1a; margin:20px 0;">
+                <hr style="border:0; border-top:1px solid #1a1a1a; margin:30px 0;">
 
-                <p style="font-size: 0.7rem; color: #555;">GESTIÓN DE SERVICIOS</p>
-                <input type="text" id="serv-n" placeholder="Nombre Servicio">
-                <input type="number" id="serv-p" placeholder="Precio (Q)">
-                <button class="btn btn-gold" id="btn-add-serv">AÑADIR SERVICIO</button>
-                <div id="lista-servicios-admin" style="margin-top:20px;"></div>
+                <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px;">GESTIÓN DE SERVICIOS</p>
+                <input type="text" id="serv-n" placeholder="Nombre (Ej: Corte + Barba)">
+                <input type="number" id="serv-p" placeholder="Precio en Quetzales">
+                <button class="btn btn-gold" id="btn-add-serv" style="padding: 12px; font-size: 0.6rem;">AÑADIR AL CATÁLOGO</button>
+                
+                <div id="lista-servicios-admin" style="margin-top:25px; text-align: left;"></div>
 
-                <button class="btn btn-outline" onclick="toggleConfig()">SALIR</button>
+                <button class="btn btn-outline" onclick="toggleConfig()" style="margin-top: 30px;">CERRAR PANEL</button>
             </div>
         </div>
 
         <div id="modalConfirm" class="modal">
-            <div class="modal-content" style="max-width: 320px;">
-                <p id="confirm-text" style="font-size: 0.9rem; margin-bottom: 25px;"></p>
-                <div style="display:flex; gap:12px;">
-                    <button class="btn btn-red" id="confirm-yes" style="padding: 12px;">SÍ, ELIMINAR</button>
-                    <button class="btn btn-outline" onclick="document.getElementById('modalConfirm').style.display='none'" style="padding: 12px; margin: 0;">NO</button>
+            <div class="modal-content" style="max-width: 340px;">
+                <div style="color: var(--red); font-size: 3rem; margin-bottom: 20px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <p id="confirm-text" style="font-size: 0.95rem; margin-bottom: 30px; line-height: 1.5; color: #ccc;"></p>
+                <div style="display:flex; gap:15px;">
+                    <button class="btn btn-red" id="confirm-yes" style="padding: 14px; font-size: 0.65rem;">SÍ, PROCEDER</button>
+                    <button class="btn btn-outline" onclick="document.getElementById('modalConfirm').style.display='none'" style="padding: 14px; font-size: 0.65rem; margin: 0;">CANCELAR</button>
                 </div>
             </div>
         </div>
@@ -434,7 +546,7 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, set, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // CONFIGURACIÓN FIREBASE
+        // CONFIGURACIÓN DE FIREBASE (TU BASE DE DATOS)
         const firebaseConfig = { 
             apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", 
             authDomain: "innovation-barber-studio.firebaseapp.com", 
@@ -447,29 +559,30 @@
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
         
-        // VARIABLES GLOBALES
+        // VARIABLES DE CONTROL GLOBAL
         let calendar;
         let selectedDateTime = null;
         let catalogoGlobal = {};
         let iti;
         let currentEditingId = null;
+        let fechaVisualizada = new Date().toISOString().split('T')[0];
 
-        // INICIALIZACIÓN DE COMPONENTES
+        // INICIALIZACIÓN DEL SELECTOR DE TELÉFONO
         iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { 
             initialCountry: "gt", 
-            separateDialCode: true 
+            separateDialCode: true,
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
         });
 
-        // FUNCIONES DE UI
+        // --- SISTEMA DE NOTIFICACIONES ---
         window.showToast = function(mensaje) { 
             const t = document.getElementById('toast'); 
             t.innerText = mensaje; 
             t.classList.add('show'); 
-            setTimeout(() => {
-                t.classList.remove('show');
-            }, 3000); 
+            setTimeout(() => { t.classList.remove('show'); }, 3000); 
         };
 
+        // --- SISTEMA DE CONFIRMACIÓN MODAL ---
         window.confirmarAccion = function(texto, callback) { 
             document.getElementById('confirm-text').innerText = texto; 
             document.getElementById('modalConfirm').style.display = 'flex'; 
@@ -479,29 +592,27 @@
             }; 
         };
 
-        // LLENAR SELECTS DE HORAS
+        // --- LLENAR SELECTS DE HORAS EN CONFIG ---
         const apS = document.getElementById('config-apertura');
         const ciS = document.getElementById('config-cierre');
         for(let h=0; h<=23; h++){ 
             const opt = document.createElement('option');
             opt.value = h;
-            opt.innerText = h + ":00";
+            opt.innerText = h.toString().padStart(2, '0') + ":00";
             apS.appendChild(opt.cloneNode(true));
             ciS.appendChild(opt);
         }
 
-        // LÓGICA DE AUTENTICACIÓN
+        // --- GESTIÓN DE AUTENTICACIÓN ---
         window.loginGoogle = function() {
-            signInWithPopup(auth, provider);
+            signInWithPopup(auth, provider).catch(() => {
+                showToast("ERROR EN LOGIN");
+            });
         };
 
         window.toggleConfig = function() { 
             const m = document.getElementById('modalConfig'); 
-            if (m.style.display === 'flex') {
-                m.style.display = 'none';
-            } else {
-                m.style.display = 'flex';
-            }
+            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
         };
 
         onAuthStateChanged(auth, (user) => { 
@@ -512,7 +623,7 @@
             } 
         });
 
-        // INICIALIZACIÓN DEL DASHBOARD
+        // --- INICIALIZACIÓN DEL DASHBOARD ---
         function initDashboard() {
             const calendarEl = document.getElementById('calendar');
             calendar = new FullCalendar.Calendar(calendarEl, {
@@ -520,10 +631,19 @@
                 locale: 'es', 
                 allDaySlot: false, 
                 slotDuration: '00:30:00',
+                nowIndicator: true,
                 headerToolbar: { 
                     left: 'prev,next today', 
                     center: 'title', 
                     right: 'dayGridMonth,timeGridWeek,timeGridDay' 
+                },
+                // DETECCIÓN DINÁMICA DE CAMBIO DE FECHA
+                datesSet: function(info) {
+                    fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
+                    // Forzamos actualización de etiquetas y conteos
+                    onValue(ref(db, 'citas'), (snapshot) => {
+                        renderAdmin(snapshot.val());
+                    }, { onlyOnce: true });
                 },
                 selectable: true,
                 select: function(info) {
@@ -533,7 +653,7 @@
                         const min = info.start.getMinutes().toString().padStart(2,'0');
                         selectedDateTime = fecha + 'T' + hora + ':' + min;
                         
-                        document.getElementById('add-fecha-display').innerText = info.start.toLocaleString('es-GT');
+                        document.getElementById('add-fecha-display').innerText = info.start.toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
                         document.getElementById('modalAddCita').style.display = 'flex';
                     }
                 },
@@ -541,45 +661,48 @@
                     currentEditingId = info.event.id;
                     const meta = info.event.extendedProps;
                     const fTxt = info.event.start.toLocaleString('es-GT', { 
-                        weekday: 'long', 
-                        day: 'numeric', 
-                        month: 'long', 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
+                        weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' 
                     });
                     
+                    // Llenar vista consulta
                     document.getElementById('pop-nombre').innerText = meta.nombre;
                     document.getElementById('pop-fecha').innerText = fTxt;
                     document.getElementById('pop-detalle-corte').innerHTML = `
-                        <div style="color:var(--gold); font-weight:600; margin:10px 0;">
-                            ${meta.servicio} - Q${meta.precio}
+                        <div style="color:var(--gold); font-size:1.1rem; font-weight:600; margin-bottom:5px;">
+                            ${meta.servicio}
                         </div>
-                    ` + (meta.nota ? `<p style="font-size:0.8rem; color:#aaa; font-style:italic;">Nota: ${meta.nota}</p>` : "");
+                        <div style="color:var(--green); font-weight:600; font-size:1.2rem;">Q${meta.precio}</div>
+                    ` + (meta.nota ? `<p style="font-size:0.8rem; color:#888; margin-top:15px; background:#111; padding:10px; border-radius:10px;">Nota: ${meta.nota}</p>` : "");
                     
+                    // Acción WhatsApp
                     document.getElementById('pop-whatsapp').onclick = function() {
                         const num = meta.whatsapp.replace(/\D/g,'');
-                        const msg = encodeURIComponent('Hola ' + meta.nombre + ', te recordamos tu cita en Innovation Barber Studio...');
+                        const msg = encodeURIComponent('Hola ' + meta.nombre + ', te recordamos tu cita en Innovation Barber Studio para el ' + fTxt + '. ¡Te esperamos!');
                         window.open('https://wa.me/' + num + '?text=' + msg);
                     };
                     
-                    // Llenar campos de edición
+                    // Llenar vista edición
                     document.getElementById('edit-nombre').value = meta.nombre;
                     document.getElementById('edit-whatsapp').value = meta.whatsapp;
                     document.getElementById('edit-precio').value = meta.precio;
                     document.getElementById('edit-nota').value = meta.nota || "";
+                    document.getElementById('edit-servicio-select').value = ""; // Reset select para que elija si desea cambiar
 
                     document.getElementById('modalEvento').style.display = 'flex';
                     
                     document.getElementById('btn-eliminar-pop').onclick = function() {
-                        confirmarAccion("¿Seguro que quieres eliminar esta cita?", function() {
-                            remove(ref(db, 'citas/' + currentEditingId)).then(cerrarPop);
+                        confirmarAccion("¿Seguro que quieres eliminar permanentemente esta cita?", function() {
+                            remove(ref(db, 'citas/' + currentEditingId)).then(() => {
+                                showToast("CITA ELIMINADA");
+                                cerrarPop();
+                            });
                         });
                     };
                 }
             });
             calendar.render();
 
-            // Escuchar configuración de horario
+            // SINCRONIZACIÓN DE CONFIGURACIÓN
             onValue(ref(db, 'configuracion_horario'), (snapshot) => { 
                 const config = snapshot.val();
                 if(config){ 
@@ -590,23 +713,24 @@
                 } 
             });
 
-            // Escuchar citas
+            // SINCRONIZACIÓN DE CITAS (TIEMPO REAL)
             onValue(ref(db, 'citas'), (snapshot) => {
                 renderAdmin(snapshot.val());
             });
 
-            // Escuchar servicios
+            // SINCRONIZACIÓN DE CATÁLOGO
             onValue(ref(db, 'servicios'), (snapshot) => {
                 renderServicios(snapshot.val() || {});
             });
         }
 
-        // RENDERIZADO DE DATOS
+        // --- RENDERIZADO MAESTRO DE DATOS ---
         function renderAdmin(data) {
             const lista = document.getElementById('lista-citas');
             const cCount = document.getElementById('citas-count');
             const iTotal = document.getElementById('ingreso-total');
             const pCount = document.getElementById('count-pendientes');
+            const pLabel = document.getElementById('label-pendientes');
             const desglose = document.getElementById('desglose-servicios');
             
             lista.innerHTML = ''; 
@@ -614,14 +738,23 @@
             
             let finalizadosMes = 0;
             let ingresosMes = 0;
-            let pendientesHoy = 0;
+            let pendientesDiaEnPantalla = 0;
             let eventosCalendar = [];
             let contadorServicios = {};
 
             const ahora = new Date();
             const mesActual = ahora.getMonth();
             const añoActual = ahora.getFullYear();
-            const hoyIso = ahora.toISOString().split('T')[0];
+            const hoyRealIso = ahora.toISOString().split('T')[0];
+
+            // ACTUALIZAR ETIQUETA DINÁMICA DE PENDIENTES
+            if (fechaVisualizada === hoyRealIso) {
+                pLabel.innerText = "Pendientes Hoy";
+            } else {
+                const opciones = { day: 'numeric', month: 'short' };
+                const fechaFormateada = new Date(fechaVisualizada + "T00:00:00").toLocaleDateString('es-GT', opciones);
+                pLabel.innerText = "Pendientes " + fechaFormateada;
+            }
 
             if(data){
                 Object.keys(data).forEach(id => {
@@ -629,63 +762,66 @@
                     const fCita = new Date(cita.fecha);
                     const esFinalizada = cita.estado === 'Finalizada';
 
-                    // Cálculos del mes
+                    // Lógica de métricas del mes actual
                     if(esFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) { 
                         finalizadosMes++; 
                         ingresosMes += parseFloat(cita.precio || 0); 
                         contadorServicios[cita.servicio] = (contadorServicios[cita.servicio] || 0) + 1; 
                     }
 
-                    // Cálculo de pendientes hoy
-                    if(!esFinalizada && cita.fecha.startsWith(hoyIso)) {
-                        pendientesHoy++;
+                    // CONTEO DINÁMICO SEGÚN DÍA EN PANTALLA
+                    if(!esFinalizada && cita.fecha.startsWith(fechaVisualizada)) {
+                        pendientesDiaEnPantalla++;
                     }
 
-                    // Preparar evento para calendario
+                    // Preparar objeto para FullCalendar
                     eventosCalendar.push({ 
                         id: id, 
-                        title: cita.nota ? cita.nombre + ' (' + cita.nota + ')' : cita.nombre, 
+                        title: cita.nombre, 
                         start: cita.fecha, 
                         backgroundColor: esFinalizada ? '#1a1a1a' : '#d4af37', 
+                        borderColor: esFinalizada ? '#222' : '#aa8c2c',
                         textColor: esFinalizada ? '#555' : '#000', 
                         extendedProps: { ...cita } 
                     });
                     
-                    // Renderizar en lista de pendientes (inferior)
-                    if(!esFinalizada){
+                    // Renderizar tarjetas de la lista inferior (solo del día visualizado)
+                    if(!esFinalizada && cita.fecha.startsWith(fechaVisualizada)){
                         const card = document.createElement('div');
                         card.className = 'card';
                         card.innerHTML = `
-                            <div>
-                                <h4 style="margin:0; font-size:0.75rem;">${cita.nombre}</h4>
-                                ${cita.nota ? `<p style="margin:2px 0 0; font-size:0.6rem; color:#555;">${cita.nota}</p>` : ""}
+                            <div style="flex:1">
+                                <div style="font-size:0.6rem; color:var(--gold); font-weight:600; text-transform:uppercase; margin-bottom:2px;">
+                                    ${cita.fecha.split('T')[1]} - ${cita.servicio}
+                                </div>
+                                <h4 style="margin:0; font-size:0.85rem; letter-spacing:0.5px;">${cita.nombre}</h4>
+                                ${cita.nota ? `<p style="margin:4px 0 0; font-size:0.65rem; color:#555; font-style:italic;">"${cita.nota}"</p>` : ""}
                             </div>
-                            <button class="btn-mini" onclick="cambiarEstado('${id}','Finalizada')">FIN</button>
+                            <button class="btn-mini" onclick="cambiarEstado('${id}','Finalizada')">
+                                <i class="fas fa-check"></i> FIN
+                            </button>
                         `;
                         lista.appendChild(card);
                     }
                 });
             }
 
-            // Actualizar UI lateral
+            // Actualizar Desglose de servicios
             Object.keys(contadorServicios).forEach(serv => {
-                desglose.innerHTML += `
-                    <div class="serv-stat-item">
-                        <span>${serv}</span>
-                        <span>x${contadorServicios[serv]}</span>
-                    </div>
-                `;
+                desglose.innerHTML += `<div class="serv-stat-item"><span>${serv}</span><span>x${contadorServicios[serv]}</span></div>`;
             });
 
+            // Actualizar Valores en Sidebar
             cCount.innerText = finalizadosMes;
-            iTotal.innerText = 'Q' + ingresosMes.toFixed(2);
-            pCount.innerText = pendientesHoy;
+            iTotal.innerText = 'Q' + ingresosMes.toLocaleString('es-GT', { minimumFractionDigits: 2 });
+            pCount.innerText = pendientesDiaEnPantalla;
 
+            // Actualizar Calendario
             calendar.removeAllEvents();
             calendar.addEventSource(eventosCalendar);
         }
 
-        // FUNCIONES DE EDICIÓN Y ESTADO
+        // --- FUNCIONES DE EDICIÓN ---
         window.entrarModoEdicion = function() { 
             document.getElementById('view-mode').style.display = 'none'; 
             document.getElementById('edit-mode').style.display = 'block'; 
@@ -705,19 +841,21 @@
                 nota: document.getElementById('edit-nota').value
             };
 
+            // Si se seleccionó un nuevo servicio del catálogo, actualizar nombre y precio
             if(servSelect.value) {
                 updateData.servicio = catalogoGlobal[servSelect.value].nombre;
+                updateData.precio = catalogoGlobal[servSelect.value].precio;
             }
 
             update(ref(db, 'citas/' + currentEditingId), updateData).then(() => { 
-                showToast("CAMBIOS GUARDADOS"); 
+                showToast("CITA ACTUALIZADA"); 
                 cerrarPop(); 
             });
         };
 
         window.cambiarEstado = function(id, nuevoEstado) { 
             update(ref(db, 'citas/' + id), { estado: nuevoEstado }).then(() => {
-                showToast("CLIENTE FINALIZADO");
+                showToast("SERVICIO COMPLETADO");
             });
         };
 
@@ -728,39 +866,44 @@
 
         window.cerrarModalAdd = function() { 
             document.getElementById('modalAddCita').style.display = 'none'; 
+            // Limpiar campos
+            document.getElementById('add-nombre').value = '';
+            document.getElementById('add-nota').value = '';
         };
 
-        // GESTIÓN DE SERVICIOS
+        // --- GESTIÓN DE SERVICIOS (CATÁLOGO) ---
         function renderServicios(servs){
             catalogoGlobal = servs;
             const selAdd = document.getElementById('add-servicio-select');
             const selEdit = document.getElementById('edit-servicio-select');
             const listaAdmin = document.getElementById('lista-servicios-admin');
             
-            selAdd.innerHTML = '<option value="">Elegir servicio...</option>';
-            selEdit.innerHTML = '<option value="">Cambiar servicio (Opcional)</option>';
+            selAdd.innerHTML = '<option value="">Selecciona un servicio...</option>';
+            selEdit.innerHTML = '<option value="">(Sin cambios de servicio)</option>';
             listaAdmin.innerHTML = '';
 
             Object.keys(servs).forEach(id => {
                 const s = servs[id];
-                const optHtml = `<option value="${id}">${s.nombre} (Q${s.precio})</option>`;
+                const optHtml = `<option value="${id}">${s.nombre} - Q${s.precio}</option>`;
                 selAdd.innerHTML += optHtml;
                 selEdit.innerHTML += optHtml;
 
-                // Lista para borrar servicios en configuración
+                // Elemento visual para configuración
                 const item = document.createElement('div');
-                item.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #111; font-size:0.8rem;";
+                item.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #111; font-size:0.8rem; background:rgba(255,255,255,0.01); margin-bottom:5px; border-radius:10px;";
                 item.innerHTML = `
-                    <span>${s.nombre} (Q${s.precio})</span>
-                    <i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="eliminarServicio('${id}')"></i>
+                    <div style="font-weight:600;">${s.nombre} <span style="color:var(--gold); margin-left:10px;">Q${s.precio}</span></div>
+                    <button style="background:none; border:none; color:var(--red); cursor:pointer;" onclick="eliminarServicio('${id}')">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
                 `;
                 listaAdmin.appendChild(item);
             });
         }
 
         window.eliminarServicio = function(id) {
-            confirmarAccion("¿Eliminar este servicio del catálogo?", function() {
-                remove(ref(db, 'servicios/' + id));
+            confirmarAccion("¿Eliminar este servicio del catálogo? Esto no afectará citas ya agendadas.", function() {
+                remove(ref(db, 'servicios/' + id)).then(() => showToast("CATÁLOGO ACTUALIZADO"));
             });
         };
 
@@ -771,12 +914,14 @@
                 push(ref(db, 'servicios'), { nombre: n, precio: p }).then(() => {
                     document.getElementById('serv-n').value = '';
                     document.getElementById('serv-p').value = '';
-                    showToast("SERVICIO AÑADIDO");
+                    showToast("NUEVO SERVICIO AÑADIDO");
                 });
+            } else {
+                showToast("LLENA AMBOS CAMPOS");
             }
         };
 
-        // ACCIONES FINALES
+        // --- ACCIÓN FINAL: GUARDAR CITA DESDE CALENDARIO ---
         document.getElementById('btn-save-cita-calendar').onclick = function() {
             const nombre = document.getElementById('add-nombre').value;
             const sKey = document.getElementById('add-servicio-select').value;
@@ -798,16 +943,17 @@
 
             push(ref(db, 'citas'), nuevaCita).then(() => {
                 cerrarModalAdd();
-                showToast("CITA AGENDADA");
+                showToast("CITA AGENDADA CON ÉXITO");
             });
         };
 
+        // --- GUARDAR AJUSTES DE HORARIO ---
         document.getElementById('btn-save-hours').onclick = function() { 
             set(ref(db, 'configuracion_horario'), { 
                 apertura: apS.value, 
                 cierre: ciS.value 
             }).then(() => {
-                showToast("HORARIO ACTUALIZADO");
+                showToast("HORARIOS DE ATENCIÓN ACTUALIZADOS");
             });
         };
     </script>
