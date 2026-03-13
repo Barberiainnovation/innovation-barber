@@ -34,6 +34,25 @@
     background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 12px; 
     margin-bottom: 8px; font-size: 0.8rem; border-left: 3px solid var(--red); 
 }
+/* Ajuste para que las banderas se vean perfectas */
+.iti { width: 100%; margin-bottom: 12px; }
+.iti__country-list { 
+    background-color: #0a0a0a !important; 
+    border: 1px solid var(--gold) !important; 
+    color: white !important;
+    z-index: 20000 !important; /* Para que salga frente al modal movil */
+    max-width: 300px !important;
+    border-radius: 15px;
+}
+.iti__selected-flag { 
+    background-color: rgba(255,255,255,0.05) !important; 
+    border-radius: 18px 0 0 18px !important; 
+    padding: 0 10px 0 15px !important;
+}
+.iti__country:hover { background-color: #1a1a1a !important; }
+.iti__dial-code { color: #888; }
+/* Corrige el ancho para que México y Centroamérica quepan bien */
+.iti__country-name { color: #fff; font-size: 0.8rem; }
         /* ==========================================
            ESTILOS BASE Y SCROLLBAR
            ========================================== */
@@ -579,19 +598,21 @@
 
         // INICIALIZACIÓN DEL SELECTOR DE TELÉFONO
         // Para el modal de Agregar Cita
+// AGREGAR CITA
 iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), {
     initialCountry: "gt",
     separateDialCode: true,
-    // Con 'onlyCountries' eliminamos el resto del mundo
     onlyCountries: ["gt", "sv", "hn", "ni", "cr", "pa", "mx", "us"],
+    dropdownContainer: document.body, // ESTO ARREGLA EL DESPLIEGUE EN MÓVILES
     utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
 });
-// INICIALIZACIÓN PARA EL MODAL DE EDICIÓN
-// Para el modal de Editar Cita
+
+// EDITAR CITA
 window.itiEdit = window.intlTelInput(document.querySelector("#edit-whatsapp"), {
     initialCountry: "gt",
     separateDialCode: true,
     onlyCountries: ["gt", "sv", "hn", "ni", "cr", "pa", "mx", "us"],
+    dropdownContainer: document.body, // ESTO ARREGLA EL DESPLIEGUE EN MÓVILES
     utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
 });
         // --- SISTEMA DE NOTIFICACIONES ---
