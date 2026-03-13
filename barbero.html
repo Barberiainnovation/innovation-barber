@@ -16,66 +16,75 @@
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/es.global.min.js"></script>
     
     <style>
-        /* ==========================================
-           VARIABLES DE DISEÑO (PALETA ÉLITE)
-           ========================================== */
-        :root { 
-            --bg: #000; 
-            --card: #0a0a0a; 
-            --gold: #d4af37; 
-            --gold-dark: #aa8c2c; 
-            --border: #1a1a1a; 
-            --green: #2ecc71; 
-            --red: #ff4d4d; 
-            --glass: rgba(10, 10, 10, 0.98); 
-        }
-.block-item-admin { 
-    display: flex; justify-content: space-between; align-items: center; 
-    background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 12px; 
-    margin-bottom: 8px; font-size: 0.8rem; border-left: 3px solid var(--red); 
-}
-/* Ajuste para que las banderas se vean perfectas */
-.iti { width: 100%; margin-bottom: 12px; }
-.iti__country-list { 
-    background-color: #0a0a0a !important; 
-    border: 1px solid var(--gold) !important; 
-    color: white !important;
-    z-index: 20000 !important; /* Para que salga frente al modal movil */
-    max-width: 300px !important;
-    border-radius: 15px;
-}
-.iti__selected-flag { 
-    background-color: rgba(255,255,255,0.05) !important; 
-    border-radius: 18px 0 0 18px !important; 
-    padding: 0 10px 0 15px !important;
-}
-.iti__country:hover { background-color: #1a1a1a !important; }
-.iti__dial-code { color: #888; }
-/* Corrige el ancho para que México y Centroamérica quepan bien */
-.iti__country-name { color: #fff; font-size: 0.8rem; }
-        /* ==========================================
-           ESTILOS BASE Y SCROLLBAR
-           ========================================== */
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background: var(--bg); 
-            color: #fff; 
-            margin: 0; 
-            padding: 15px; 
-            overflow-x: hidden; 
-        }
+    /* ==========================================
+       VARIABLES DE DISEÑO (PALETA ÉLITE)
+       ========================================== */
+    :root { 
+        --bg: #000; 
+        --card: #0a0a0a; 
+        --gold: #d4af37; 
+        --gold-dark: #aa8c2c; 
+        --border: #1a1a1a; 
+        --green: #2ecc71; 
+        --red: #ff4d4d; 
+        --glass: rgba(10, 10, 10, 0.98); 
+    }
 
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #000;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--gold);
-            border-radius: 10px;
-        }
+    /* BLOQUEO DE DÍAS */
+    .block-item-admin { 
+        display: flex; justify-content: space-between; align-items: center; 
+        background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 12px; 
+        margin-bottom: 8px; font-size: 0.8rem; border-left: 3px solid var(--red); 
+    }
 
+    /* ==========================================
+       CORRECCIÓN DEFINITIVA DE BANDERAS (MÓVIL Y PC)
+       ========================================== */
+    .iti { width: 100%; margin-bottom: 12px; }
+    
+    .iti__country-list { 
+        background-color: #0a0a0a !important; 
+        border: 1px solid var(--gold) !important; 
+        color: white !important;
+        z-index: 999999 !important; /* Prioridad máxima sobre modales */
+        max-width: 280px !important;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        position: absolute !important; /* Evita que mueva otros elementos */
+    }
+
+    .iti__selected-flag { 
+        background-color: rgba(255,255,255,0.05) !important; 
+        border-radius: 18px 0 0 18px !important; 
+        padding: 0 10px 0 15px !important;
+    }
+
+    .iti__country:hover { background-color: #1a1a1a !important; }
+    .iti__dial-code { color: var(--gold) !important; margin-left: auto; }
+    .iti__country-name { color: #fff; font-size: 0.8rem; }
+    
+    /* Evita que el texto de México o Centroamérica se amontone */
+    .iti__flag-box { margin-right: 10px; }
+
+    /* ==========================================
+       ESTILOS BASE Y SCROLLBAR
+       ========================================== */
+    body { 
+        font-family: 'Poppins', sans-serif; 
+        background: var(--bg); 
+        color: #fff; 
+        margin: 0; 
+        padding: 15px; 
+        overflow-x: hidden; 
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #000; }
+    ::-webkit-scrollbar-thumb { 
+        background: var(--gold); 
+        border-radius: 10px; 
+    }
+</style>
         /* ==========================================
            LOGIN OVERLAY
            ========================================== */
