@@ -110,12 +110,13 @@
         /* ==========================================
            CALENDARIO (MODERN DARK)
            ========================================== */
-        #calendar-container { 
+    #calendar-container { 
             background: var(--card); 
-            padding: 20px; 
+            padding: 10px; /* Reducimos el padding para que cierre más ajustado */
             border-radius: 35px; 
             border: 1px solid var(--border); 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            height: fit-content; /* <--- AGREGA ESTO: La caja se encoge al contenido */
+            overflow: hidden; /* <--- AGREGA ESTO: Corta cualquier residuo visual */
         }
 
         .fc { 
