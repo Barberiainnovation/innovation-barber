@@ -727,16 +727,17 @@
             calendar.render();
 
             // SINCRONIZACIÓN DE CONFIGURACIÓN
-            onValue(ref(db, 'configuracion_horario'), (snapshot) => {
+            // --- ESTO VA DENTRO DE initDashboard ---
+        onValue(ref(db, 'configuracion_horario'), (snapshot) => {
             const config = snapshot.val();
             if(config) {
-                // Ajuste inteligente del rango horario del calendario
+                // Sincroniza el calendario al cargar la página
                 calendar.setOption('slotMinTime', config.apertura.padStart(2, '0') + ':00:00');
                 calendar.setOption('slotMaxTime', config.cierre.padStart(2, '0') + ':00:00');
 
-                // Sincronización de los selectores del panel
-                apS.value = config.apertura;
-                ciS.value = config.cierre;
+                // Sincroniza los selectores del panel
+                if(apS) apS.value = config.apertura;
+                if(ciS) ciS.value = config.cierre;
                 if(document.getElementById('lunch-inicio')) document.getElementById('lunch-inicio').value = config.lunch_inicio || "";
                 if(document.getElementById('lunch-fin')) document.getElementById('lunch-fin').value = config.lunch_fin || "";
             }
