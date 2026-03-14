@@ -1232,6 +1232,28 @@
         location.reload(); 
     });
 }
+   // ... (todo tu código anterior de botones y bloqueos)
+
+        // --- FUNCIÓN PARA MOVER CITAS (DRAG & DROP) ---
+        function actualizarHorarioCita(event) {
+            // ... (tu código actual) ...
+        }
+
+        // === PEGA LAS NUEVAS FUNCIONES AQUÍ ===
+        function finalizarDesdeLista(id) {
+            confirmarAccion("¿Deseas finalizar y cobrar esta cita?", function() {
+                update(ref(db, 'citas/' + id), { estado: 'Finalizado' }).then(() => {
+                    showToast("CITA FINALIZADA Y COBRADA");
+                });
+            });
+        }
+
+        function abrirEdicionDirecta(id) {
+            const ev = calendar.getEventById(id);
+            if(ev) calendar.trigger('eventClick', { event: ev });
+        }
+        // ======================================
+
     </script>
 </body>
 </html>
