@@ -997,7 +997,6 @@
                 Object.keys(bloqueos).forEach(f => {
                     list.innerHTML += `<div class="block-item-admin"><span>${f}</span><i class="fas fa-trash" style="color:var(--red); cursor:pointer;" onclick="eliminarBloqueo('${f}')"></i></div>`;
                 });
-            }
         });
 
         window.eliminarBloqueo = (f) => {
