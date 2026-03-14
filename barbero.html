@@ -532,13 +532,15 @@
                 <hr style="border:0; border-top:1px solid #1a1a1a; margin:30px 0;">
 
                 <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px;">GESTIÓN DE SERVICIOS</p>
-                <input type="text" id="serv-n" placeholder="Nombre (Ej: Corte + Barba)">
-                <input type="number" id="serv-p" placeholder="Precio en Quetzales">
-                <button class="btn btn-gold" id="btn-add-serv" style="padding: 12px; font-size: 0.6rem;">AÑADIR AL CATÁLOGO</button>
-                
-                <div id="lista-servicios-admin" style="margin-top:25px; text-align: left;"></div>
 
-                <button class="btn btn-outline" onclick="toggleConfig()" style="margin-top: 30px;">CERRAR PANEL</button>
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+    <input type="text" id="serv-n" placeholder="Nombre del Servicio" style="margin-bottom:0;">
+    <input type="number" id="serv-p" placeholder="Precio Q." style="margin-bottom:0;">
+</div>
+    <input type="text" id="serv-d" placeholder="¿Qué incluye?" style="margin-bottom:10px;">
+    <button class="btn btn-gold" id="btn-add-serv" style="padding: 12px; font-size: 0.6rem;">AGREGAR SERVICIO</button>
+    <div id="lista-servicios-admin" style="margin-top:25px; text-align: left;"></div>
+    <button class="btn btn-outline" onclick="toggleConfig()" style="margin-top: 30px;">CERRAR PANEL</button>
             </div>
         </div>
 
