@@ -660,6 +660,22 @@
         signInWithPopup(auth, provider).catch(err => console.error("Error login:", err));
     };
 
+   // --- FUNCIONES DE ACCESO CORREGIDAS ---
+
+    // 1. Procesar el regreso de Google (Solo para móviles/PWA)
+    getRedirectResult(auth).catch(err => console.error("Error al volver de Google:", err));
+
+    // 2. Login Inteligente: Prueba Popup, si falla (en móvil), usa Redirect
+    window.loginGoogle = () => {
+        signInWithPopup(auth, provider).catch(err => {
+            if (err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment') {
+                signInWithRedirect(auth, provider);
+            } else {
+                console.error("Error login:", err);
+            }
+        });
+    };
+
     window.logout = () => {
         auth.signOut().then(() => location.reload());
     };
@@ -670,11 +686,9 @@
 
         if (user) {
             console.log("LOGIN EXITOSO: ", user.email);
-            // Esto es lo que quita la pantalla negra:
             if (loginOverlay) loginOverlay.style.display = 'none';
             if (adminContent) adminContent.style.display = 'block';
             
-            // Esto arranca tu calendario y buscador
             if (typeof initDashboard === 'function') {
                 initDashboard();
             } else {
