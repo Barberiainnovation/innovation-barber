@@ -917,7 +917,7 @@ onValue(ref(db, 'configuracion_horario'), snap => {
         }
 
         // --- RENDERIZADO MAESTRO DE DATOS ---
-        function renderAdmin(data) {
+       function renderAdmin(data) {
             const lista = document.getElementById('lista-citas');
             const cCount = document.getElementById('citas-count');
             const iTotal = document.getElementById('ingreso-total');
@@ -939,7 +939,6 @@ onValue(ref(db, 'configuracion_horario'), snap => {
             const añoActual = ahora.getFullYear();
             const hoyRealIso = ahora.toISOString().split('T')[0];
 
-            // 1. Etiqueta de la fecha
             if (fechaVisualizada === hoyRealIso) {
                 pLabel.innerText = "Pendientes Hoy";
             } else {
@@ -953,13 +952,13 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                     const cita = data[id];
                     if (!cita.fecha) return;
 
-                    // --- AQUÍ ESTÁ LA CORRECCIÓN: DEFINIMOS LAS VARIABLES ---
+                    // --- DEFINICIÓN DE VARIABLES (ESTO ES LO QUE HACÍA FALTA) ---
                     const esFinalizada = cita.estado === 'Finalizada';
-                    const esPendiente = cita.estado !== 'Finalizada'; // Esta es la que faltaba
+                    const esPendiente = cita.estado !== 'Finalizada'; 
                     const fechaLimpia = cita.fecha.split('T')[0];
                     const fCita = new Date(fechaLimpia + "T12:00:00");
 
-                    // 2. CONTAR FINALIZADOS DEL MES
+                    // 1. Contar para métricas del mes
                     if(esFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) { 
                         finalizadosMes++; 
                         ingresosMes += parseFloat(cita.precio || 0); 
@@ -968,12 +967,12 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                         }
                     }
 
-                    // 3. CONTAR PENDIENTES DEL DÍA
+                    // 2. Contar para el número dorado (Pendientes del día)
                     if (esPendiente && fechaLimpia === fechaVisualizada) {
                         pendientesDiaEnPantalla++;
                     }
 
-                    // 4. Configurar eventos del calendario
+                    // 3. Eventos del calendario
                     eventosCalendar.push({ 
                         id: id, 
                         title: cita.nombre, 
@@ -984,8 +983,8 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                         extendedProps: { ...cita } 
                     });
                     
-                    // 5. Dibujar las tarjetas (Cintas) de abajo
-                    if (esPendiente && fechaLimpia === fechaVisualizada) {
+                    // 4. Cintas de abajo (Tarjetas)
+                    if (esPendiente && fechaLimpia === fechaVisualizada){
                         const card = document.createElement('div');
                         card.className = 'card';
                         card.innerHTML = `
@@ -1005,17 +1004,15 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                 });
             }
 
-            // 6. Mostrar el desglose de servicios
+            // Actualizar interfaz
             Object.keys(contadorServicios).forEach(serv => {
                 desglose.innerHTML += `<div class="serv-stat-item"><span>${serv}</span><span>x${contadorServicios[serv]}</span></div>`;
             });
 
-            // 7. ACTUALIZAR LOS NÚMEROS EN PANTALLA
             cCount.innerText = finalizadosMes;
             iTotal.innerText = 'Q' + ingresosMes.toLocaleString('es-GT', { minimumFractionDigits: 2 });
             pCount.innerText = pendientesDiaEnPantalla;
 
-            // Actualizar calendario
             calendar.removeAllEvents();
             calendar.addEventSource(eventosCalendar);
         }
