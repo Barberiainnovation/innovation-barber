@@ -985,24 +985,29 @@ onValue(ref(db, 'configuracion_horario'), snap => {
         };
 
         // --- GUARDAR AJUSTES DE HORARIO ---
-        document.getElementById('btn-save-hours').onclick = () => {
+       document.getElementById('btn-save-hours').onclick = () => {
     const nuevaAp = apS.value;
     const nuevaCi = ciS.value;
 
+    // Guardamos en Firebase
     set(ref(db, 'configuracion_horario'), { 
         apertura: nuevaAp, 
-        cierre: nuevaCi,
-        lunch_inicio: document.getElementById('lunch-inicio').value,
-        lunch_fin: document.getElementById('lunch-fin').value
+        cierre: nuevaCi, 
+        lunch_inicio: lIn.value, 
+        lunch_fin: lFi.value 
     }).then(() => {
-        // 1. Cambia las horas en el calendario
+        // ACTUALIZACIÓN INMEDIATA DEL CALENDARIO
+        // 1. Ajusta el rango de horas
         calendar.setOption('slotMinTime', nuevaAp.padStart(2, '0') + ':00:00');
         calendar.setOption('slotMaxTime', nuevaCi.padStart(2, '0') + ':00:00');
         
-        // 2. AJUSTA LA CAJA: Esto hace que el contenedor negro se adapte al tamaño
+        // 2. Fuerza a la caja a encogerse/estirarse
         calendar.updateSize(); 
         
         showToast("HORARIOS ACTUALIZADOS");
+    }).catch(err => {
+        console.error("Error al guardar:", err);
+        showToast("ERROR AL GUARDAR");
     });
 };
         // --- LÓGICA DE BLOQUEO DE DÍAS ---
