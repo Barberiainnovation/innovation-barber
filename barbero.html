@@ -758,7 +758,7 @@
                             const hora = ev.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                             
                             const card = document.createElement('div');
-                            card.className = 'card'; // USA TU DISEÑO DE CINTA ORIGINAL
+                            card.className = 'card'; 
                             card.innerHTML = `
                                 <div style="flex:1; cursor:pointer;" onclick="abrirEventoDirecto('${ev.id}')">
                                     <div style="font-size:0.6rem; color:var(--gold); font-weight:600; text-transform:uppercase; margin-bottom:2px;">
@@ -774,7 +774,14 @@
                             listaDiv.appendChild(card);
                         });
                     }
+                    
                     detalleDiv.scrollIntoView({ behavior: 'smooth' });
+
+                    // --- ESTO ES LO QUE ACTUALIZA EL NÚMERO DORADO AL HACER CLIC ---
+                    onValue(ref(db, 'citas'), (snapshot) => {
+                        renderAdmin(snapshot.val());
+                    }, { onlyOnce: true });
+
                 }
             },
 
