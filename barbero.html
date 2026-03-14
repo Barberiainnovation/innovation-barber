@@ -909,25 +909,32 @@ onValue(ref(db, 'configuracion_horario'), snap => {
         };
 
         document.getElementById('btn-update-cita').onclick = function() {
-            const servSelect = document.getElementById('edit-servicio-select');
-            const updateData = {
-                nombre: document.getElementById('edit-nombre').value,
-                whatsapp: document.getElementById('edit-whatsapp').value,
-                precio: document.getElementById('edit-precio').value,
-                nota: document.getElementById('edit-nota').value
-            };
+            document.getElementById('btn-update-cita').onclick = function() {
+    const servSelect = document.getElementById('edit-servicio-select');
+    
+    // CAPTURAMOS AMBOS CAMPOS Y LOS UNIMOS
+    const cod = document.getElementById('edit-codigo-area').value;
+    const num = document.getElementById('edit-whatsapp').value;
+    const whatsappCompleto = cod + num;
 
-            // Si se seleccionó un nuevo servicio del catálogo, actualizar nombre y precio
-            if(servSelect.value) {
-                updateData.servicio = catalogoGlobal[servSelect.value].nombre;
-                updateData.precio = catalogoGlobal[servSelect.value].precio;
-            }
+    const updateData = {
+        nombre: document.getElementById('edit-nombre').value,
+        whatsapp: whatsappCompleto, // Guardamos la unión de código + número
+        precio: document.getElementById('edit-precio').value,
+        nota: document.getElementById('edit-nota').value
+    };
 
-            update(ref(db, 'citas/' + currentEditingId), updateData).then(() => { 
-                showToast("CITA ACTUALIZADA"); 
-                cerrarPop(); 
-            });
-        };
+    // Si se seleccionó un nuevo servicio del catálogo, actualizar nombre y precio
+    if(servSelect.value) {
+        updateData.servicio = catalogoGlobal[servSelect.value].nombre;
+        updateData.precio = catalogoGlobal[servSelect.value].precio;
+    }
+
+    update(ref(db, 'citas/' + currentEditingId), updateData).then(() => { 
+        showToast("CITA ACTUALIZADA"); 
+        cerrarPop(); 
+    });
+};
 
         window.cambiarEstado = function(id, nuevoEstado) { 
             update(ref(db, 'citas/' + id), { estado: nuevoEstado }).then(() => {
