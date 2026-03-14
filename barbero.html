@@ -712,48 +712,62 @@
                     }
                 },
                 eventClick: function(info) {
-                    currentEditingId = info.event.id;
-                    const meta = info.event.extendedProps;
-                    const fTxt = info.event.start.toLocaleString('es-GT', { 
-                        weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' 
-                    });
-                    
-                    // Llenar vista consulta
-                    document.getElementById('pop-nombre').innerText = meta.nombre;
-                    document.getElementById('pop-fecha').innerText = fTxt;
-                    document.getElementById('pop-detalle-corte').innerHTML = `
-                        <div style="color:var(--gold); font-size:1.1rem; font-weight:600; margin-bottom:5px;">
-                            ${meta.servicio}
-                        </div>
-                        <div style="color:var(--green); font-weight:600; font-size:1.2rem;">Q${meta.precio}</div>
-                    ` + (meta.nota ? `<p style="font-size:0.8rem; color:#888; margin-top:15px; background:#111; padding:10px; border-radius:10px;">Nota: ${meta.nota}</p>` : "");
-                    
-                    // Acción WhatsApp
-                    document.getElementById('pop-whatsapp').onclick = function() {
-                        const num = meta.whatsapp.replace(/\D/g,'');
-                        const msg = encodeURIComponent('Hola ' + meta.nombre + ', te recordamos tu cita en Innovation Barber Studio para el ' + fTxt + '. ¡Te esperamos!');
-                        window.open('https://wa.me/' + num + '?text=' + msg);
-                    };
-                    
-                    // Llenar vista edición
-                    document.getElementById('edit-nombre').value = meta.nombre;
-                    document.getElementById('edit-whatsapp').value = meta.whatsapp;
-                    document.getElementById('edit-precio').value = meta.precio;
-                    document.getElementById('edit-nota').value = meta.nota || "";
-                    document.getElementById('edit-servicio-select').value = ""; // Reset select para que elija si desea cambiar
+    currentEditingId = info.event.id;
+    const meta = info.event.extendedProps;
+    const fTxt = info.event.start.toLocaleString('es-GT', { 
+        weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' 
+    });
+    
+    // Llenar vista consulta
+    document.getElementById('pop-nombre').innerText = meta.nombre;
+    document.getElementById('pop-fecha').innerText = fTxt;
+    document.getElementById('pop-detalle-corte').innerHTML = `
+        <div style="color:var(--gold); font-size:1.1rem; font-weight:600; margin-bottom:5px;">
+            ${meta.servicio}
+        </div>
+        <div style="color:var(--green); font-weight:600; font-size:1.2rem;">Q${meta.precio}</div>
+    ` + (meta.nota ? `<p style="font-size:0.8rem; color:#888; margin-top:15px; background:#111; padding:10px; border-radius:10px;">Nota: ${meta.nota}</p>` : "");
+    
+    // Acción WhatsApp
+    document.getElementById('pop-whatsapp').onclick = function() {
+        const num = meta.whatsapp.replace(/\D/g,'');
+        const msg = encodeURIComponent('Hola ' + meta.nombre + ', te recordamos tu cita en Innovation Barber Studio para el ' + fTxt + '. ¡Te esperamos!');
+        window.open('https://wa.me/' + num + '?text=' + msg);
+    };
+    
+    // --- Lógica para separar Código de Área y Número ---
+    const fullWhatsapp = meta.whatsapp || "";
+    const codigos = ["502", "503", "504", "505", "506", "507", "52", "1"];
+    let encontrado = "502"; 
+    let numLimpio = fullWhatsapp;
 
-                    document.getElementById('modalEvento').style.display = 'flex';
-                    
-                    document.getElementById('btn-eliminar-pop').onclick = function() {
-                        confirmarAccion("¿Seguro que quieres eliminar permanentemente esta cita?", function() {
-                            remove(ref(db, 'citas/' + currentEditingId)).then(() => {
-                                showToast("CITA ELIMINADA");
-                                cerrarPop();
-                            });
-                        });
-                    };
-                }
+    for (let cod of codigos) {
+        if (fullWhatsapp.startsWith(cod)) {
+            encontrado = cod;
+            numLimpio = fullWhatsapp.substring(cod.length); 
+            break;
+        }
+    }
+
+    // Llenar vista edición con los nuevos IDs del selector de banderas
+    document.getElementById('edit-nombre').value = meta.nombre;
+    document.getElementById('edit-codigo-area').value = encontrado; // Selector
+    document.getElementById('edit-whatsapp').value = numLimpio;     // Input del número
+    document.getElementById('edit-precio').value = meta.precio;
+    document.getElementById('edit-nota').value = meta.nota || "";
+    document.getElementById('edit-servicio-select').value = ""; 
+
+    document.getElementById('modalEvento').style.display = 'flex';
+    
+    document.getElementById('btn-eliminar-pop').onclick = function() {
+        confirmarAccion("¿Seguro que quieres eliminar permanentemente esta cita?", function() {
+            remove(ref(db, 'citas/' + currentEditingId)).then(() => {
+                showToast("CITA ELIMINADA");
+                cerrarPop();
             });
+        });
+    };
+}
             calendar.render();
 
             // SINCRONIZACIÓN DE CONFIGURACIÓN
