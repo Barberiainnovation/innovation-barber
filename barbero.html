@@ -657,35 +657,49 @@
     };
 
    // 3. FUNCIONES DE ACCESO
-window.loginGoogle = () => {
-    signInWithPopup(auth, provider).catch(console.error);
-};
+// 3. FUNCIONES DE ACCESO (Recuperado de 'copy')
+    window.loginGoogle = () => signInWithPopup(auth, provider).catch(console.error);
+    window.logout = () => auth.signOut().then(() => location.reload());
 
-window.logout = () => {
-    auth.signOut().then(() => location.reload());
-};
-
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        document.getElementById('login-overlay').style.display = 'none';
-        document.getElementById('admin-content').style.display = 'block';
-        initDashboard(); 
-    } else {
-        document.getElementById('login-overlay').style.display = 'flex';
-        document.getElementById('admin-content').style.display = 'none';
-    }
-});
-
-function initDashboard() {
-        // Inicializar Teléfono (intl-tel-input)
-        const inputTel = document.querySelector("#add-whatsapp-input");
-        if (inputTel && !iti) {
-            iti = window.intlTelInput(inputTel, { 
-                initialCountry: "gt", 
-                separateDialCode: true,
-                utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
-            });
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'block';
+            initDashboard();
+        } else {
+            document.getElementById('login-overlay').style.display = 'flex';
+            document.getElementById('admin-content').style.display = 'none';
         }
+    });
+
+    // --- AQUÍ EMPIEZA TU FUNCIÓN ORIGINAL ---
+    function initDashboard() {
+        // ... (Aquí va todo tu código de FullCalendar y Firebase que ya tienes) ...
+    }
+
+    // --- LÓGICA DEL BUSCADOR DE CLIENTES (Recuperado de 'barbero.html') ---
+    // Este es el código que se perdía en las versiones "limpias"
+    onSnapshot(collection(fs, "clientes"), (snapshot) => {
+        const datalist = document.getElementById('listaClientes');
+        if(!datalist) return;
+        datalist.innerHTML = "";
+        snapshot.forEach((doc) => {
+            const opt = document.createElement('option');
+            opt.value = doc.data().nombre;
+            datalist.appendChild(opt);
+        });
+    });
+
+    document.getElementById('add-nombre').addEventListener('input', async (e) => {
+        const nombreDigitado = e.target.value;
+        if(nombreDigitado.length < 3) return;
+        const q = query(collection(fs, "clientes"), where("nombre", "==", nombreDigitado));
+        const snap = await getDocs(q);
+        snap.forEach((doc) => {
+            const datos = doc.data();
+            if (iti) iti.setNumber(datos.telefono);
+        });
+    });
 
         // Inicializar Calendario
         const calendarEl = document.getElementById('calendar');
