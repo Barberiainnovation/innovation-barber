@@ -959,34 +959,40 @@
         };
 
         // --- GESTIÓN DE SERVICIOS (CATÁLOGO) ---
-        function renderServicios(servs){
-            catalogoGlobal = servs;
-            const selAdd = document.getElementById('add-servicio-select');
-            const selEdit = document.getElementById('edit-servicio-select');
-            const listaAdmin = document.getElementById('lista-servicios-admin');
-            
-            selAdd.innerHTML = '<option value="">Selecciona un servicio...</option>';
-            selEdit.innerHTML = '<option value="">(Sin cambios de servicio)</option>';
-            listaAdmin.innerHTML = '';
+       function renderServicios(servs) {
+    catalogoGlobal = servs;
+    const selAdd = document.getElementById('add-servicio-select');
+    const selEdit = document.getElementById('edit-servicio-select');
+    const listaAdmin = document.getElementById('lista-servicios-admin');
 
-            Object.keys(servs).forEach(id => {
-                const s = servs[id];
-                const optHtml = `<option value="${id}">${s.nombre} - Q${s.precio}</option>`;
-                selAdd.innerHTML += optHtml;
-                selEdit.innerHTML += optHtml;
+    // Limpiamos los selectores y la lista antes de llenarlos
+    if (selAdd) selAdd.innerHTML = '<option value="">Selecciona un servicio...</option>';
+    if (selEdit) selEdit.innerHTML = '<option value="">(Sin cambios de servicio)</option>';
+    if (listaAdmin) listaAdmin.innerHTML = '';
 
-                // Elemento visual para configuración
-                const item = document.createElement('div');
-                item.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #111; font-size:0.8rem; background:rgba(255,255,255,0.01); margin-bottom:5px; border-radius:10px;";
-                item.innerHTML = `
-                    <div style="font-weight:600;">${s.nombre} <span style="color:var(--gold); margin-left:10px;">Q${s.precio}</span></div>
-                    <button style="background:none; border:none; color:var(--red); cursor:pointer;" onclick="eliminarServicio('${id}')">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                `;
-                listaAdmin.appendChild(item);
-            });
-        }
+    Object.keys(servs).forEach(id => {
+        const s = servs[id];
+        const optHtml = `<option value="${id}">${s.nombre} - Q${s.precio}</option>`;
+        
+        if (selAdd) selAdd.innerHTML += optHtml;
+        if (selEdit) selEdit.innerHTML += optHtml;
+
+        // Creamos el elemento visual para la lista del panel
+        const item = document.createElement('div');
+        item.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #111; font-size:0.8rem; background:rgba(255,255,255,0.01); margin-bottom:5px; border-radius:10px;";
+        
+        item.innerHTML = `
+            <div style="display:flex; flex-direction:column;">
+                <div style="font-weight:600; color:white;">${s.nombre} <span style="color:var(--gold); margin-left:10px;">Q${s.precio}</span></div>
+                <small style="color:#666; font-size:0.7rem;">${s.detalle || ''}</small>
+            </div>
+            <button style="background:none; border:none; color:var(--red); cursor:pointer;" onclick="eliminarServicio('${id}')">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        `;
+        if (listaAdmin) listaAdmin.appendChild(item);
+    });
+}
 
         window.eliminarServicio = function(id) {
             confirmarAccion("¿Eliminar este servicio del catálogo? Esto no afectará citas ya agendadas.", function() {
