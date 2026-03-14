@@ -735,18 +735,17 @@
 onValue(ref(db, 'configuracion_horario'), snap => { 
     const config = snap.val();
     if(config){ 
-        // 1. Ajusta el rango de horas visuales
         calendar.setOption('slotMinTime', config.apertura.padStart(2,'0')+':00:00'); 
         calendar.setOption('slotMaxTime', config.cierre.padStart(2,'0')+':00:00');
         
-        // 2. SINCRONIZA LA CAJA: Hace que el contenedor se ajuste al nuevo tamaño
+        // Mantiene los valores en los selectores
+        apS.value = config.apertura; 
+        ciS.value = config.cierre;
+        if(lIn) lIn.value = config.lunch_inicio || "";
+        if(lFi) lFi.value = config.lunch_fin || "";
+
+        // Sincroniza el tamaño de la caja al cargar
         calendar.updateSize(); 
-        
-        // 3. Mantiene los valores sincronizados en los selectores del panel
-        if(apS) apS.value = config.apertura; 
-        if(ciS) ciS.value = config.cierre;
-        if(typeof lIn !== 'undefined' && lIn) lIn.value = config.lunch_inicio || "";
-        if(typeof lFi !== 'undefined' && lFi) lFi.value = config.lunch_fin || "";
     } 
 });
 
