@@ -984,17 +984,21 @@ onValue(ref(db, 'configuracion_horario'), snap => {
         document.getElementById('btn-save-hours').onclick = () => {
     const nuevaAp = apS.value;
     const nuevaCi = ciS.value;
-    
+
     set(ref(db, 'configuracion_horario'), { 
         apertura: nuevaAp, 
-        cierre: nuevaCi, 
-        lunch_inicio: lIn.value, 
-        lunch_fin: lFi.value 
-    }).then(() => { 
-        // Actualización inmediata del calendario en pantalla
-        calendar.setOption('slotMinTime', nuevaAp.padStart(2,'0')+':00:00');
-        calendar.setOption('slotMaxTime', nuevaCi.padStart(2,'0')+':00:00');
-        showToast("HORARIO ACTUALIZADO"); 
+        cierre: nuevaCi,
+        lunch_inicio: document.getElementById('lunch-inicio').value,
+        lunch_fin: document.getElementById('lunch-fin').value
+    }).then(() => {
+        // 1. Cambia las horas en el calendario
+        calendar.setOption('slotMinTime', nuevaAp.padStart(2, '0') + ':00:00');
+        calendar.setOption('slotMaxTime', nuevaCi.padStart(2, '0') + ':00:00');
+        
+        // 2. AJUSTA LA CAJA: Esto hace que el contenedor negro se adapte al tamaño
+        calendar.updateSize(); 
+        
+        showToast("HORARIOS ACTUALIZADOS");
     });
 };
         // --- LÓGICA DE BLOQUEO DE DÍAS ---
