@@ -966,25 +966,22 @@
         };
 
         // --- GUARDAR AJUSTES DE HORARIO ---
-        document.getElementById('btn-save-hours').onclick = function() { 
+        document.getElementById('btn-save-hours').onclick = () => {
+            const nuevaAp = apS.value;
+            const nuevaCi = ciS.value;
+
             set(ref(db, 'configuracion_horario'), { 
-                apertura: apS.value, 
-                cierre: ciS.value 
+                apertura: nuevaAp, 
+                cierre: nuevaCi,
+                lunch_inicio: document.getElementById('lunch-inicio').value,
+                lunch_fin: document.getElementById('lunch-fin').value
             }).then(() => {
+                // Actualiza el calendario sin recargar la página
+                calendar.setOption('slotMinTime', nuevaAp.padStart(2, '0') + ':00:00');
+                calendar.setOption('slotMaxTime', nuevaCi.padStart(2, '0') + ':00:00');
                 showToast("HORARIOS DE ATENCIÓN ACTUALIZADOS");
             });
         };
-        // --- LÓGICA DE BLOQUEO DE DÍAS ---
-        const fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d" });
-
-        onValue(ref(db, 'dias_bloqueados'), snap => {
-            const list = document.getElementById('lista-bloqueos-admin');
-            list.innerHTML = ''; 
-            const bloqueos = snap.val() || {};
-            Object.keys(bloqueos).forEach(f => {
-                list.innerHTML += `<div class="block-item-admin"><span>${f}</span><i class="fas fa-trash" style="color:var(--red); cursor:pointer;" onclick="eliminarBloqueo('${f}')"></i></div>`;
-            });
-        });
 
         window.eliminarBloqueo = (f) => {
             if(confirm("¿Desbloquear este día?")) {
