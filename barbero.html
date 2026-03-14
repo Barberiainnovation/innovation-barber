@@ -760,6 +760,7 @@
     document.getElementById('modalEvento').style.display = 'flex';
     
     // ... (final de la lógica de eliminar cita)
+                   // --- FINAL DE EVENT CLICK ---
                     document.getElementById('btn-eliminar-pop').onclick = function() {
                         confirmarAccion("¿Seguro que quieres eliminar permanentemente esta cita?", function() {
                             remove(ref(db, 'citas/' + currentEditingId)).then(() => {
@@ -768,28 +769,28 @@
                             });
                         });
                     };
-                } // <--- Cierra el eventClick
-            }); // <--- Cierra el "new FullCalendar.Calendar"
+                } // Cierre de eventClick
+            }); // CIERRE CORRECTO DE FullCalendar
 
-            calendar.render();
+            calendar.render(); // Ahora sí, renderizamos
 
-            // SINCRONIZACIÓN DE CONFIGURACIÓN
+            // --- SINCRONIZACIÓN DE HORARIOS (onValue) ---
             onValue(ref(db, 'configuracion_horario'), snap => { 
                 const config = snap.val();
-                if(config){ 
+                if(config && calendar){ 
                     calendar.setOption('slotMinTime', config.apertura.padStart(2,'0')+':00:00'); 
                     calendar.setOption('slotMaxTime', config.cierre.padStart(2,'0')+':00:00');
                     
-                    apS.value = config.apertura; 
-                    ciS.value = config.cierre;
-                    if(lIn) lIn.value = config.lunch_inicio || "";
-                    if(lFi) lFi.value = config.lunch_fin || "";
-
+                    const apS = document.getElementById('apertura-select');
+                    const ciS = document.getElementById('cierre-select');
+                    if(apS) apS.value = config.apertura; 
+                    if(ciS) ciS.value = config.cierre;
+                    
                     calendar.updateSize(); 
                 } 
             });
 
-            // EL BOTÓN DE ACTUALIZAR VA AQUÍ ABAJO
+            // --- BOTÓN DE ACTUALIZAR CITA ---
             document.getElementById('btn-update-cita').onclick = function() {
                 const servSelect = document.getElementById('edit-servicio-select');
                 const cod = document.getElementById('edit-codigo-area').value;
@@ -813,7 +814,6 @@
                     cerrarPop(); 
                 });
             };
-
             // SINCRONIZACIÓN DE CITAS (TIEMPO REAL)
             onValue(ref(db, 'citas'), (snapshot) => {
                 renderAdmin(snapshot.val());
