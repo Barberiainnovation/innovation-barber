@@ -953,12 +953,13 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                     const cita = data[id];
                     if (!cita.fecha) return;
 
-                    // 1. Definición limpia de estados
+                    // --- AQUÍ ESTÁ LA CORRECCIÓN: DEFINIMOS LAS VARIABLES ---
                     const esFinalizada = cita.estado === 'Finalizada';
+                    const esPendiente = cita.estado !== 'Finalizada'; // Esta es la que faltaba
                     const fechaLimpia = cita.fecha.split('T')[0];
                     const fCita = new Date(fechaLimpia + "T12:00:00");
 
-                    // 2. CONTAR FINALIZADOS DEL MES (Cuadros de Clientes e Ingresos)
+                    // 2. CONTAR FINALIZADOS DEL MES
                     if(esFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) { 
                         finalizadosMes++; 
                         ingresosMes += parseFloat(cita.precio || 0); 
@@ -967,9 +968,8 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                         }
                     }
 
-                    // 3. CONTAR PENDIENTES DEL DÍA (Número dorado de la derecha)
-                    // Usamos fechaLimpia === fechaVisualizada para precisión total
-                    if (cita.estado !== 'Finalizada' && fechaLimpia === fechaVisualizada) {
+                    // 3. CONTAR PENDIENTES DEL DÍA
+                    if (esPendiente && fechaLimpia === fechaVisualizada) {
                         pendientesDiaEnPantalla++;
                     }
 
@@ -984,8 +984,6 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                         extendedProps: { ...cita } 
                     });
                     
-                    // 5. Dibujar las tarjetas (Cintas) de abajo
-                    // Usamos la misma lógica que el punto 3 para que coincidan
                     // 5. Dibujar las tarjetas (Cintas) de abajo
                     if (esPendiente && fechaLimpia === fechaVisualizada) {
                         const card = document.createElement('div');
