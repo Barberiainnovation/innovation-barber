@@ -1296,32 +1296,6 @@ document.getElementById('add-nombre').addEventListener('input', async (e) => {
         }
     });
 });
-// ... aquí termina tu código del buscador que pusimos antes ...
-
-        // --- FUNCIÓN TEMPORAL PARA MIGRAR CITAS ANTIGUAS ---
-        window.migrarClientes = async () => {
-            showToast("Iniciando sincronización...");
-            const citasRef = ref(db, 'citas');
-            
-            onValue(citasRef, (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return;
-
-                Object.values(data).forEach(async (cita) => {
-                    if (cita.nombre && cita.whatsapp) {
-                        const clienteID = cita.nombre.toLowerCase().trim().replace(/\s+/g, '_');
-                        try {
-                            await setDoc(doc(fs, "clientes", clienteID), {
-                                nombre: cita.nombre,
-                                telefono: cita.whatsapp,
-                                ultima_visita: cita.fecha || new Date().toISOString()
-                            }, { merge: true });
-                        } catch (e) { console.error(e); }
-                    }
-                });
-                showToast("¡Sincronización completada!");
-            }, { onlyOnce: true });
-        };
     </script>
 </body>
 </html>
