@@ -739,7 +739,7 @@
                 },
 
                 // --- PASO 3: FUNCIÓN PARA LA AGENDA DETALLADA ABAJO ---
-                dateClick: function(info) {
+               dateClick: function(info) {
                     const detalleDiv = document.getElementById('detalle-agenda-dia');
                     const listaDiv = document.getElementById('lista-eventos-dia');
                     const titulo = document.getElementById('titulo-agenda');
@@ -758,27 +758,24 @@
                             const hora = ev.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                             
                             const card = document.createElement('div');
-                            card.style = "background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-left: 4px solid var(--gold); padding: 15px; border-radius: 12px; cursor: pointer; margin-bottom: 10px;";
+                            // Clase para el estilo CSS que pondremos luego
+                            card.className = "agenda-card-finalizar"; 
                             
                             card.innerHTML = `
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                    <div onclick="abrirEdicionDirecta('${ev.id}')" style="cursor:pointer; flex-grow:1;">
                                         <strong style="color: #fff; font-size: 1.1rem; display: block;">${ev.title}</strong>
                                         <span style="color: var(--gold); font-size: 0.85rem;">${meta.servicio || ''}</span>
+                                        ${meta.nota ? `<p style="color: #888; font-size: 0.75rem; margin-top: 5px; font-style: italic;"><i class="fas fa-sticky-note"></i> ${meta.nota}</p>` : ''}
                                     </div>
-                                    <div style="color: #fff; font-weight: bold; background: #222; padding: 5px 10px; border-radius: 8px;">${hora}</div>
+                                    <div style="text-align: right; min-width: 80px;">
+                                        <div style="color: #fff; font-weight: bold; background: #222; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; margin-bottom: 8px;">${hora}</div>
+                                        <button onclick="finalizarDesdeLista('${ev.id}')" class="btn-finalizar-small">
+                                            <i class="fas fa-check-circle"></i> FINALIZAR
+                                        </button>
+                                    </div>
                                 </div>
-                                ${meta.nota ? `
-                                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1);">
-                                    <p style="color: #aaa; font-size: 0.85rem; margin: 0;">
-                                        <i class="fas fa-sticky-note" style="color: var(--gold); margin-right: 6px;"></i>${meta.nota}
-                                    </p>
-                                </div>` : ''}
                             `;
-
-                            card.onclick = () => {
-                                calendar.trigger('eventClick', { event: ev });
-                            };
                             listaDiv.appendChild(card);
                         });
                     }
