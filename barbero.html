@@ -734,6 +734,8 @@
             // --- CLIC EN UN DÍA (TU NUEVA AGENDA DE CINTAS ABAJO) ---
             dateClick: function(info) {
                 if (info.view.type === 'dayGridMonth') {
+                    fechaVisualizada = info.dateStr;
+                    
                     const detalleDiv = document.getElementById('detalle-agenda-dia');
                     const listaDiv = document.getElementById('lista-citas');
                     const titulo = document.getElementById('titulo-agenda');
