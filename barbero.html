@@ -1054,20 +1054,30 @@ onValue(ref(db, 'configuracion_horario'), snap => {
 
         // --- FUNCIÓN PARA MOVER CITAS (DRAG & DROP) ---
         function actualizarHorarioCita(event) {
-            const citaId = event.id;
-            const nuevaFecha = event.start.toISOString();
+    const citaId = event.id;
+    
+    // Convertimos la fecha al formato que entiende tu sistema (YYYY-MM-DDTHH:mm)
+    // Esto asegura que el "index" detecte el cambio correctamente
+    const start = event.start;
+    const year = start.getFullYear();
+    const month = String(start.getMonth() + 1).padStart(2, '0');
+    const day = String(start.getDate()).padStart(2, '0');
+    const hours = String(start.getHours()).padStart(2, '0');
+    const minutes = String(start.getMinutes()).padStart(2, '0');
+    
+    const nuevaFechaFormateada = `${year}-${month}-${day}T${hours}:${minutes}`;
 
-            // Usamos update para cambiar solo la fecha en la base de datos
-            update(ref(db, 'citas/' + citaId), {
-                fecha: nuevaFecha
-            }).then(() => {
-                showToast("CITA REPROGRAMADA");
-            }).catch((error) => {
-                console.error("Error al mover:", error);
-                showToast("ERROR AL MOVER");
-                location.reload(); 
-            });
-        }
+    // Actualizamos en Firebase
+    update(ref(db, 'citas/' + citaId), {
+        fecha: nuevaFechaFormateada
+    }).then(() => {
+        showToast("HORARIO ACTUALIZADO Y BLOQUEADO");
+    }).catch((error) => {
+        console.error("Error al mover:", error);
+        showToast("ERROR AL REPROGRAMAR");
+        location.reload(); 
+    });
+}
     </script>
 </body>
 </html>
