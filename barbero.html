@@ -944,6 +944,7 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                     const cita = data[id];
                     const fCita = new Date(cita.fecha);
                     const esFinalizada = cita.estado === 'Finalizada';
+                    const esPendiente = cita.estado === 'Pendiente';
 
                     // Lógica de métricas del mes actual
                     if(esFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) { 
