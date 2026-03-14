@@ -190,12 +190,16 @@
             }
         };
 
-        window.enviarCita = () => {
-            const nom = document.getElementById('nombre').value, num = document.getElementById('whatsapp').value, sel = document.getElementById('servicio');
+       window.enviarCita = () => {
+            const nom = document.getElementById('nombre').value, 
+                  num = document.getElementById('whatsapp').value, 
+                  sel = document.getElementById('servicio');
+
             if(!nom || !num || !sel.value || !horaSeleccionada || !fechaSeleccionada) {
                 document.getElementById('modalError').style.display = 'flex';
                 return;
             }
+
             // Guardar la cita en Realtime Database
             push(ref(db, 'citas'), {
                 nombre: nom,
@@ -219,14 +223,14 @@
 
                 document.getElementById('modalExito').style.display = 'flex'; 
             });
-   };
-        
+        }; // <--- ASÍ DEBE QUEDAR EL CIERRE
+
         // ESCUCHAR DÍAS BLOQUEADOS
         onValue(ref(db, 'dias_bloqueados'), (snapshot) => {
             const bloqueos = snapshot.val() || {};
             const diasADeshabilitar = Object.keys(bloqueos);
             fp.set("disable", diasADeshabilitar);
-            fp.redraw(); // Forzar actualización visual en móviles
+            fp.redraw();
             
             if(diasADeshabilitar.includes(fechaSeleccionada)) {
                 fechaSeleccionada = "";
