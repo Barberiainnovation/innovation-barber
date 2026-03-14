@@ -1161,6 +1161,7 @@ onValue(ref(db, 'configuracion_horario'), snap => {
             }
 
             const servicio = catalogoGlobal[sKey];
+            const telFull = iti.getNumber(); // Obtenemos el teléfono una sola vez
             const nuevaCita = {
                 nombre: nombre,
                 whatsapp: iti.getNumber(),
@@ -1178,28 +1179,44 @@ onValue(ref(db, 'configuracion_horario'), snap => {
         };
 
         // --- GUARDAR AJUSTES DE HORARIO ---
-       document.getElementById('btn-save-hours').onclick = () => {
-    const nuevaAp = apS.value;
-    const nuevaCi = ciS.value;
+      document.getElementById('btn-save-cita-calendar').onclick = function() {
+    const nombre = document.getElementById('add-nombre').value;
+    const sKey = document.getElementById('add-servicio-select').value;
+    
+    if(!nombre || !sKey) {
+        return showToast("FALTA NOMBRE O SERVICIO");
+    }
 
-    // Guardamos en Firebase
-    set(ref(db, 'configuracion_horario'), { 
-        apertura: nuevaAp, 
-        cierre: nuevaCi, 
-        lunch_inicio: lIn.value, 
-        lunch_fin: lFi.value 
-    }).then(() => {
-        // ACTUALIZACIÓN INMEDIATA DEL CALENDARIO
-        // 1. Ajusta el rango de horas
-        calendar.setOption('slotMinTime', nuevaAp.padStart(2, '0') + ':00:00');
-        calendar.setOption('slotMaxTime', nuevaCi.padStart(2, '0') + ':00:00');
+    const servicio = catalogoGlobal[sKey];
+    const telFull = iti.getNumber(); // Obtenemos el teléfono una sola vez
+
+    const nuevaCita = {
+        nombre: nombre,
+        whatsapp: telFull,
+        servicio: servicio.nombre,
+        precio: servicio.precio,
+        fecha: selectedDateTime,
+        estado: "Pendiente",
+        nota: document.getElementById('add-nota').value
+    };
+
+    // 1. Guarda la cita en el Calendario (Realtime Database)
+    push(ref(db, 'citas'), nuevaCita).then(() => {
         
-        // 2. Fuerza a la caja a encogerse/estirarse
-        calendar.updateSize(); 
+        // --- 2. REGISTRO AUTOMÁTICO DEL CLIENTE (Firestore) ---
+        // Esto es lo que hace que aparezca en el buscador la próxima vez
+        const clienteID = nombre.toLowerCase().trim().replace(/\s+/g, '_');
         
-        showToast("HORARIOS ACTUALIZADOS");
+        setDoc(doc(fs, "clientes", clienteID), {
+            nombre: nombre,
+            telefono: telFull,
+            ultima_visita: selectedDateTime.split('T')[0]
+        }, { merge: true });
+
+        cerrarModalAdd();
+        showToast("CITA AGENDADA Y CLIENTE GUARDADO");
     }).catch(err => {
-        console.error("Error al guardar:", err);
+        console.error(err);
         showToast("ERROR AL GUARDAR");
     });
 };
