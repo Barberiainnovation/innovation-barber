@@ -957,19 +957,28 @@ onValue(ref(db, 'configuracion_horario'), snap => {
             });
         };
 
-        document.getElementById('btn-add-serv').onclick = function() {
-            const n = document.getElementById('serv-n').value;
-            const p = document.getElementById('serv-p').value;
-            if(n && p) {
-                push(ref(db, 'servicios'), { nombre: n, precio: p }).then(() => {
-                    document.getElementById('serv-n').value = '';
-                    document.getElementById('serv-p').value = '';
-                    showToast("NUEVO SERVICIO AÑADIDO");
-                });
-            } else {
-                showToast("LLENA AMBOS CAMPOS");
-            }
-        };
+        document.getElementById('btn-add-serv').onclick = () => {
+    const n = document.getElementById('serv-n').value;
+    const p = document.getElementById('serv-p').value;
+    const d = document.getElementById('serv-d').value; // <--- Agregamos esta línea
+
+    if(n && p) {
+        // Añadimos 'detalle: d' al objeto que se envía a Firebase
+        push(ref(db, 'servicios'), { 
+            nombre: n, 
+            precio: p, 
+            detalle: d 
+        }).then(() => {
+            // Limpiamos los tres campos después de guardar
+            document.getElementById('serv-n').value = '';
+            document.getElementById('serv-p').value = '';
+            document.getElementById('serv-d').value = ''; 
+            showToast("NUEVO SERVICIO AÑADIDO");
+        });
+    } else {
+        showToast("LLENA NOMBRE Y PRECIO");
+    }
+};
 
         // --- ACCIÓN FINAL: GUARDAR CITA DESDE CALENDARIO ---
         document.getElementById('btn-save-cita-calendar').onclick = function() {
