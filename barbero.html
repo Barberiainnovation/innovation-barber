@@ -930,35 +930,41 @@ onValue(ref(db, 'configuracion_horario'), snap => {
             const añoActual = ahora.getFullYear();
             const hoyRealIso = ahora.toISOString().split('T')[0];
 
-            // ACTUALIZAR ETIQUETA DINÁMICA DE PENDIENTES
+            // 1. Etiqueta de la fecha
             if (fechaVisualizada === hoyRealIso) {
                 pLabel.innerText = "Pendientes Hoy";
             } else {
                 const opciones = { day: 'numeric', month: 'short' };
-                const fechaFormateada = new Date(fechaVisualizada + "T00:00:00").toLocaleDateString('es-GT', opciones);
+                const fechaFormateada = new Date(fechaVisualizada + "T12:00:00").toLocaleDateString('es-GT', opciones);
                 pLabel.innerText = "Pendientes " + fechaFormateada;
             }
 
             if(data){
                 Object.keys(data).forEach(id => {
                     const cita = data[id];
-                    const fCita = new Date(cita.fecha);
-                    const esFinalizada = cita.estado === 'Finalizada';
-                    const esPendiente = cita.estado === 'Pendiente';
+                    if (!cita.fecha) return;
 
-                    // Lógica de métricas del mes actual
+                    const esFinalizada = cita.estado === 'Finalizada';
+                    
+                    // Ajuste de fecha para que el conteo del mes sea exacto en Guate
+                    const fechaLimpia = cita.fecha.split('T')[0];
+                    const fCita = new Date(fechaLimpia + "T12:00:00");
+
+                    // 2. CONTAR FINALIZADOS DEL MES (Para el cuadro de Clientes Finalizados)
                     if(esFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) { 
                         finalizadosMes++; 
                         ingresosMes += parseFloat(cita.precio || 0); 
-                        contadorServicios[cita.servicio] = (contadorServicios[cita.servicio] || 0) + 1; 
+                        if(cita.servicio) {
+                            contadorServicios[cita.servicio] = (contadorServicios[cita.servicio] || 0) + 1; 
+                        }
                     }
 
-                    // CONTEO DINÁMICO SEGÚN DÍA EN PANTALLA
-                    if (cita.estado !== 'Finalizada' && cita.fecha.startsWith(fechaVisualizada)) {
-    pendientesDiaEnPantalla++;
-}
+                    // 3. CONTAR PENDIENTES DEL DÍA (Para el número dorado de la derecha)
+                    if(!esFinalizada && cita.fecha.startsWith(fechaVisualizada)) {
+                        pendientesDiaEnPantalla++;
+                    }
 
-                    // Preparar objeto para FullCalendar
+                    // 4. Configurar eventos del calendario
                     eventosCalendar.push({ 
                         id: id, 
                         title: cita.nombre, 
@@ -969,7 +975,7 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                         extendedProps: { ...cita } 
                     });
                     
-                    // Renderizar tarjetas de la lista inferior (solo del día visualizado)
+                    // 5. Dibujar las tarjetas (Cintas) de abajo
                     if(!esFinalizada && cita.fecha.startsWith(fechaVisualizada)){
                         const card = document.createElement('div');
                         card.className = 'card';
@@ -990,17 +996,17 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                 });
             }
 
-            // Actualizar Desglose de servicios
+            // 6. Mostrar el desglose de servicios
             Object.keys(contadorServicios).forEach(serv => {
                 desglose.innerHTML += `<div class="serv-stat-item"><span>${serv}</span><span>x${contadorServicios[serv]}</span></div>`;
             });
 
-            // Actualizar Valores en Sidebar
+            // 7. ACTUALIZAR LOS NÚMEROS EN PANTALLA
             cCount.innerText = finalizadosMes;
             iTotal.innerText = 'Q' + ingresosMes.toLocaleString('es-GT', { minimumFractionDigits: 2 });
             pCount.innerText = pendientesDiaEnPantalla;
 
-            // Actualizar Calendario
+            // Actualizar calendario
             calendar.removeAllEvents();
             calendar.addEventSource(eventosCalendar);
         }
