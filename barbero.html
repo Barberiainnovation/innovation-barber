@@ -634,17 +634,9 @@
         const fs = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // 3. VARIABLES GLOBALES
-        let calendar;
-        let selectedDateTime = null;
-        let catalogoGlobal = {};
-        let iti; 
-        let currentEditingId = null;
-        let fechaVisualizada = new Date().toISOString().split('T')[0];
-
        // 3. FUNCIONES DE ACCESO
     window.loginGoogle = () => {
-        signInWithPopup(auth, provider).catch(console.error);
+        signInWithPopup(auth, provider).catch(err => console.error("Error login:", err));
     };
 
     window.logout = () => {
@@ -656,9 +648,17 @@
         const adminContent = document.getElementById('admin-content');
 
         if (user) {
+            console.log("LOGIN EXITOSO: ", user.email);
+            // Esto es lo que quita la pantalla negra:
             if (loginOverlay) loginOverlay.style.display = 'none';
             if (adminContent) adminContent.style.display = 'block';
-            initDashboard(); 
+            
+            // Esto arranca tu calendario y buscador
+            if (typeof initDashboard === 'function') {
+                initDashboard();
+            } else {
+                console.error("ERROR: No encuentro la función initDashboard abajo");
+            }
         } else {
             if (loginOverlay) loginOverlay.style.display = 'flex';
             if (adminContent) adminContent.style.display = 'none';
