@@ -196,6 +196,7 @@
                 document.getElementById('modalError').style.display = 'flex';
                 return;
             }
+            // Guardar la cita en Realtime Database
             push(ref(db, 'citas'), {
                 nombre: nom,
                 whatsapp: document.getElementById('codigo-area').value + num,
@@ -204,8 +205,20 @@
                 nota: document.getElementById('nota').value || "Sin notas",
                 fecha: `${fechaSeleccionada}T${horaSeleccionada}`, 
                 estado: 'Pendiente'
-            }).then(() => { document.getElementById('modalExito').style.display = 'flex'; });
-        };
+            }).then(() => {
+                // --- NUEVO: GUARDAR O ACTUALIZAR CLIENTE EN FIRESTORE ---
+                const clienteID = nom.toLowerCase().trim().replace(/\s+/g, '_');
+                const telFull = document.getElementById('codigo-area').value + num;
+                
+                setDoc(doc(fs, "clientes", clienteID), {
+                    nombre: nom,
+                    telefono: telFull,
+                    ultima_visita: new Date().toISOString()
+                }, { merge: true });
+                // -------------------------------------------------------
+
+                document.getElementById('modalExito').style.display = 'flex'; 
+            });
 
         // ESCUCHAR DÍAS BLOQUEADOS
         onValue(ref(db, 'dias_bloqueados'), (snapshot) => {
