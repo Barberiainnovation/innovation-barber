@@ -669,115 +669,145 @@
         function initDashboard() {
     const calendarEl = document.getElementById('calendar');
     calendar = new FullCalendar.Calendar(calendarEl, {
-        // ... dentro de la configuración de FullCalendar ...
-initialView: 'timeGridDay',
-locale: 'es',
-dayMaxEvents: 2,      // Muestra máximo 2 citas por cuadro, el resto dice "+X más"
-height: 650,          // Mantiene el calendario de un solo tamaño siempre
-contentHeight: 600,   // Ajuste fino del área de celdas
-        allDaySlot: false, 
-        slotDuration: '00:30:00',
-        nowIndicator: true,
-        headerToolbar: { 
-            left: 'prev,next today', 
-            center: 'title', 
-            right: 'dayGridMonth,timeGridWeek,timeGridDay' 
-        },
-        contentHeight: 'auto',
+            initialView: 'dayGridMonth', // Vista inicial en Mes para ver el cambio
+            locale: 'es',
+            dayMaxEvents: 2,      // Muestra máximo 2 nombres y luego "+ más"
+            height: 650,          // ALTURA FIJA: El calendario no se estira más
+            fixedWeekCount: false, // Ajusta las filas según el mes
+            allDaySlot: false,
+            slotDuration: '00:30:00',
+            nowIndicator: true,
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            editable: true,
+            eventDurationEditable: false,
+            
+            // --- MOVER CITAS (DRAG & DROP) ---
+            eventDrop: function(info) {
+                actualizarHorarioCita(info.event);
+            },
 
-        // --- ESTO ES LO QUE SUMAMOS PARA EL PASO 1 ---
-        editable: true,               // Permite que las citas se puedan mover
-        eventDurationEditable: false, // Bloquea que se cambie la duración (solo mover la hora)
-        eventDrop: function(info) {
-            actualizarHorarioCita(info.event); // Llama a la función que guarda en Firebase
-        },
-        // ---------------------------------------------
+            // --- DETECCIÓN DE CAMBIO DE FECHA ---
+            datesSet: function(info) {
+                fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
+                onValue(ref(db, 'citas'), (snapshot) => {
+                    renderAdmin(snapshot.val());
+                }, { onlyOnce: true });
+            },
 
-        // Aquí sigue tu código de datesSet...
-        datesSet: function(info) {
-            // ... tu código actual ...
-        },
-                
-                // DETECCIÓN DINÁMICA DE CAMBIO DE FECHA
-                datesSet: function(info) {
-                    fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
-                    // Forzamos actualización de etiquetas y conteos
-                    onValue(ref(db, 'citas'), (snapshot) => {
-                        renderAdmin(snapshot.val());
-                    }, { onlyOnce: true });
-                },
-                selectable: true,
-                select: function(info) {
-                    if(info.view.type !== 'dayGridMonth'){
-                        const fecha = info.startStr.split('T')[0];
-                        const hora = info.start.getHours().toString().padStart(2,'0');
-                        const min = info.start.getMinutes().toString().padStart(2,'0');
-                        selectedDateTime = fecha + 'T' + hora + ':' + min;
-                        
-                        document.getElementById('add-fecha-display').innerText = info.start.toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
-                        document.getElementById('modalAddCita').style.display = 'flex';
-                    }
-                },
-                eventClick: function(info) {
-    currentEditingId = info.event.id;
-    const meta = info.event.extendedProps;
-    const fTxt = info.event.start.toLocaleString('es-GT', { 
-        weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' 
-    });
-    
-    // Llenar vista consulta
-    document.getElementById('pop-nombre').innerText = meta.nombre;
-    document.getElementById('pop-fecha').innerText = fTxt;
-    document.getElementById('pop-detalle-corte').innerHTML = `
-        <div style="color:var(--gold); font-size:1.1rem; font-weight:600; margin-bottom:5px;">
-            ${meta.servicio}
-        </div>
-        <div style="color:var(--green); font-weight:600; font-size:1.2rem;">Q${meta.precio}</div>
-    ` + (meta.nota ? `<p style="font-size:0.8rem; color:#888; margin-top:15px; background:#111; padding:10px; border-radius:10px;">Nota: ${meta.nota}</p>` : "");
-    
-    // Acción WhatsApp
-    document.getElementById('pop-whatsapp').onclick = function() {
-        const num = meta.whatsapp.replace(/\D/g,'');
-        const msg = encodeURIComponent('Hola ' + meta.nombre + ', te recordamos tu cita en Innovation Barber Studio para el ' + fTxt + '. ¡Te esperamos!');
-        window.open('https://wa.me/' + num + '?text=' + msg);
-    };
-    
-    // --- Lógica para separar Código de Área y Número ---
-    const fullWhatsapp = meta.whatsapp || "";
-    const codigos = ["502", "503", "504", "505", "506", "507", "52", "1"];
-    let encontrado = "502"; 
-    let numLimpio = fullWhatsapp;
+            // --- CLIC EN UN DÍA (TU NUEVA AGENDA DE CINTAS ABAJO) ---
+            dateClick: function(info) {
+                if (info.view.type === 'dayGridMonth') {
+                    const detalleDiv = document.getElementById('detalle-agenda-dia');
+                    const listaDiv = document.getElementById('lista-citas');
+                    const titulo = document.getElementById('titulo-agenda');
 
-    for (let cod of codigos) {
-        if (fullWhatsapp.startsWith(cod)) {
-            encontrado = cod;
-            numLimpio = fullWhatsapp.substring(cod.length); 
-            break;
-        }
-    }
+                    const eventos = calendar.getEvents().filter(e => e.startStr.split('T')[0] === info.dateStr);
 
-    // Llenar vista edición con los nuevos IDs del selector de banderas
-    document.getElementById('edit-nombre').value = meta.nombre;
-    document.getElementById('edit-codigo-area').value = encontrado; // Selector
-    document.getElementById('edit-whatsapp').value = numLimpio;     // Input del número
-    document.getElementById('edit-precio').value = meta.precio;
-    document.getElementById('edit-nota').value = meta.nota || "";
-    document.getElementById('edit-servicio-select').value = ""; 
+                    detalleDiv.style.display = 'block';
+                    titulo.innerText = "CITAS DEL DÍA: " + info.dateStr.split('-').reverse().join('/');
+                    listaDiv.innerHTML = "";
 
-    document.getElementById('modalEvento').style.display = 'flex';
-    
-    // ... (final de la lógica de eliminar cita)
-                   // --- FINAL DE EVENT CLICK ---
-                    document.getElementById('btn-eliminar-pop').onclick = function() {
-                        confirmarAccion("¿Seguro que quieres eliminar permanentemente esta cita?", function() {
-                            remove(ref(db, 'citas/' + currentEditingId)).then(() => {
-                                showToast("CITA ELIMINADA");
-                                cerrarPop();
-                            });
+                    if (eventos.length === 0) {
+                        listaDiv.innerHTML = "<p style='color:#666; text-align:center; padding:20px; width:100%;'>No hay citas agendadas.</p>";
+                    } else {
+                        eventos.sort((a, b) => a.start - b.start).forEach(ev => {
+                            const meta = ev.extendedProps;
+                            const hora = ev.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            
+                            const card = document.createElement('div');
+                            card.className = 'card'; // USA TU DISEÑO DE CINTA ORIGINAL
+                            card.innerHTML = `
+                                <div style="flex:1; cursor:pointer;" onclick="abrirEventoDirecto('${ev.id}')">
+                                    <div style="font-size:0.6rem; color:var(--gold); font-weight:600; text-transform:uppercase; margin-bottom:2px;">
+                                        ${hora} - ${meta.servicio}
+                                    </div>
+                                    <h4 style="margin:0; font-size:0.85rem; letter-spacing:0.5px;">${meta.nombre}</h4>
+                                    ${meta.nota ? `<p style="margin:4px 0 0; font-size:0.65rem; color:#888; font-style:italic;">"${meta.nota}"</p>` : ""}
+                                </div>
+                                <button class="btn-mini" onclick="cambiarEstado('${ev.id}','Finalizada')">
+                                    <i class="fas fa-check"></i> FIN
+                                </button>
+                            `;
+                            listaDiv.appendChild(card);
                         });
-                    };
-                } // Cierre de eventClick
-            }); // CIERRE CORRECTO DE FullCalendar
+                    }
+                    detalleDiv.scrollIntoView({ behavior: 'smooth' });
+                }
+            },
+
+            // --- SELECCIONAR HORA PARA NUEVA CITA ---
+            selectable: true,
+            select: function(info) {
+                if(info.view.type !== 'dayGridMonth'){
+                    const fecha = info.startStr.split('T')[0];
+                    const hora = info.start.getHours().toString().padStart(2,'0');
+                    const min = info.start.getMinutes().toString().padStart(2,'0');
+                    selectedDateTime = fecha + 'T' + hora + ':' + min;
+                    
+                    document.getElementById('add-fecha-display').innerText = info.start.toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+                    document.getElementById('modalAddCita').style.display = 'flex';
+                }
+            },
+
+            // --- CLIC EN CITA (DETALLE, WHATSAPP Y EDICIÓN) ---
+            eventClick: function(info) {
+                currentEditingId = info.event.id;
+                const meta = info.event.extendedProps;
+                const fTxt = info.event.start.toLocaleString('es-GT', { 
+                    weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' 
+                });
+                
+                document.getElementById('pop-nombre').innerText = meta.nombre;
+                document.getElementById('pop-fecha').innerText = fTxt;
+                document.getElementById('pop-detalle-corte').innerHTML = `
+                    <div style="color:var(--gold); font-size:1.1rem; font-weight:600; margin-bottom:5px;">
+                        ${meta.servicio}
+                    </div>
+                    <div style="color:var(--green); font-weight:600; font-size:1.2rem;">Q${meta.precio}</div>
+                ` + (meta.nota ? `<p style="font-size:0.8rem; color:#888; margin-top:15px; background:#111; padding:10px; border-radius:10px;">Nota: ${meta.nota}</p>` : "");
+                
+                document.getElementById('pop-whatsapp').onclick = function() {
+                    const num = meta.whatsapp.replace(/\D/g,'');
+                    const msg = encodeURIComponent('Hola ' + meta.nombre + ', te recordamos tu cita en Innovation Barber Studio para el ' + fTxt + '. ¡Te esperamos!');
+                    window.open('https://wa.me/' + num + '?text=' + msg);
+                };
+                
+                const fullWhatsapp = meta.whatsapp || "";
+                const codigos = ["502", "503", "504", "505", "506", "507", "52", "1"];
+                let encontrado = "502"; 
+                let numLimpio = fullWhatsapp;
+
+                for (let cod of codigos) {
+                    if (fullWhatsapp.startsWith(cod)) {
+                        encontrado = cod;
+                        numLimpio = fullWhatsapp.substring(cod.length); 
+                        break;
+                    }
+                }
+
+                document.getElementById('edit-nombre').value = meta.nombre;
+                document.getElementById('edit-codigo-area').value = encontrado;
+                document.getElementById('edit-whatsapp').value = numLimpio;
+                document.getElementById('edit-precio').value = meta.precio;
+                document.getElementById('edit-nota').value = meta.nota || "";
+                document.getElementById('edit-servicio-select').value = ""; 
+
+                document.getElementById('modalEvento').style.display = 'flex';
+
+                document.getElementById('btn-eliminar-pop').onclick = function() {
+                    confirmarAccion("¿Seguro que quieres eliminar permanentemente esta cita?", function() {
+                        remove(ref(db, 'citas/' + currentEditingId)).then(() => {
+                            showToast("CITA ELIMINADA");
+                            cerrarPop();
+                        });
+                    });
+                };
+            }
+        });
 
             calendar.render(); // Ahora sí, renderizamos
 
