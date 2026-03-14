@@ -948,17 +948,29 @@ onValue(ref(db, 'configuracion_horario'), snap => {
             }
 
             if(data){
-                Object.keys(data).forEach(id => {
-                    const cita = data[id];
+                // 1. Convertimos el objeto de Firebase en una lista (Array) para poder ordenarla
+                const listaOrdenada = Object.keys(data).map(id => ({
+                    id: id,
+                    ...data[id]
+                }));
+
+                // 2. Ordenamos la lista por el campo 'fecha' (que incluye la hora)
+                listaOrdenada.sort((a, b) => {
+                    if (!a.fecha || !b.fecha) return 0;
+                    return a.fecha.localeCompare(b.fecha);
+                });
+
+                // 3. Ahora recorremos la lista YA ORDENADA
+                listaOrdenada.forEach(cita => {
+                    const id = cita.id;
                     if (!cita.fecha) return;
 
-                    // --- DEFINICIÓN DE VARIABLES (ESTO ES LO QUE HACÍA FALTA) ---
                     const esFinalizada = cita.estado === 'Finalizada';
                     const esPendiente = cita.estado !== 'Finalizada'; 
                     const fechaLimpia = cita.fecha.split('T')[0];
                     const fCita = new Date(fechaLimpia + "T12:00:00");
 
-                    // 1. Contar para métricas del mes
+                    // Métricas del mes
                     if(esFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) { 
                         finalizadosMes++; 
                         ingresosMes += parseFloat(cita.precio || 0); 
@@ -967,12 +979,12 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                         }
                     }
 
-                    // 2. Contar para el número dorado (Pendientes del día)
+                    // Número dorado (Pendientes del día)
                     if (esPendiente && fechaLimpia === fechaVisualizada) {
                         pendientesDiaEnPantalla++;
                     }
 
-                    // 3. Eventos del calendario
+                    // Eventos del calendario
                     eventosCalendar.push({ 
                         id: id, 
                         title: cita.nombre, 
@@ -983,7 +995,7 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                         extendedProps: { ...cita } 
                     });
                     
-                    // 4. Cintas de abajo (Tarjetas)
+                    // Cintas de abajo (Tarjetas) - AHORA SALDRÁN EN ORDEN
                     if (esPendiente && fechaLimpia === fechaVisualizada){
                         const card = document.createElement('div');
                         card.className = 'card';
