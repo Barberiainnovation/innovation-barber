@@ -613,13 +613,13 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 
-    <script type="module">
+   <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, set, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getFirestore, collection, onSnapshot, query, where, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // CONFIGURACIÓN DE FIREBASE (TU BASE DE DATOS)
+        // 1. CONFIGURACIÓN DE FIREBASE
         const firebaseConfig = { 
             apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", 
             authDomain: "innovation-barber-studio.firebaseapp.com", 
@@ -627,18 +627,23 @@
             databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" 
         };
 
-        const fs = getFirestore(app);
+        // 2. INICIALIZACIÓN DE VARIABLES (Orden Crítico)
+        const app = initializeApp(firebaseConfig); // Primero inicializamos la app
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const fs = getFirestore(app); // Ahora 'app' ya existe para Firestore
         const provider = new GoogleAuthProvider();
         
-        // VARIABLES DE CONTROL GLOBAL
+        // 3. VARIABLES DE CONTROL GLOBAL
         let calendar;
         let selectedDateTime = null;
         let catalogoGlobal = {};
-        let iti; // Variable para las banderas
+        let iti; 
         let currentEditingId = null;
         let fechaVisualizada = new Date().toISOString().split('T')[0];
 
         function initDashboard() {
+        
             // 1. ACTIVAR BANDERAS (Solo una vez)
             const inputTel = document.querySelector("#add-whatsapp-input");
             if (inputTel) {
