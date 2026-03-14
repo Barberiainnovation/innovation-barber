@@ -1183,6 +1183,10 @@
         location.reload(); 
     });
 }
+        window.abrirEventoDirecto = function(id) {
+    const ev = calendar.getEventById(id);
+    if(ev) calendar.trigger('eventClick', { event: ev });
+};
     </script>
 </body>
 </html>
