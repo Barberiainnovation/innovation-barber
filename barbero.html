@@ -967,6 +967,7 @@
 
         // --- GUARDAR AJUSTES DE HORARIO ---
        // --- FINAL DEL SCRIPT DE GUARDADO ---
+       // --- BOTÓN GUARDAR HORARIO (MODO INTELIGENTE) ---
         document.getElementById('btn-save-hours').onclick = () => {
             const nuevaAp = apS.value;
             const nuevaCi = ciS.value;
@@ -977,22 +978,43 @@
                 lunch_inicio: document.getElementById('lunch-inicio').value,
                 lunch_fin: document.getElementById('lunch-fin').value
             }).then(() => {
+                // Actualiza el calendario inmediatamente
                 calendar.setOption('slotMinTime', nuevaAp.padStart(2, '0') + ':00:00');
                 calendar.setOption('slotMaxTime', nuevaCi.padStart(2, '0') + ':00:00');
-                showToast("HORARIOS DE ATENCIÓN ACTUALIZADOS");
+                showToast("HORARIOS ACTUALIZADOS");
             });
         };
-    </script> </body> </html> ```
 
-### ¿Qué pasó?
-El error en la línea **1006** indica que el archivo se corta antes de cerrar el bloque `<script>`. Seguramente borraste el `};`, el `</script>` o el `</html>`.
+        // --- LÓGICA DE BLOQUEO DE DÍAS (Sigue igual) ---
+        const fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d" });
 
-**Instrucción:**
-1. Ve al final de tu código.
-2. Borra cualquier cosa que veas después de la función del botón de guardar.
-3. Pega estas 4 líneas finales:
-```javascript
+        onValue(ref(db, 'dias_bloqueados'), snap => {
+            const list = document.getElementById('lista-bloqueos-admin');
+            if(list) {
+                list.innerHTML = ''; 
+                const bloqueos = snap.val() || {};
+                Object.keys(bloqueos).forEach(f => {
+                    list.innerHTML += `<div class="block-item-admin"><span>${f}</span><i class="fas fa-trash" style="color:var(--red); cursor:pointer;" onclick="eliminarBloqueo('${f}')"></i></div>`;
+                });
+            }
+        });
+
+        window.eliminarBloqueo = (f) => {
+            if(confirm("¿Desbloquear este día?")) {
+                remove(ref(db, `dias_bloqueados/${f}`));
+            }
         };
+
+        document.getElementById('btn-add-block').onclick = () => {
+            const f = document.getElementById('input-block-date').value;
+            if(f) {
+                set(ref(db, `dias_bloqueados/${f}`), true).then(() => {
+                    showToast("DÍA BLOQUEADO");
+                    document.getElementById('input-block-date').value = '';
+                });
+            }
+        };
+
     </script>
 </body>
 </html>
