@@ -388,41 +388,55 @@
         #toast.show { 
             bottom: 40px; 
         }
-        /* --- ESTILO PARA EL POPUP DE "+ MÁS" DEL CALENDARIO --- */
-.fc-popover {
-    background-color: #0a0a0a !important; /* Fondo negro como tus cards */
-    border: 1px solid var(--gold) !important; /* Borde dorado */
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8) !important;
-    border-radius: 12px !important;
-}
+        /* ==================================================
+           ESTILO PARA EL POPUP DE "+ MÁS" (EDICIÓN ELITE) 
+           ================================================== */
+        .fc-popover {
+            background-color: #0a0a0a !important; 
+            border: 1px solid var(--gold) !important; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8) !important;
+            border-radius: 12px !important;
+            z-index: 9999 !important;
+        }
 
-.fc-popover-header {
-    background-color: var(--gold) !important; /* Encabezado dorado */
-    color: #000 !important; /* Texto del encabezado negro para contraste */
-    border-radius: 10px 10px 0 0 !important;
-    font-weight: bold !important;
-}
+        .fc-popover-header {
+            background-color: #111 !important; 
+            color: var(--gold) !important; 
+            border-bottom: 1px solid #222 !important;
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: bold !important;
+            padding: 8px 12px !important;
+        }
 
-.fc-popover-body {
-    background-color: #0a0a0a !important;
-    color: #fff !important;
-    padding: 10px !important;
-}
+        .fc-popover-body {
+            background-color: #0a0a0a !important;
+            padding: 10px !important;
+        }
 
-/* Estilo de los eventos dentro de ese popup */
-.fc-popover-body .fc-daygrid-event {
-    background-color: rgba(212, 175, 55, 0.1) !important;
-    border: 1px solid rgba(212, 175, 55, 0.3) !important;
-    color: #fff !important;
-    margin-bottom: 4px !important;
-    padding: 4px 8px !important;
-}
+        /* NOMBRES LIMPIOS SIN FONDO AMARILLO */
+        .fc-popover-body .fc-daygrid-event {
+            background-color: transparent !important; 
+            border: none !important; 
+            color: #ffffff !important; 
+            font-size: 0.85rem !important;
+            margin-bottom: 6px !important;
+            padding: 4px 5px !important;
+            display: block !important;
+        }
 
-/* Botón de cerrar del popup */
-.fc-popover-close {
-    color: #000 !important;
-    opacity: 0.8;
-}
+        /* PUNTITO DORADO DE LISTA VIP */
+        .fc-popover-body .fc-daygrid-event::before {
+            content: "•";
+            color: var(--gold);
+            margin-right: 8px;
+            font-size: 1.2rem;
+            vertical-align: middle;
+        }
+
+        .fc-popover-close {
+            color: #fff !important;
+            font-size: 1.1em !important;
+        }
     </style>
 </head>
 <body>
