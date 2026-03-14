@@ -806,12 +806,14 @@
             });
 
             // SINCRONIZACIÓN DE CATÁLOGO
-            onValue(ref(db, 'servicios'), (snapshot) => {
+           // 1. Carga de servicios (Corregido)
+        onValue(ref(db, 'servicios'), (snapshot) => {
+            if (typeof renderServicios === 'function') {
                 renderServicios(snapshot.val() || {});
-            });
-        }
+            }
+        });
 
-        // --- RENDERIZADO MAESTRO DE DATOS ---
+        // 2. Renderizado Maestro (Protegido contra errores null)
         function renderAdmin(data) {
             const lista = document.getElementById('lista-citas');
             const cCount = document.getElementById('citas-count');
@@ -819,14 +821,16 @@
             const pCount = document.getElementById('count-pendientes');
             const pLabel = document.getElementById('label-pendientes');
             const desglose = document.getElementById('desglose-servicios');
-            
+
+            // Si la lista no existe en el HTML, no seguimos para evitar errores
+            if (!lista) return; 
+
             lista.innerHTML = ''; 
-            desglose.innerHTML = '';
+            if (desglose) desglose.innerHTML = '';
             
             let finalizadosMes = 0;
             let ingresosMes = 0;
             let pendientesDiaEnPantalla = 0;
-            let eventosCalendar = [];
             let contadorServicios = {};
 
             const ahora = new Date();
@@ -834,14 +838,56 @@
             const añoActual = ahora.getFullYear();
             const hoyRealIso = ahora.toISOString().split('T')[0];
 
-            // ACTUALIZAR ETIQUETA DINÁMICA DE PENDIENTES
-            if (fechaVisualizada === hoyRealIso) {
-                pLabel.innerText = "Pendientes Hoy";
-            } else {
-                const opciones = { day: 'numeric', month: 'short' };
-                const fechaFormateada = new Date(fechaVisualizada + "T00:00:00").toLocaleDateString('es-GT', opciones);
-                pLabel.innerText = "Pendientes " + fechaFormateada;
+            if (data) {
+                Object.keys(data).forEach(id => {
+                    const c = data[id];
+                    const fechaCita = new Date(c.fecha + "T00:00:00");
+
+                    // Estadísticas del mes actual
+                    if (fechaCita.getMonth() === mesActual && fechaCita.getFullYear() === añoActual) {
+                        finalizadosMes++;
+                        ingresosMes += parseFloat(c.precio || 0);
+                        contadorServicios[c.servicio] = (contadorServicios[c.servicio] || 0) + 1;
+                    }
+
+                    // Filtrar por fecha visualizada
+                    if (c.fecha === fechaVisualizada) {
+                        pendientesDiaEnPantalla++;
+                        const item = document.createElement('div');
+                        item.className = 'block-item-admin';
+                        item.innerHTML = `
+                            <div style="flex:1">
+                                <div style="font-weight:600; font-size:0.85rem; color:white;">${c.cliente}</div>
+                                <div style="font-size:0.75rem; color:var(--gold);">${c.hora} - ${c.servicio}</div>
+                            </div>
+                            <i class="fas fa-trash-alt" style="color:var(--red); cursor:pointer;" onclick="eliminarCita('${id}')"></i>
+                        `;
+                        lista.appendChild(item);
+                    }
+                });
             }
+
+            // Actualizar textos solo si los elementos existen
+            if (cCount) cCount.innerText = finalizadosMes;
+            if (iTotal) iTotal.innerText = "Q" + ingresosMes.toFixed(2);
+            if (pCount) pCount.innerText = pendientesDiaEnPantalla;
+
+            if (pLabel) {
+                if (fechaVisualizada === hoyRealIso) {
+                    pLabel.innerText = "Pendientes Hoy";
+                } else {
+                    const opciones = { day: 'numeric', month: 'short' };
+                    const fechaFormateada = new Date(fechaVisualizada + "T00:00:00").toLocaleDateString('es-GT', opciones);
+                    pLabel.innerText = "Pendientes " + fechaFormateada;
+                }
+            }
+
+            if (desglose) {
+                Object.keys(contadorServicios).forEach(s => {
+                    desglose.innerHTML += `<div style="font-size:0.7rem; color:#888;">${s}: ${contadorServicios[s]}</div>`;
+                });
+            }
+        }
 
             if(data){
                 Object.keys(data).forEach(id => {
