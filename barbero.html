@@ -1147,24 +1147,32 @@ onValue(ref(db, 'configuracion_horario'), snap => {
 
         // --- ACCIÓN FINAL: GUARDAR CITA DESDE CALENDARIO ---
         document.getElementById('btn-save-cita-calendar').onclick = function() {
-            const nombre = document.getElementById('add-nombre').value;
-            const sKey = document.getElementById('add-servicio-select').value;
-            
-            if(!nombre || !sKey) {
-                return showToast("FALTA NOMBRE O SERVICIO");
-            }
+    const nombre = document.getElementById('add-nombre').value;
+    const sKey = document.getElementById('add-servicio-select').value;
+    
+    // --- NUEVA CAPTURA DE TELÉFONO SIN ITI ---
+    const codArea = document.getElementById('add-codigo-area').value;
+    const numTel = document.getElementById('add-whatsapp').value;
+    const whatsappCompleto = codArea + numTel; // Unimos ej: 502 + 12345678
+    
+    // Validamos que también pongan el número
+    if(!nombre || !sKey || !numTel) {
+        return showToast("FALTA NOMBRE, SERVICIO O WHATSAPP");
+    }
 
-            const servicio = catalogoGlobal[sKey];
-            const telFull = iti.getNumber(); // Obtenemos el teléfono una sola vez
-            const nuevaCita = {
-                nombre: nombre,
-                whatsapp: iti.getNumber(),
-                servicio: servicio.nombre,
-                precio: servicio.precio,
-                fecha: selectedDateTime,
-                estado: "Pendiente",
-                nota: document.getElementById('add-nota').value
-            };
+    const servicio = catalogoGlobal[sKey];
+    
+    const nuevaCita = {
+        nombre: nombre,
+        whatsapp: whatsappCompleto, // Guardamos el número ya unido
+        servicio: servicio.nombre,
+        precio: servicio.precio,
+        fecha: selectedDateTime,
+        estado: "Pendiente",
+        nota: document.getElementById('add-nota').value
+    };
+
+    // ... aquí sigue tu código de Firebase (push/setDoc)
 
             push(ref(db, 'citas'), nuevaCita).then(() => {
                 cerrarModalAdd();
