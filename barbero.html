@@ -388,45 +388,6 @@
         #toast.show { 
             bottom: 40px; 
         }
-
-        
- /* ... todos tus estilos anteriores ... */
-
-        /* --- ESTILOS PARA LA AGENDA DE ABAJO --- */
-        #detalle-agenda-dia {
-            animation: fadeIn 0.5s ease;
-        }
-
-        #lista-eventos-dia > div {
-            transition: all 0.3s ease;
-        }
-
-        #lista-eventos-dia > div:hover {
-            transform: translateY(-2px);
-            background: rgba(212, 175, 55, 0.05) !important;
-            border-color: var(--gold) !important;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .fc-daygrid-event {
-            border-radius: 4px !important;
-            padding: 2px 4px !important;
-            font-size: 0.75rem !important;
-        }
-
-        .fc-daygrid-day-frame {
-            min-height: 80px !important;
-        }
-
-        /* Tu estilo anterior de scroll-to-top o similar */
-        .scroll-to-top {
-            bottom: 40px; 
-        }
     </style>
 </head>
 <body>
@@ -451,17 +412,8 @@
 
         <div class="main-grid">
             
-           <div class="calendar-container">
-                <div id="calendar"></div> 
-                
-                <div id="detalle-agenda-dia" style="margin-top: 25px; display: none; padding-bottom: 50px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
-                        <h3 id="titulo-agenda" style="color: var(--gold); margin: 0; font-size: 1.1rem; text-transform: uppercase;"></h3>
-                        <span style="color: #666; font-size: 0.7rem;">TAP PARA EDITAR</span>
-                    </div>
-                    <div id="lista-eventos-dia" style="display: grid; gap: 12px;">
-                        </div>
-                </div>
+            <div id="calendar-container">
+                <div id="calendar"></div>
             </div>
 
             <aside class="sidebar-stats">
@@ -713,83 +665,40 @@
         // --- INICIALIZACIÓN DEL DASHBOARD ---
         function initDashboard() {
     const calendarEl = document.getElementById('calendar');
-   calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth', // Vista inicial recomendada para ver el mes
-                locale: 'es', 
-                allDaySlot: false, 
-                slotDuration: '00:30:00',
-                nowIndicator: true,
-                headerToolbar: { 
-                    left: 'prev,next today', 
-                    center: 'title', 
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay' 
-                },
+    calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridDay', 
+        locale: 'es', 
+        allDaySlot: false, 
+        slotDuration: '00:30:00',
+        nowIndicator: true,
+        headerToolbar: { 
+            left: 'prev,next today', 
+            center: 'title', 
+            right: 'dayGridMonth,timeGridWeek,timeGridDay' 
+        },
+        contentHeight: 'auto',
 
-                // --- PASO 2: CONFIGURACIÓN DE TAMAÑO FIJO ---
-                dayMaxEvents: 2,         // Muestra máximo 2 citas por día en el mes
-                height: 600,             // Obliga al calendario a no estirarse
-                fixedWeekCount: false,   // Ajusta las filas según el mes
-                contentHeight: 'auto',
-                editable: true,
-                eventDurationEditable: false,
-                // --------------------------------------------
+        // --- ESTO ES LO QUE SUMAMOS PARA EL PASO 1 ---
+        editable: true,               // Permite que las citas se puedan mover
+        eventDurationEditable: false, // Bloquea que se cambie la duración (solo mover la hora)
+        eventDrop: function(info) {
+            actualizarHorarioCita(info.event); // Llama a la función que guarda en Firebase
+        },
+        // ---------------------------------------------
 
-                eventDrop: function(info) {
-                    actualizarHorarioCita(info.event);
-                },
-
-                // --- PASO 3: FUNCIÓN PARA LA AGENDA DETALLADA ABAJO ---
-               dateClick: function(info) {
-                    const detalleDiv = document.getElementById('detalle-agenda-dia');
-                    const listaDiv = document.getElementById('lista-eventos-dia');
-                    const titulo = document.getElementById('titulo-agenda');
-
-                    const eventos = calendar.getEvents().filter(e => e.startStr.split('T')[0] === info.dateStr);
-
-                    detalleDiv.style.display = 'block';
-                    titulo.innerText = "Agenda: " + info.dateStr.split('-').reverse().join('/');
-                    listaDiv.innerHTML = "";
-
-                    if (eventos.length === 0) {
-                        listaDiv.innerHTML = "<p style='color:#666; text-align:center; padding:20px;'>No hay citas para este día.</p>";
-                    } else {
-                        eventos.sort((a, b) => a.start - b.start).forEach(ev => {
-                            const meta = ev.extendedProps;
-                            const hora = ev.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                            
-                            const card = document.createElement('div');
-                            // Clase para el estilo CSS que pondremos luego
-                            card.className = "agenda-card-finalizar"; 
-                            
-                            card.innerHTML = `
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                    <div onclick="abrirEdicionDirecta('${ev.id}')" style="cursor:pointer; flex-grow:1;">
-                                        <strong style="color: #fff; font-size: 1.1rem; display: block;">${ev.title}</strong>
-                                        <span style="color: var(--gold); font-size: 0.85rem;">${meta.servicio || ''}</span>
-                                        ${meta.nota ? `<p style="color: #888; font-size: 0.75rem; margin-top: 5px; font-style: italic;"><i class="fas fa-sticky-note"></i> ${meta.nota}</p>` : ''}
-                                    </div>
-                                    <div style="text-align: right; min-width: 80px;">
-                                        <div style="color: #fff; font-weight: bold; background: #222; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; margin-bottom: 8px;">${hora}</div>
-                                        <button onclick="finalizarDesdeLista('${ev.id}')" class="btn-finalizar-small">
-                                            <i class="fas fa-check-circle"></i> FINALIZAR
-                                        </button>
-                                    </div>
-                                </div>
-                            `;
-                            listaDiv.appendChild(card);
-                        });
-                    }
-                    detalleDiv.scrollIntoView({ behavior: 'smooth' });
-                },
-
-                // Tu código de detección de cambio de fecha
+        // Aquí sigue tu código de datesSet...
+        datesSet: function(info) {
+            // ... tu código actual ...
+        },
+                
+                // DETECCIÓN DINÁMICA DE CAMBIO DE FECHA
                 datesSet: function(info) {
                     fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
+                    // Forzamos actualización de etiquetas y conteos
                     onValue(ref(db, 'citas'), (snapshot) => {
                         renderAdmin(snapshot.val());
                     }, { onlyOnce: true });
                 },
-
                 selectable: true,
                 select: function(info) {
                     if(info.view.type !== 'dayGridMonth'){
@@ -802,51 +711,56 @@
                         document.getElementById('modalAddCita').style.display = 'flex';
                     }
                 },
-
                 eventClick: function(info) {
-                    currentEditingId = info.event.id;
-                    const meta = info.event.extendedProps;
-                    const fTxt = info.event.start.toLocaleString('es-GT', { 
-                        weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' 
-                    });
-                    
-                    document.getElementById('pop-nombre').innerText = meta.nombre;
-                    document.getElementById('pop-fecha').innerText = fTxt;
-                    document.getElementById('pop-detalle-corte').innerHTML = `
-                        <div style="color:var(--gold); font-size:1.1rem; font-weight:600; margin-bottom:5px;">
-                            ${meta.servicio}
-                        </div>
-                        <div style="color:var(--green); font-weight:600; font-size:1.2rem;">Q${meta.precio}</div>
-                    ` + (meta.nota ? `<p style="font-size:0.8rem; color:#888; margin-top:15px; background:#111; padding:10px; border-radius:10px;">Nota: ${meta.nota}</p>` : "");
-                    
-                    document.getElementById('pop-whatsapp').onclick = function() {
-                        const num = meta.whatsapp.replace(/\D/g,'');
-                        const msg = encodeURIComponent('Hola ' + meta.nombre + ', te recordamos tu cita en Innovation Barber Studio para el ' + fTxt + '. ¡Te esperamos!');
-                        window.open('https://wa.me/' + num + '?text=' + msg);
-                    };
-                    
-                    const fullWhatsapp = meta.whatsapp || "";
-                    const codigos = ["502", "503", "504", "505", "506", "507", "52", "1"];
-                    let encontrado = "502"; 
-                    let numLimpio = fullWhatsapp;
+    currentEditingId = info.event.id;
+    const meta = info.event.extendedProps;
+    const fTxt = info.event.start.toLocaleString('es-GT', { 
+        weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' 
+    });
+    
+    // Llenar vista consulta
+    document.getElementById('pop-nombre').innerText = meta.nombre;
+    document.getElementById('pop-fecha').innerText = fTxt;
+    document.getElementById('pop-detalle-corte').innerHTML = `
+        <div style="color:var(--gold); font-size:1.1rem; font-weight:600; margin-bottom:5px;">
+            ${meta.servicio}
+        </div>
+        <div style="color:var(--green); font-weight:600; font-size:1.2rem;">Q${meta.precio}</div>
+    ` + (meta.nota ? `<p style="font-size:0.8rem; color:#888; margin-top:15px; background:#111; padding:10px; border-radius:10px;">Nota: ${meta.nota}</p>` : "");
+    
+    // Acción WhatsApp
+    document.getElementById('pop-whatsapp').onclick = function() {
+        const num = meta.whatsapp.replace(/\D/g,'');
+        const msg = encodeURIComponent('Hola ' + meta.nombre + ', te recordamos tu cita en Innovation Barber Studio para el ' + fTxt + '. ¡Te esperamos!');
+        window.open('https://wa.me/' + num + '?text=' + msg);
+    };
+    
+    // --- Lógica para separar Código de Área y Número ---
+    const fullWhatsapp = meta.whatsapp || "";
+    const codigos = ["502", "503", "504", "505", "506", "507", "52", "1"];
+    let encontrado = "502"; 
+    let numLimpio = fullWhatsapp;
 
-                    for (let cod of codigos) {
-                        if (fullWhatsapp.startsWith(cod)) {
-                            encontrado = cod;
-                            numLimpio = fullWhatsapp.substring(cod.length); 
-                            break;
-                        }
-                    }
+    for (let cod of codigos) {
+        if (fullWhatsapp.startsWith(cod)) {
+            encontrado = cod;
+            numLimpio = fullWhatsapp.substring(cod.length); 
+            break;
+        }
+    }
 
-                    document.getElementById('edit-nombre').value = meta.nombre;
-                    document.getElementById('edit-codigo-area').value = encontrado;
-                    document.getElementById('edit-whatsapp').value = numLimpio;
-                    document.getElementById('edit-precio').value = meta.precio;
-                    document.getElementById('edit-nota').value = meta.nota || "";
-                    document.getElementById('edit-servicio-select').value = ""; 
+    // Llenar vista edición con los nuevos IDs del selector de banderas
+    document.getElementById('edit-nombre').value = meta.nombre;
+    document.getElementById('edit-codigo-area').value = encontrado; // Selector
+    document.getElementById('edit-whatsapp').value = numLimpio;     // Input del número
+    document.getElementById('edit-precio').value = meta.precio;
+    document.getElementById('edit-nota').value = meta.nota || "";
+    document.getElementById('edit-servicio-select').value = ""; 
 
-                    document.getElementById('modalEvento').style.display = 'flex';
-
+    document.getElementById('modalEvento').style.display = 'flex';
+    
+    // ... (final de la lógica de eliminar cita)
+                   // --- FINAL DE EVENT CLICK ---
                     document.getElementById('btn-eliminar-pop').onclick = function() {
                         confirmarAccion("¿Seguro que quieres eliminar permanentemente esta cita?", function() {
                             remove(ref(db, 'citas/' + currentEditingId)).then(() => {
@@ -855,8 +769,8 @@
                             });
                         });
                     };
-                }
-            });
+                } // Cierre de eventClick
+            }); // CIERRE CORRECTO DE FullCalendar
 
             calendar.render(); // Ahora sí, renderizamos
 
@@ -1094,7 +1008,6 @@
             });
         }
 
-        // --- CATÁLOGO DE SERVICIOS ---
         window.eliminarServicio = function(id) {
             confirmarAccion("¿Eliminar este servicio del catálogo? Esto no afectará citas ya agendadas.", function() {
                 remove(ref(db, 'servicios/' + id)).then(() => showToast("CATÁLOGO ACTUALIZADO"));
@@ -1102,25 +1015,27 @@
         };
 
         document.getElementById('btn-add-serv').onclick = () => {
-            const n = document.getElementById('serv-n').value;
-            const p = document.getElementById('serv-p').value;
-            const d = document.getElementById('serv-d').value;
+    const n = document.getElementById('serv-n').value;
+    const p = document.getElementById('serv-p').value;
+    const d = document.getElementById('serv-d').value; // <--- Agregamos esta línea
 
-            if(n && p) {
-                push(ref(db, 'servicios'), { 
-                    nombre: n, 
-                    precio: p, 
-                    detalle: d 
-                }).then(() => {
-                    document.getElementById('serv-n').value = '';
-                    document.getElementById('serv-p').value = '';
-                    document.getElementById('serv-d').value = ''; 
-                    showToast("NUEVO SERVICIO AÑADIDO");
-                });
-            } else {
-                showToast("LLENA NOMBRE Y PRECIO");
-            }
-        };
+    if(n && p) {
+        // Añadimos 'detalle: d' al objeto que se envía a Firebase
+        push(ref(db, 'servicios'), { 
+            nombre: n, 
+            precio: p, 
+            detalle: d 
+        }).then(() => {
+            // Limpiamos los tres campos después de guardar
+            document.getElementById('serv-n').value = '';
+            document.getElementById('serv-p').value = '';
+            document.getElementById('serv-d').value = ''; 
+            showToast("NUEVO SERVICIO AÑADIDO");
+        });
+    } else {
+        showToast("LLENA NOMBRE Y PRECIO");
+    }
+};
 
         // --- ACCIÓN FINAL: GUARDAR CITA DESDE CALENDARIO ---
         document.getElementById('btn-save-cita-calendar').onclick = function() {
@@ -1149,26 +1064,31 @@
         };
 
         // --- GUARDAR AJUSTES DE HORARIO ---
-        document.getElementById('btn-save-hours').onclick = () => {
-            const nuevaAp = apS.value;
-            const nuevaCi = ciS.value;
+       document.getElementById('btn-save-hours').onclick = () => {
+    const nuevaAp = apS.value;
+    const nuevaCi = ciS.value;
 
-            set(ref(db, 'configuracion_horario'), { 
-                apertura: nuevaAp, 
-                cierre: nuevaCi, 
-                lunch_inicio: lIn.value, 
-                lunch_fin: lFi.value 
-            }).then(() => {
-                calendar.setOption('slotMinTime', nuevaAp.padStart(2, '0') + ':00:00');
-                calendar.setOption('slotMaxTime', nuevaCi.padStart(2, '0') + ':00:00');
-                calendar.updateSize(); 
-                showToast("HORARIOS ACTUALIZADOS");
-            }).catch(err => {
-                console.error("Error al guardar:", err);
-                showToast("ERROR AL GUARDAR");
-            });
-        };
-
+    // Guardamos en Firebase
+    set(ref(db, 'configuracion_horario'), { 
+        apertura: nuevaAp, 
+        cierre: nuevaCi, 
+        lunch_inicio: lIn.value, 
+        lunch_fin: lFi.value 
+    }).then(() => {
+        // ACTUALIZACIÓN INMEDIATA DEL CALENDARIO
+        // 1. Ajusta el rango de horas
+        calendar.setOption('slotMinTime', nuevaAp.padStart(2, '0') + ':00:00');
+        calendar.setOption('slotMaxTime', nuevaCi.padStart(2, '0') + ':00:00');
+        
+        // 2. Fuerza a la caja a encogerse/estirarse
+        calendar.updateSize(); 
+        
+        showToast("HORARIOS ACTUALIZADOS");
+    }).catch(err => {
+        console.error("Error al guardar:", err);
+        showToast("ERROR AL GUARDAR");
+    });
+};
         // --- LÓGICA DE BLOQUEO DE DÍAS ---
         const fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d" });
 
@@ -1198,43 +1118,34 @@
                 showToast("SELECCIONA UNA FECHA");
             }
         };
+        // ... (todo tu código anterior de botones y bloqueos)
 
-        // --- FUNCIONES GLOBALES (DRAG & DROP Y AGENDA) ---
+        // --- FUNCIÓN PARA MOVER CITAS (DRAG & DROP) ---
         function actualizarHorarioCita(event) {
-            const citaId = event.id;
-            const start = event.start;
-            const year = start.getFullYear();
-            const month = String(start.getMonth() + 1).padStart(2, '0');
-            const day = String(start.getDate()).padStart(2, '0');
-            const hours = String(start.getHours()).padStart(2, '0');
-            const minutes = String(start.getMinutes()).padStart(2, '0');
-            
-            const nuevaFechaFormateada = `${year}-${month}-${day}T${hours}:${minutes}`;
+    const citaId = event.id;
+    
+    // Convertimos la fecha al formato que entiende tu sistema (YYYY-MM-DDTHH:mm)
+    // Esto asegura que el "index" detecte el cambio correctamente
+    const start = event.start;
+    const year = start.getFullYear();
+    const month = String(start.getMonth() + 1).padStart(2, '0');
+    const day = String(start.getDate()).padStart(2, '0');
+    const hours = String(start.getHours()).padStart(2, '0');
+    const minutes = String(start.getMinutes()).padStart(2, '0');
+    
+    const nuevaFechaFormateada = `${year}-${month}-${day}T${hours}:${minutes}`;
 
-            update(ref(db, 'citas/' + citaId), {
-                fecha: nuevaFechaFormateada
-            }).then(() => {
-                showToast("HORARIO ACTUALIZADO");
-            }).catch((error) => {
-                console.error("Error al mover:", error);
-                showToast("ERROR AL REPROGRAMAR");
-                location.reload(); 
-            });
-        }
-
-        function finalizarDesdeLista(id) {
-            confirmarAccion("¿Deseas finalizar y cobrar esta cita?", function() {
-                update(ref(db, 'citas/' + id), { estado: 'Finalizado' }).then(() => {
-                    showToast("CITA FINALIZADA Y COBRADA");
-                });
-            });
-        }
-
-        function abrirEdicionDirecta(id) {
-            const ev = calendar.getEventById(id);
-            if(ev) calendar.trigger('eventClick', { event: ev });
-        }
-
+    // Actualizamos en Firebase
+    update(ref(db, 'citas/' + citaId), {
+        fecha: nuevaFechaFormateada
+    }).then(() => {
+        showToast("HORARIO ACTUALIZADOO");
+    }).catch((error) => {
+        console.error("Error al mover:", error);
+        showToast("ERROR AL REPROGRAMAR");
+        location.reload(); 
+    });
+}
     </script>
 </body>
 </html>
