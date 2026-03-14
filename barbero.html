@@ -35,41 +35,7 @@
     background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 12px; 
     margin-bottom: 8px; font-size: 0.8rem; border-left: 3px solid var(--red); 
 }
-        /* --- ESTILO GLOBAL PARA CABECERAS OSCURAS --- */
-        .fc-theme-standard .fc-col-header-cell {
-            background: #000000 !important; 
-        }
-
-        .fc-col-header-cell-cushion {
-            color: #ffffff !important;
-            text-decoration: none !important;
-            font-weight: 600 !important;
-            display: block !important;
-            padding: 10px 0 !important;
-        }
-
-        /* Quitar bordes brillantes y asegurar fondo negro */
-        .fc-theme-standard td, .fc-theme-standard th {
-            border: 1px solid #1a1a1a !important;
-        }
-
-        .fc-view-harness {
-            background: #000000 !important;
-        }
-
-        /* --- ELIMINAR EL CUADRITO BLANCO DE LA ESQUINA --- */
-
-/* 1. Fondo negro para el rincón superior izquierdo */
-.fc .fc-timegrid-axis-frame, 
-.fc-theme-standard .fc-timegrid-axis {
-    background-color: #000000 !important;
-}
-
-/* 2. Por si acaso queda un borde o fondo en la celda de la esquina */
-.fc-theme-standard .fc-scrollgrid-section-header th {
-    background-color: #000000 !important;
-    border: 1px solid #1a1a1a !important;
-}
+        
         /* ==========================================
            ESTILOS BASE Y SCROLLBAR
            ========================================== */
@@ -144,13 +110,12 @@
         /* ==========================================
            CALENDARIO (MODERN DARK)
            ========================================== */
-    #calendar-container { 
+        #calendar-container { 
             background: var(--card); 
-            padding: 10px; /* Reducimos el padding para que cierre más ajustado */
+            padding: 20px; 
             border-radius: 35px; 
             border: 1px solid var(--border); 
-            height: fit-content; /* <--- AGREGA ESTO: La caja se encoge al contenido */
-            overflow: hidden; /* <--- AGREGA ESTO: Corta cualquier residuo visual */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .fc { 
@@ -456,7 +421,7 @@
                 </header>
 
                 <div class="stat-group">
-                    <span class="stat-label">Clientes Finalizados del Mes</span><br>
+                    <span class="stat-label">Finalizados Mes</span><br>
                     <span class="stat-val" id="citas-count">0</span>
                     <div id="desglose-servicios"></div>
                 </div>
@@ -550,26 +515,29 @@
                     </div>
                 </div>
 
-                <p style="font-size: 0.7rem; color: #555; margin-top: 15px; text-align: left;">HORARIO DE ALMUERZO</p>
+                <p style="font-size: 0.7rem; color: #555; margin-top: 15px; text-align: left;">HORARIO DE ALMUERZO (LUNCH)</p>
                 <div style="display:flex; gap:10px; margin-bottom:15px;">
                     <select id="config-lunch-inicio"><option value="">Sin lunch</option></select>
                     <select id="config-lunch-fin"><option value="">Sin lunch</option></select>
                 </div>
 
-        <button class="btn btn-gold" id="btn-save-hours">GUARDAR CAMBIOS</button>
+        <button class="btn btn-gold" id="btn-save-hours">ACTUALIZAR HORARIOS</button>
 <h4 style="font-size:0.7rem; color:var(--gold); border-bottom:1px solid #222; text-align:left; margin-top:25px; margin-bottom:10px;">BLOQUEAR DÍA ENTERO</h4>
 <div style="display:flex; gap:10px;">
     <input type="text" id="input-block-date" placeholder="Elegir fecha" readonly style="cursor:pointer; text-align: center; margin-bottom:0;">
-    <button class="btn btn-red" id="btn-add-block" style="padding:12px; width:auto; margin-bottom:12px;">BLOQUEAR FECHA</button>
+    <button class="btn btn-red" id="btn-add-block" style="padding:12px; width:auto; margin-bottom:12px;">BLOQUEAR</button>
 </div>
 <div id="lista-bloqueos-admin" style="margin-top:15px; text-align: left; max-height: 120px; overflow-y:auto;"></div>
                 <hr style="border:0; border-top:1px solid #1a1a1a; margin:30px 0;">
 
                 <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px;">GESTIÓN DE SERVICIOS</p>
-                <input type="text" id="serv-n" placeholder="Nombre del Servicio">
-                <input type="number" id="serv-p" placeholder="Precio Q.">
-                <input type="text" id="serv-d" placeholder="¿Qué incluye?">
-                <button class="btn btn-gold" id="btn-add-serv" style="padding: 12px; font-size: 0.6rem;">AÑADIR SERVICIO</button>
+                <input type="text" id="serv-n" placeholder="Nombre (Ej: Corte + Barba)">
+                <input type="number" id="serv-p" placeholder="Precio en Quetzales">
+                <button class="btn btn-gold" id="btn-add-serv" style="padding: 12px; font-size: 0.6rem;">AÑADIR AL CATÁLOGO</button>
+                
+                <div id="lista-servicios-admin" style="margin-top:25px; text-align: left;"></div>
+
+                <button class="btn btn-outline" onclick="toggleConfig()" style="margin-top: 30px;">CERRAR PANEL</button>
             </div>
         </div>
 
@@ -643,49 +611,22 @@
         };
 
         // --- LLENAR SELECTS DE HORAS EN CONFIG ---
-     const apS = document.getElementById('config-apertura');
+        const apS = document.getElementById('config-apertura');
         const ciS = document.getElementById('config-cierre');
         const lIn = document.getElementById('config-lunch-inicio');
         const lFi = document.getElementById('config-lunch-fin');
-
-        // 1. Creamos la lista de horas (Estilo limpio Imagen 1)
-        let opciones = "";
-        for(let h=0; h<=23; h++){
-            opciones += `<option value="${h}">${h.toString().padStart(2, '0')}:00</option>`;
+        
+        for(let h=0; h<=23; h++){ 
+            const opt = document.createElement('option');
+            opt.value = h;
+            opt.innerText = h.toString().padStart(2, '0') + ":00";
+            
+            apS.appendChild(opt.cloneNode(true));
+            ciS.appendChild(opt.cloneNode(true));
+            lIn.appendChild(opt.cloneNode(true));
+            lFi.appendChild(opt);
         }
 
-        // 2. Inyectamos el diseño en los 4 cuadros por igual
-        apS.innerHTML = opciones;
-        ciS.innerHTML = opciones;
-        lIn.innerHTML = '<option value="">Sin lunch</option>' + opciones;
-        lFi.innerHTML = '<option value="">Sin lunch</option>' + opciones;
-
-        // 3. Cargamos los datos guardados
-        onValue(ref(db, 'configuracion_horario'), (snapshot) => {
-            const config = snapshot.val();
-            if(config) {
-                apS.value = config.apertura;
-                ciS.value = config.cierre;
-                lIn.value = config.lunch_inicio || "";
-                lFi.value = config.lunch_fin || "";
-            }
-        });
-        // Esta parte es la "magia" para que el diseño se vea como la Imagen 1
-        // Solo agrega las horas de lunch si están dentro del horario de trabajo
-       onValue(ref(db, 'configuracion_horario'), (snapshot) => {
-            const config = snapshot.val();
-            if(config) {
-                // 1. Esto recorta el calendario visualmente (Lógica Imagen 1)
-                calendar.setOption('slotMinTime', config.apertura.padStart(2, '0') + ':00:00');
-                calendar.setOption('slotMaxTime', config.cierre.padStart(2, '0') + ':00:00');
-
-                // 2. Sincroniza los valores del panel
-                apS.value = config.apertura;
-                ciS.value = config.cierre;
-                lIn.value = config.lunch_inicio || "";
-                lFi.value = config.lunch_fin || "";
-            }
-        });
         // --- GESTIÓN DE AUTENTICACIÓN ---
         window.loginGoogle = function() {
             signInWithPopup(auth, provider).catch(() => {
@@ -709,14 +650,12 @@
         // --- INICIALIZACIÓN DEL DASHBOARD ---
         function initDashboard() {
             const calendarEl = document.getElementById('calendar');
-            calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+            calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridDay', 
                 locale: 'es', 
                 allDaySlot: false, 
-                slotDuration: '00:30:00', 
-                height: 'auto', // <--- CAMBIA ESTO (antes decía contentHeight)
-                handleWindowResize: true,
-                expandRows: false, // <--- AGREGA ESTO para que las filas no se estiren
+                slotDuration: '00:30:00',
+                nowIndicator: true,
                 headerToolbar: { 
                     left: 'prev,next today', 
                     center: 'title', 
@@ -788,17 +727,15 @@
             calendar.render();
 
             // SINCRONIZACIÓN DE CONFIGURACIÓN
-            onValue(ref(db, 'configuracion_horario'), (snapshot) => {
-            const config = snapshot.val();
-            if(config) {
-                apS.value = config.apertura;
-                ciS.value = config.cierre;
-                
-                // PEGA ESTAS DOS AQUÍ:
-                lIn.value = config.lunch_inicio || ""; 
-                lFi.value = config.lunch_fin || "";    
-            }
-        });
+            onValue(ref(db, 'configuracion_horario'), (snapshot) => { 
+                const config = snapshot.val();
+                if(config){ 
+                    calendar.setOption('slotMinTime', config.apertura.padStart(2,'0') + ':00:00'); 
+                    calendar.setOption('slotMaxTime', config.cierre.padStart(2,'0') + ':00:00'); 
+                    apS.value = config.apertura;
+                    ciS.value = config.cierre;
+                } 
+            });
 
             // SINCRONIZACIÓN DE CITAS (TIEMPO REAL)
             onValue(ref(db, 'citas'), (snapshot) => {
@@ -806,14 +743,12 @@
             });
 
             // SINCRONIZACIÓN DE CATÁLOGO
-           // 1. Carga de servicios (Corregido)
-        onValue(ref(db, 'servicios'), (snapshot) => {
-            if (typeof renderServicios === 'function') {
+            onValue(ref(db, 'servicios'), (snapshot) => {
                 renderServicios(snapshot.val() || {});
-            }
-        });
+            });
+        }
 
-        // 2. Renderizado Maestro (Protegido contra errores null)
+        // --- RENDERIZADO MAESTRO DE DATOS ---
         function renderAdmin(data) {
             const lista = document.getElementById('lista-citas');
             const cCount = document.getElementById('citas-count');
@@ -821,16 +756,14 @@
             const pCount = document.getElementById('count-pendientes');
             const pLabel = document.getElementById('label-pendientes');
             const desglose = document.getElementById('desglose-servicios');
-
-            // Si la lista no existe en el HTML, no seguimos para evitar errores
-            if (!lista) return; 
-
+            
             lista.innerHTML = ''; 
-            if (desglose) desglose.innerHTML = '';
+            desglose.innerHTML = '';
             
             let finalizadosMes = 0;
             let ingresosMes = 0;
             let pendientesDiaEnPantalla = 0;
+            let eventosCalendar = [];
             let contadorServicios = {};
 
             const ahora = new Date();
@@ -838,56 +771,14 @@
             const añoActual = ahora.getFullYear();
             const hoyRealIso = ahora.toISOString().split('T')[0];
 
-            if (data) {
-                Object.keys(data).forEach(id => {
-                    const c = data[id];
-                    const fechaCita = new Date(c.fecha + "T00:00:00");
-
-                    // Estadísticas del mes actual
-                    if (fechaCita.getMonth() === mesActual && fechaCita.getFullYear() === añoActual) {
-                        finalizadosMes++;
-                        ingresosMes += parseFloat(c.precio || 0);
-                        contadorServicios[c.servicio] = (contadorServicios[c.servicio] || 0) + 1;
-                    }
-
-                    // Filtrar por fecha visualizada
-                    if (c.fecha === fechaVisualizada) {
-                        pendientesDiaEnPantalla++;
-                        const item = document.createElement('div');
-                        item.className = 'block-item-admin';
-                        item.innerHTML = `
-                            <div style="flex:1">
-                                <div style="font-weight:600; font-size:0.85rem; color:white;">${c.cliente}</div>
-                                <div style="font-size:0.75rem; color:var(--gold);">${c.hora} - ${c.servicio}</div>
-                            </div>
-                            <i class="fas fa-trash-alt" style="color:var(--red); cursor:pointer;" onclick="eliminarCita('${id}')"></i>
-                        `;
-                        lista.appendChild(item);
-                    }
-                });
+            // ACTUALIZAR ETIQUETA DINÁMICA DE PENDIENTES
+            if (fechaVisualizada === hoyRealIso) {
+                pLabel.innerText = "Pendientes Hoy";
+            } else {
+                const opciones = { day: 'numeric', month: 'short' };
+                const fechaFormateada = new Date(fechaVisualizada + "T00:00:00").toLocaleDateString('es-GT', opciones);
+                pLabel.innerText = "Pendientes " + fechaFormateada;
             }
-
-            // Actualizar textos solo si los elementos existen
-            if (cCount) cCount.innerText = finalizadosMes;
-            if (iTotal) iTotal.innerText = "Q" + ingresosMes.toFixed(2);
-            if (pCount) pCount.innerText = pendientesDiaEnPantalla;
-
-            if (pLabel) {
-                if (fechaVisualizada === hoyRealIso) {
-                    pLabel.innerText = "Pendientes Hoy";
-                } else {
-                    const opciones = { day: 'numeric', month: 'short' };
-                    const fechaFormateada = new Date(fechaVisualizada + "T00:00:00").toLocaleDateString('es-GT', opciones);
-                    pLabel.innerText = "Pendientes " + fechaFormateada;
-                }
-            }
-
-            if (desglose) {
-                Object.keys(contadorServicios).forEach(s => {
-                    desglose.innerHTML += `<div style="font-size:0.7rem; color:#888;">${s}: ${contadorServicios[s]}</div>`;
-                });
-            }
-        }
 
             if(data){
                 Object.keys(data).forEach(id => {
@@ -1005,40 +896,34 @@
         };
 
         // --- GESTIÓN DE SERVICIOS (CATÁLOGO) ---
-       function renderServicios(servs) {
-    catalogoGlobal = servs;
-    const selAdd = document.getElementById('add-servicio-select');
-    const selEdit = document.getElementById('edit-servicio-select');
-    const listaAdmin = document.getElementById('lista-servicios-admin');
+        function renderServicios(servs){
+            catalogoGlobal = servs;
+            const selAdd = document.getElementById('add-servicio-select');
+            const selEdit = document.getElementById('edit-servicio-select');
+            const listaAdmin = document.getElementById('lista-servicios-admin');
+            
+            selAdd.innerHTML = '<option value="">Selecciona un servicio...</option>';
+            selEdit.innerHTML = '<option value="">(Sin cambios de servicio)</option>';
+            listaAdmin.innerHTML = '';
 
-    // Limpiamos los selectores y la lista antes de llenarlos
-    if (selAdd) selAdd.innerHTML = '<option value="">Selecciona un servicio...</option>';
-    if (selEdit) selEdit.innerHTML = '<option value="">(Sin cambios de servicio)</option>';
-    if (listaAdmin) listaAdmin.innerHTML = '';
+            Object.keys(servs).forEach(id => {
+                const s = servs[id];
+                const optHtml = `<option value="${id}">${s.nombre} - Q${s.precio}</option>`;
+                selAdd.innerHTML += optHtml;
+                selEdit.innerHTML += optHtml;
 
-    Object.keys(servs).forEach(id => {
-        const s = servs[id];
-        const optHtml = `<option value="${id}">${s.nombre} - Q${s.precio}</option>`;
-        
-        if (selAdd) selAdd.innerHTML += optHtml;
-        if (selEdit) selEdit.innerHTML += optHtml;
-
-        // Creamos el elemento visual para la lista del panel
-        const item = document.createElement('div');
-        item.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #111; font-size:0.8rem; background:rgba(255,255,255,0.01); margin-bottom:5px; border-radius:10px;";
-        
-        item.innerHTML = `
-            <div style="display:flex; flex-direction:column;">
-                <div style="font-weight:600; color:white;">${s.nombre} <span style="color:var(--gold); margin-left:10px;">Q${s.precio}</span></div>
-                <small style="color:#666; font-size:0.7rem;">${s.detalle || ''}</small>
-            </div>
-            <button style="background:none; border:none; color:var(--red); cursor:pointer;" onclick="eliminarServicio('${id}')">
-                <i class="fas fa-trash-alt"></i>
-            </button>
-        `;
-        if (listaAdmin) listaAdmin.appendChild(item);
-    });
-}
+                // Elemento visual para configuración
+                const item = document.createElement('div');
+                item.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #111; font-size:0.8rem; background:rgba(255,255,255,0.01); margin-bottom:5px; border-radius:10px;";
+                item.innerHTML = `
+                    <div style="font-weight:600;">${s.nombre} <span style="color:var(--gold); margin-left:10px;">Q${s.precio}</span></div>
+                    <button style="background:none; border:none; color:var(--red); cursor:pointer;" onclick="eliminarServicio('${id}')">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                `;
+                listaAdmin.appendChild(item);
+            });
+        }
 
         window.eliminarServicio = function(id) {
             confirmarAccion("¿Eliminar este servicio del catálogo? Esto no afectará citas ya agendadas.", function() {
@@ -1046,21 +931,17 @@
             });
         };
 
-       document.getElementById('btn-add-serv').onclick = () => {
+        document.getElementById('btn-add-serv').onclick = function() {
             const n = document.getElementById('serv-n').value;
             const p = document.getElementById('serv-p').value;
-            const d = document.getElementById('serv-d').value; // <--- Esta es la nueva línea
-            
             if(n && p) {
-                push(ref(db, 'servicios'), { 
-                    nombre: n, 
-                    precio: p, 
-                    detalle: d // <--- Esto guarda el "¿Qué incluye?"
-                }).then(() => { 
-                    document.getElementById('serv-n').value=''; 
-                    document.getElementById('serv-p').value=''; 
-                    document.getElementById('serv-d').value=''; // <--- Esto limpia el cuadro
+                push(ref(db, 'servicios'), { nombre: n, precio: p }).then(() => {
+                    document.getElementById('serv-n').value = '';
+                    document.getElementById('serv-p').value = '';
+                    showToast("NUEVO SERVICIO AÑADIDO");
                 });
+            } else {
+                showToast("LLENA AMBOS CAMPOS");
             }
         };
 
@@ -1091,13 +972,13 @@
         };
 
         // --- GUARDAR AJUSTES DE HORARIO ---
-        document.getElementById('btn-save-hours').onclick = () => {
+        document.getElementById('btn-save-hours').onclick = function() { 
             set(ref(db, 'configuracion_horario'), { 
                 apertura: apS.value, 
-                cierre: ciS.value,
-                lunch_inicio: lIn.value,
-                lunch_fin: lFi.value 
-            }).then(() => showToast("GUARDADO"));
+                cierre: ciS.value 
+            }).then(() => {
+                showToast("HORARIOS DE ATENCIÓN ACTUALIZADOS");
+            });
         };
         // --- LÓGICA DE BLOQUEO DE DÍAS ---
         const fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d" });
