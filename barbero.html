@@ -650,20 +650,32 @@
 
         // --- INICIALIZACIÓN DEL DASHBOARD ---
         function initDashboard() {
-            const calendarEl = document.getElementById('calendar');
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridDay', 
-                locale: 'es', 
-                allDaySlot: false, 
-                slotDuration: '00:30:00',
-                nowIndicator: true,
-                headerToolbar: { 
-                    left: 'prev,next today', 
-                    center: 'title', 
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay' 
-                },
+    const calendarEl = document.getElementById('calendar');
+    calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridDay', 
+        locale: 'es', 
+        allDaySlot: false, 
+        slotDuration: '00:30:00',
+        nowIndicator: true,
+        headerToolbar: { 
+            left: 'prev,next today', 
+            center: 'title', 
+            right: 'dayGridMonth,timeGridWeek,timeGridDay' 
+        },
+        contentHeight: 'auto',
 
-                contentHeight: 'auto',
+        // --- ESTO ES LO QUE SUMAMOS PARA EL PASO 1 ---
+        editable: true,               // Permite que las citas se puedan mover
+        eventDurationEditable: false, // Bloquea que se cambie la duración (solo mover la hora)
+        eventDrop: function(info) {
+            actualizarHorarioCita(info.event); // Llama a la función que guarda en Firebase
+        },
+        // ---------------------------------------------
+
+        // Aquí sigue tu código de datesSet...
+        datesSet: function(info) {
+            // ... tu código actual ...
+        },
                 
                 // DETECCIÓN DINÁMICA DE CAMBIO DE FECHA
                 datesSet: function(info) {
