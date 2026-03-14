@@ -710,6 +710,55 @@
         }
     });
 
+    } else {
+            if (loginOverlay) loginOverlay.style.display = 'flex';
+            if (adminContent) adminContent.style.display = 'none';
+        }
+    }); // <--- AQUÍ TERMINA LO QUE ME MOSTRASTE
+
+    // === PEGA EL CÓDIGO DE CONFIGURACIÓN AQUÍ ABAJO ===
+
+    window.toggleConfig = () => {
+        const modal = document.getElementById('modalConfig');
+        if (modal) {
+            modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+        }
+    };
+
+    const selectsConfig = ['config-apertura', 'config-cierre', 'config-lunch-inicio', 'config-lunch-fin'];
+    selectsConfig.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.innerHTML = "";
+            for (let i = 0; i < 24; i++) {
+                let h = i.toString().padStart(2, '0');
+                el.innerHTML += `<option value="${h}">${h}:00</option>`;
+            }
+        }
+    });
+
+    const btnSaveHours = document.getElementById('btn-save-hours');
+    if (btnSaveHours) {
+        btnSaveHours.onclick = () => {
+            const configData = {
+                apertura: document.getElementById('config-apertura').value,
+                cierre: document.getElementById('config-cierre').value,
+                lunch_inicio: document.getElementById('config-lunch-inicio').value,
+                lunch_fin: document.getElementById('config-lunch-fin').value
+            };
+
+            set(ref(db, 'configuracion_horario'), configData)
+                .then(() => {
+                    showToast("HORARIOS ACTUALIZADOS");
+                    toggleConfig();
+                })
+                .catch(err => {
+                    console.error("Error guardando config:", err);
+                    showToast("ERROR AL GUARDAR");
+                });
+        };
+    }
+
         // 5. INICIO DEL DASHBOARD
         function initDashboard() {
             // ACTIVAR BANDERAS
