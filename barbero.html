@@ -627,9 +627,6 @@
             databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" 
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
         const fs = getFirestore(app);
         const provider = new GoogleAuthProvider();
         
@@ -637,113 +634,46 @@
         let calendar;
         let selectedDateTime = null;
         let catalogoGlobal = {};
-        let iti;
+        let iti; // Variable para las banderas
         let currentEditingId = null;
         let fechaVisualizada = new Date().toISOString().split('T')[0];
 
-        // INICIALIZACIÓN DEL SELECTOR DE TELÉFONO
-        iti = window.intlTelInput(document.querySelector("#add-whatsapp-input"), { 
-            initialCountry: "gt", 
-            separateDialCode: true,
-            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
-        });
-
-        // --- SISTEMA DE NOTIFICACIONES ---
-        window.showToast = function(mensaje) { 
-            const t = document.getElementById('toast'); 
-            t.innerText = mensaje; 
-            t.classList.add('show'); 
-            setTimeout(() => { t.classList.remove('show'); }, 3000); 
-        };
-
-        // --- SISTEMA DE CONFIRMACIÓN MODAL ---
-        window.confirmarAccion = function(texto, callback) { 
-            document.getElementById('confirm-text').innerText = texto; 
-            document.getElementById('modalConfirm').style.display = 'flex'; 
-            document.getElementById('confirm-yes').onclick = function() { 
-                callback(); 
-                document.getElementById('modalConfirm').style.display = 'none'; 
-            }; 
-        };
-
-        // --- LLENAR SELECTS DE HORAS EN CONFIG ---
-        const apS = document.getElementById('config-apertura');
-        const ciS = document.getElementById('config-cierre');
-        const lIn = document.getElementById('config-lunch-inicio');
-        const lFi = document.getElementById('config-lunch-fin');
-        
-        for(let h=0; h<=23; h++){ 
-            const opt = document.createElement('option');
-            opt.value = h;
-            opt.innerText = h.toString().padStart(2, '0') + ":00";
-            
-            apS.appendChild(opt.cloneNode(true));
-            ciS.appendChild(opt.cloneNode(true));
-            lIn.appendChild(opt.cloneNode(true));
-            lFi.appendChild(opt);
-        }
-
-        // --- GESTIÓN DE AUTENTICACIÓN ---
-        window.loginGoogle = function() {
-            signInWithPopup(auth, provider).catch(() => {
-                showToast("ERROR EN LOGIN");
-            });
-        };
-
-        window.toggleConfig = function() { 
-            const m = document.getElementById('modalConfig'); 
-            m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
-        };
-
-        onAuthStateChanged(auth, (user) => { 
-            if(user){ 
-                document.getElementById('login-overlay').style.display = 'none'; 
-                document.getElementById('admin-content').style.display = 'block'; 
-                initDashboard(); 
-            } 
-        });
-
-        // --- INICIALIZACIÓN DEL DASHBOARD ---
         function initDashboard() {
-    const calendarEl = document.getElementById('calendar');
-            document.addEventListener('DOMContentLoaded', function() {
-    
-    // --- PEGA ESTO AQUÍ (Línea 390 aprox) ---
-    const inputTel = document.querySelector("#add-whatsapp-input");
-    if (inputTel) {
-        iti = window.intlTelInput(inputTel, { 
-            initialCountry: "gt", 
-            separateDialCode: true,
-            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
-        });
-    }
-    // ---------------------------------------
+            // 1. ACTIVAR BANDERAS (Solo una vez)
+            const inputTel = document.querySelector("#add-whatsapp-input");
+            if (inputTel) {
+                iti = window.intlTelInput(inputTel, { 
+                    initialCountry: "gt", 
+                    separateDialCode: true,
+                    utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
+                });
+            }
 
-    const calendarEl = document.getElementById('calendar');
-    // ... sigue el resto de tu código ...
-    calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth', // Vista inicial en Mes para ver el cambio
-            locale: 'es',
-            dayMaxEvents: 2,      // Muestra máximo 2 nombres y luego "+ más"
-            height: 650,          // ALTURA FIJA: El calendario no se estira más
-            fixedWeekCount: false, // Ajusta las filas según el mes
-            allDaySlot: false,
-            slotDuration: '00:30:00',
-            nowIndicator: true,
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
-            },
-            editable: true,
-            eventDurationEditable: false,
+            // 2. CONFIGURAR CALENDARIO
+            const calendarEl = document.getElementById('calendar');
+            if (!calendarEl) return;
+
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'es',
+                dayMaxEvents: 2,
+                height: 650,
+                fixedWeekCount: false,
+                allDaySlot: false,
+                slotDuration: '00:30:00',
+                nowIndicator: true,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                editable: true,
+                eventDurationEditable: false,
+                
+                eventDrop: function(info) {
+                    actualizarHorarioCita(info.event);
+                },
             
-            // --- MOVER CITAS (DRAG & DROP) ---
-            eventDrop: function(info) {
-                actualizarHorarioCita(info.event);
-            },
-
-            // --- DETECCIÓN DE CAMBIO DE FECHA ---
             datesSet: function(info) {
                 fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
                 onValue(ref(db, 'citas'), (snapshot) => {
