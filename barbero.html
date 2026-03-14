@@ -986,7 +986,8 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                     
                     // 5. Dibujar las tarjetas (Cintas) de abajo
                     // Usamos la misma lógica que el punto 3 para que coincidan
-                    if(cita.estado !== 'Finalizada' && fechaLimpia === fechaVisualizada){
+                    // 5. Dibujar las tarjetas (Cintas) de abajo
+                    if (esPendiente && fechaLimpia === fechaVisualizada) {
                         const card = document.createElement('div');
                         card.className = 'card';
                         card.innerHTML = `
