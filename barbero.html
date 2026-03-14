@@ -388,55 +388,39 @@
         #toast.show { 
             bottom: 40px; 
         }
-        /* ==================================================
-           ESTILO PARA EL POPUP DE "+ MÁS" (EDICIÓN ELITE) 
-           ================================================== */
-        .fc-popover {
-            background-color: #0a0a0a !important; 
-            border: 1px solid var(--gold) !important; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8) !important;
-            border-radius: 12px !important;
-            z-index: 9999 !important;
-        }
+       /* --- LIMPIEZA DEL POPUP (SOLO QUITAR AMARILLO) --- */
+.fc-popover {
+    background-color: #0a0a0a !important;
+    border: 1px solid var(--gold) !important;
+    z-index: 9999 !important;
+}
 
-        .fc-popover-header {
-            background-color: #111 !important; 
-            color: var(--gold) !important; 
-            border-bottom: 1px solid #222 !important;
-            border-radius: 10px 10px 0 0 !important;
-            font-weight: bold !important;
-            padding: 8px 12px !important;
-        }
+.fc-popover-header {
+    background-color: #1a1a1a !important;
+    color: var(--gold) !important;
+}
 
-        .fc-popover-body {
-            background-color: #0a0a0a !important;
-            padding: 10px !important;
-        }
+.fc-popover-body {
+    background-color: #0a0a0a !important;
+}
 
-        /* NOMBRES LIMPIOS SIN FONDO AMARILLO */
-        .fc-popover-body .fc-daygrid-event {
-            background-color: transparent !important; 
-            border: none !important; 
-            color: #ffffff !important; 
-            font-size: 0.85rem !important;
-            margin-bottom: 6px !important;
-            padding: 4px 5px !important;
-            display: block !important;
-        }
+/* LA CLAVE: Aquí quitamos el amarillo y ponemos texto blanco */
+.fc-popover-body .fc-daygrid-event {
+    background-color: transparent !important; /* Cero amarillo */
+    border: none !important;
+    color: #ffffff !important; /* Texto blanco puro */
+}
 
-        /* PUNTITO DORADO DE LISTA VIP */
-        .fc-popover-body .fc-daygrid-event::before {
-            content: "•";
-            color: var(--gold);
-            margin-right: 8px;
-            font-size: 1.2rem;
-            vertical-align: middle;
-        }
+/* El punto dorado para que no se vea vacío */
+.fc-popover-body .fc-daygrid-event::before {
+    content: "• ";
+    color: var(--gold);
+    font-weight: bold;
+}
 
-        .fc-popover-close {
-            color: #fff !important;
-            font-size: 1.1em !important;
-        }
+.fc-popover-close {
+    color: #fff !important;
+}
     </style>
 </head>
 <body>
