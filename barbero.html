@@ -918,116 +918,118 @@ onValue(ref(db, 'configuracion_horario'), snap => {
 
         // --- RENDERIZADO MAESTRO DE DATOS ---
        function renderAdmin(data) {
-            const lista = document.getElementById('lista-citas');
-            const cCount = document.getElementById('citas-count');
-            const iTotal = document.getElementById('ingreso-total');
-            const pCount = document.getElementById('count-pendientes');
-            const pLabel = document.getElementById('label-pendientes');
-            const desglose = document.getElementById('desglose-servicios');
-            
-            lista.innerHTML = ''; 
-            desglose.innerHTML = '';
-            
-            let finalizadosMes = 0;
-            let ingresosMes = 0;
-            let pendientesDiaEnPantalla = 0;
-            let eventosCalendar = [];
-            let contadorServicios = {};
+    const lista = document.getElementById('lista-citas');
+    const cCount = document.getElementById('citas-count');
+    const iTotal = document.getElementById('ingreso-total');
+    const pCount = document.getElementById('count-pendientes');
+    const pLabel = document.getElementById('label-pendientes');
+    const desglose = document.getElementById('desglose-servicios');
+    
+    lista.innerHTML = ''; 
+    desglose.innerHTML = '';
+    
+    let finalizadosMes = 0;
+    let ingresosMes = 0;
+    let pendientesDiaEnPantalla = 0;
+    let eventosCalendar = [];
+    let contadorServicios = {};
 
-            const ahora = new Date();
-            const mesActual = ahora.getMonth();
-            const añoActual = ahora.getFullYear();
-            const hoyRealIso = ahora.toISOString().split('T')[0];
+    // --- CORRECCIÓN DE MES DINÁMICO ---
+    // Extraemos mes y año de la fecha que está viendo el usuario en el calendario
+    const fechaReferencia = new Date(fechaVisualizada + "T12:00:00");
+    const mesEnPantalla = fechaReferencia.getMonth();
+    const añoEnPantalla = fechaReferencia.getFullYear();
 
-            if (fechaVisualizada === hoyRealIso) {
-                pLabel.innerText = "Pendientes Hoy";
-            } else {
-                const opciones = { day: 'numeric', month: 'short' };
-                const fechaFormateada = new Date(fechaVisualizada + "T12:00:00").toLocaleDateString('es-GT', opciones);
-                pLabel.innerText = "Pendientes " + fechaFormateada;
+    const ahoraHoy = new Date();
+    const hoyRealIso = ahoraHoy.toISOString().split('T')[0];
+
+    // Actualizar etiqueta del contador dorado
+    if (fechaVisualizada === hoyRealIso) {
+        pLabel.innerText = "Pendientes Hoy";
+    } else {
+        const opciones = { day: 'numeric', month: 'short' };
+        const fechaFormateada = fechaReferencia.toLocaleDateString('es-GT', opciones);
+        pLabel.innerText = "Pendientes " + fechaFormateada;
+    }
+
+    if(data){
+        // --- 1. ORDENAMIENTO POR HORA ---
+        const listaOrdenada = Object.keys(data).map(id => ({
+            id: id,
+            ...data[id]
+        })).sort((a, b) => {
+            if (!a.fecha || !b.fecha) return 0;
+            return a.fecha.localeCompare(b.fecha);
+        });
+
+        // --- 2. PROCESAMIENTO DE CITAS ---
+        listaOrdenada.forEach(cita => {
+            const id = cita.id;
+            if (!cita.fecha) return;
+
+            const esFinalizada = cita.estado === 'Finalizada';
+            const esPendiente = cita.estado !== 'Finalizada'; 
+            const fechaLimpia = cita.fecha.split('T')[0];
+            const fCita = new Date(fechaLimpia + "T12:00:00");
+
+            // MÉTRICAS BASADAS EN EL MES QUE ESTÁS VIENDO
+            if(esFinalizada && fCita.getMonth() === mesEnPantalla && fCita.getFullYear() === añoEnPantalla) { 
+                finalizadosMes++; 
+                ingresosMes += parseFloat(cita.precio || 0); 
+                if(cita.servicio) {
+                    contadorServicios[cita.servicio] = (contadorServicios[cita.servicio] || 0) + 1; 
+                }
             }
 
-            if(data){
-                // 1. Convertimos el objeto de Firebase en una lista (Array) para poder ordenarla
-                const listaOrdenada = Object.keys(data).map(id => ({
-                    id: id,
-                    ...data[id]
-                }));
-
-                // 2. Ordenamos la lista por el campo 'fecha' (que incluye la hora)
-                listaOrdenada.sort((a, b) => {
-                    if (!a.fecha || !b.fecha) return 0;
-                    return a.fecha.localeCompare(b.fecha);
-                });
-
-                // 3. Ahora recorremos la lista YA ORDENADA
-                listaOrdenada.forEach(cita => {
-                    const id = cita.id;
-                    if (!cita.fecha) return;
-
-                    const esFinalizada = cita.estado === 'Finalizada';
-                    const esPendiente = cita.estado !== 'Finalizada'; 
-                    const fechaLimpia = cita.fecha.split('T')[0];
-                    const fCita = new Date(fechaLimpia + "T12:00:00");
-
-                    // Métricas del mes
-                    if(esFinalizada && fCita.getMonth() === mesActual && fCita.getFullYear() === añoActual) { 
-                        finalizadosMes++; 
-                        ingresosMes += parseFloat(cita.precio || 0); 
-                        if(cita.servicio) {
-                            contadorServicios[cita.servicio] = (contadorServicios[cita.servicio] || 0) + 1; 
-                        }
-                    }
-
-                    // Número dorado (Pendientes del día)
-                    if (esPendiente && fechaLimpia === fechaVisualizada) {
-                        pendientesDiaEnPantalla++;
-                    }
-
-                    // Eventos del calendario
-                    eventosCalendar.push({ 
-                        id: id, 
-                        title: cita.nombre, 
-                        start: cita.fecha, 
-                        backgroundColor: esFinalizada ? '#1a1a1a' : '#d4af37', 
-                        borderColor: esFinalizada ? '#222' : '#aa8c2c',
-                        textColor: esFinalizada ? '#555' : '#000', 
-                        extendedProps: { ...cita } 
-                    });
-                    
-                    // Cintas de abajo (Tarjetas) - AHORA SALDRÁN EN ORDEN
-                    if (esPendiente && fechaLimpia === fechaVisualizada){
-                        const card = document.createElement('div');
-                        card.className = 'card';
-                        card.innerHTML = `
-                            <div style="flex:1">
-                                <div style="font-size:0.6rem; color:var(--gold); font-weight:600; text-transform:uppercase; margin-bottom:2px;">
-                                    ${cita.fecha.split('T')[1]} - ${cita.servicio}
-                                </div>
-                                <h4 style="margin:0; font-size:0.85rem; letter-spacing:0.5px;">${cita.nombre}</h4>
-                                ${cita.nota ? `<p style="margin:4px 0 0; font-size:0.65rem; color:#555; font-style:italic;">"${cita.nota}"</p>` : ""}
-                            </div>
-                            <button class="btn-mini" onclick="cambiarEstado('${id}','Finalizada')">
-                                <i class="fas fa-check"></i> FIN
-                            </button>
-                        `;
-                        lista.appendChild(card);
-                    }
-                });
+            // PENDIENTES DEL DÍA SELECCIONADO
+            if (esPendiente && fechaLimpia === fechaVisualizada) {
+                pendientesDiaEnPantalla++;
             }
 
-            // Actualizar interfaz
-            Object.keys(contadorServicios).forEach(serv => {
-                desglose.innerHTML += `<div class="serv-stat-item"><span>${serv}</span><span>x${contadorServicios[serv]}</span></div>`;
+            // EVENTOS DEL CALENDARIO
+            eventosCalendar.push({ 
+                id: id, 
+                title: cita.nombre, 
+                start: cita.fecha, 
+                backgroundColor: esFinalizada ? '#1a1a1a' : '#d4af37', 
+                borderColor: esFinalizada ? '#222' : '#aa8c2c',
+                textColor: esFinalizada ? '#555' : '#000', 
+                extendedProps: { ...cita } 
             });
+            
+            // TARJETAS (CINTAS) EN ORDEN
+            if (esPendiente && fechaLimpia === fechaVisualizada){
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div style="flex:1">
+                        <div style="font-size:0.6rem; color:var(--gold); font-weight:600; text-transform:uppercase; margin-bottom:2px;">
+                            ${cita.fecha.split('T')[1]} - ${cita.servicio}
+                        </div>
+                        <h4 style="margin:0; font-size:0.85rem; letter-spacing:0.5px;">${cita.nombre}</h4>
+                        ${cita.nota ? `<p style="margin:4px 0 0; font-size:0.65rem; color:#555; font-style:italic;">"${cita.nota}"</p>` : ""}
+                    </div>
+                    <button class="btn-mini" onclick="cambiarEstado('${id}','Finalizada')">
+                        <i class="fas fa-check"></i> FIN
+                    </button>
+                `;
+                lista.appendChild(card);
+            }
+        });
+    }
 
-            cCount.innerText = finalizadosMes;
-            iTotal.innerText = 'Q' + ingresosMes.toLocaleString('es-GT', { minimumFractionDigits: 2 });
-            pCount.innerText = pendientesDiaEnPantalla;
+    // ACTUALIZACIÓN DE LA INTERFAZ
+    Object.keys(contadorServicios).forEach(serv => {
+        desglose.innerHTML += `<div class="serv-stat-item"><span>${serv}</span><span>x${contadorServicios[serv]}</span></div>`;
+    });
 
-            calendar.removeAllEvents();
-            calendar.addEventSource(eventosCalendar);
-        }
+    cCount.innerText = finalizadosMes;
+    iTotal.innerText = 'Q' + ingresosMes.toLocaleString('es-GT', { minimumFractionDigits: 2 });
+    pCount.innerText = pendientesDiaEnPantalla;
+
+    calendar.removeAllEvents();
+    calendar.addEventSource(eventosCalendar);
+}
 
         // --- FUNCIONES DE EDICIÓN ---
         window.entrarModoEdicion = function() { 
