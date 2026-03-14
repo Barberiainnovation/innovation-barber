@@ -1094,6 +1094,7 @@
             });
         }
 
+        // --- CATÁLOGO DE SERVICIOS ---
         window.eliminarServicio = function(id) {
             confirmarAccion("¿Eliminar este servicio del catálogo? Esto no afectará citas ya agendadas.", function() {
                 remove(ref(db, 'servicios/' + id)).then(() => showToast("CATÁLOGO ACTUALIZADO"));
@@ -1101,27 +1102,25 @@
         };
 
         document.getElementById('btn-add-serv').onclick = () => {
-    const n = document.getElementById('serv-n').value;
-    const p = document.getElementById('serv-p').value;
-    const d = document.getElementById('serv-d').value; // <--- Agregamos esta línea
+            const n = document.getElementById('serv-n').value;
+            const p = document.getElementById('serv-p').value;
+            const d = document.getElementById('serv-d').value;
 
-    if(n && p) {
-        // Añadimos 'detalle: d' al objeto que se envía a Firebase
-        push(ref(db, 'servicios'), { 
-            nombre: n, 
-            precio: p, 
-            detalle: d 
-        }).then(() => {
-            // Limpiamos los tres campos después de guardar
-            document.getElementById('serv-n').value = '';
-            document.getElementById('serv-p').value = '';
-            document.getElementById('serv-d').value = ''; 
-            showToast("NUEVO SERVICIO AÑADIDO");
-        });
-    } else {
-        showToast("LLENA NOMBRE Y PRECIO");
-    }
-};
+            if(n && p) {
+                push(ref(db, 'servicios'), { 
+                    nombre: n, 
+                    precio: p, 
+                    detalle: d 
+                }).then(() => {
+                    document.getElementById('serv-n').value = '';
+                    document.getElementById('serv-p').value = '';
+                    document.getElementById('serv-d').value = ''; 
+                    showToast("NUEVO SERVICIO AÑADIDO");
+                });
+            } else {
+                showToast("LLENA NOMBRE Y PRECIO");
+            }
+        };
 
         // --- ACCIÓN FINAL: GUARDAR CITA DESDE CALENDARIO ---
         document.getElementById('btn-save-cita-calendar').onclick = function() {
@@ -1150,31 +1149,26 @@
         };
 
         // --- GUARDAR AJUSTES DE HORARIO ---
-       document.getElementById('btn-save-hours').onclick = () => {
-    const nuevaAp = apS.value;
-    const nuevaCi = ciS.value;
+        document.getElementById('btn-save-hours').onclick = () => {
+            const nuevaAp = apS.value;
+            const nuevaCi = ciS.value;
 
-    // Guardamos en Firebase
-    set(ref(db, 'configuracion_horario'), { 
-        apertura: nuevaAp, 
-        cierre: nuevaCi, 
-        lunch_inicio: lIn.value, 
-        lunch_fin: lFi.value 
-    }).then(() => {
-        // ACTUALIZACIÓN INMEDIATA DEL CALENDARIO
-        // 1. Ajusta el rango de horas
-        calendar.setOption('slotMinTime', nuevaAp.padStart(2, '0') + ':00:00');
-        calendar.setOption('slotMaxTime', nuevaCi.padStart(2, '0') + ':00:00');
-        
-        // 2. Fuerza a la caja a encogerse/estirarse
-        calendar.updateSize(); 
-        
-        showToast("HORARIOS ACTUALIZADOS");
-    }).catch(err => {
-        console.error("Error al guardar:", err);
-        showToast("ERROR AL GUARDAR");
-    });
-};
+            set(ref(db, 'configuracion_horario'), { 
+                apertura: nuevaAp, 
+                cierre: nuevaCi, 
+                lunch_inicio: lIn.value, 
+                lunch_fin: lFi.value 
+            }).then(() => {
+                calendar.setOption('slotMinTime', nuevaAp.padStart(2, '0') + ':00:00');
+                calendar.setOption('slotMaxTime', nuevaCi.padStart(2, '0') + ':00:00');
+                calendar.updateSize(); 
+                showToast("HORARIOS ACTUALIZADOS");
+            }).catch(err => {
+                console.error("Error al guardar:", err);
+                showToast("ERROR AL GUARDAR");
+            });
+        };
+
         // --- LÓGICA DE BLOQUEO DE DÍAS ---
         const fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d" });
 
@@ -1204,11 +1198,8 @@
                 showToast("SELECCIONA UNA FECHA");
             }
         };
-        // ... (todo tu código anterior de botones y bloqueos)
 
-       // ... (tus funciones anteriores de bloquear días y botones)
-
-        // --- FUNCIÓN PARA MOVER CITAS (DRAG & DROP) ---
+        // --- FUNCIONES GLOBALES (DRAG & DROP Y AGENDA) ---
         function actualizarHorarioCita(event) {
             const citaId = event.id;
             const start = event.start;
@@ -1231,12 +1222,10 @@
             });
         }
 
-        // === FUNCIONES PARA LA AGENDA DE ABAJO ===
         function finalizarDesdeLista(id) {
             confirmarAccion("¿Deseas finalizar y cobrar esta cita?", function() {
                 update(ref(db, 'citas/' + id), { estado: 'Finalizado' }).then(() => {
                     showToast("CITA FINALIZADA Y COBRADA");
-                    // Nota: Al actualizar Firebase, el calendario se refresca solo
                 });
             });
         }
@@ -1245,7 +1234,6 @@
             const ev = calendar.getEventById(id);
             if(ev) calendar.trigger('eventClick', { event: ev });
         }
-        // ======================================
 
     </script>
 </body>
