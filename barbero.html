@@ -954,6 +954,7 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                     if (!cita.fecha) return;
 
                     const esFinalizada = cita.estado === 'Finalizada';
+                    const esPendiente = cita.estado !== 'Finalizada';
                     
                     // Ajuste de fecha para que el conteo del mes sea exacto en Guate
                     const fechaLimpia = cita.fecha.split('T')[0];
@@ -969,9 +970,6 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                     }
 
                     // 3. CONTAR PENDIENTES DEL DÍA (Para el número dorado de la derecha)
-                    if(!esFinalizada && cita.fecha.startsWith(fechaVisualizada)) {
-                        pendientesDiaEnPantalla++;
-                    }
                     if(cita.estado !== 'Finalizada' && cita.fecha.startsWith(fechaVisualizada)) {
                         pendientesDiaEnPantalla++;
                     }
