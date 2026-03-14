@@ -642,16 +642,28 @@
         let currentEditingId = null;
         let fechaVisualizada = new Date().toISOString().split('T')[0];
 
-        // 4. FUNCIONES DE ACCESO (EXPUESTAS AL BOTÓN)
-        window.loginGoogle = function() {
-            signInWithPopup(auth, provider)
-                .then((result) => { console.log("Sesión iniciada"); })
-                .catch((error) => { console.error("Error:", error); });
-        };
+       // 3. FUNCIONES DE ACCESO
+    window.loginGoogle = () => {
+        signInWithPopup(auth, provider).catch(console.error);
+    };
 
-        window.logout = function() {
-            auth.signOut().then(() => { location.reload(); });
-        };
+    window.logout = () => {
+        auth.signOut().then(() => location.reload());
+    };
+
+    onAuthStateChanged(auth, (user) => {
+        const loginOverlay = document.getElementById('login-overlay');
+        const adminContent = document.getElementById('admin-content');
+
+        if (user) {
+            if (loginOverlay) loginOverlay.style.display = 'none';
+            if (adminContent) adminContent.style.display = 'block';
+            initDashboard(); 
+        } else {
+            if (loginOverlay) loginOverlay.style.display = 'flex';
+            if (adminContent) adminContent.style.display = 'none';
+        }
+    });
 
         // 5. INICIO DEL DASHBOARD
         function initDashboard() {
