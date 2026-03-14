@@ -759,35 +759,60 @@
 
     document.getElementById('modalEvento').style.display = 'flex';
     
-    document.getElementById('btn-eliminar-pop').onclick = function() {
-        confirmarAccion("¿Seguro que quieres eliminar permanentemente esta cita?", function() {
-            remove(ref(db, 'citas/' + currentEditingId)).then(() => {
-                showToast("CITA ELIMINADA");
-                cerrarPop();
-            });
-        });
-    };
-}
+    // ... (final de la lógica de eliminar cita)
+                    document.getElementById('btn-eliminar-pop').onclick = function() {
+                        confirmarAccion("¿Seguro que quieres eliminar permanentemente esta cita?", function() {
+                            remove(ref(db, 'citas/' + currentEditingId)).then(() => {
+                                showToast("CITA ELIMINADA");
+                                cerrarPop();
+                            });
+                        });
+                    };
+                } // <--- Cierra el eventClick
+            }); // <--- Cierra el "new FullCalendar.Calendar"
+
             calendar.render();
 
             // SINCRONIZACIÓN DE CONFIGURACIÓN
-            // --- DENTRO DE initDashboard() ---
-onValue(ref(db, 'configuracion_horario'), snap => { 
-    const config = snap.val();
-    if(config){ 
-        calendar.setOption('slotMinTime', config.apertura.padStart(2,'0')+':00:00'); 
-        calendar.setOption('slotMaxTime', config.cierre.padStart(2,'0')+':00:00');
-        
-        // Mantiene los valores en los selectores
-        apS.value = config.apertura; 
-        ciS.value = config.cierre;
-        if(lIn) lIn.value = config.lunch_inicio || "";
-        if(lFi) lFi.value = config.lunch_fin || "";
+            onValue(ref(db, 'configuracion_horario'), snap => { 
+                const config = snap.val();
+                if(config){ 
+                    calendar.setOption('slotMinTime', config.apertura.padStart(2,'0')+':00:00'); 
+                    calendar.setOption('slotMaxTime', config.cierre.padStart(2,'0')+':00:00');
+                    
+                    apS.value = config.apertura; 
+                    ciS.value = config.cierre;
+                    if(lIn) lIn.value = config.lunch_inicio || "";
+                    if(lFi) lFi.value = config.lunch_fin || "";
 
-        // Sincroniza el tamaño de la caja al cargar
-        calendar.updateSize(); 
-    } 
-});
+                    calendar.updateSize(); 
+                } 
+            });
+
+            // EL BOTÓN DE ACTUALIZAR VA AQUÍ ABAJO
+            document.getElementById('btn-update-cita').onclick = function() {
+                const servSelect = document.getElementById('edit-servicio-select');
+                const cod = document.getElementById('edit-codigo-area').value;
+                const num = document.getElementById('edit-whatsapp').value;
+                const whatsappCompleto = cod + num;
+
+                const updateData = {
+                    nombre: document.getElementById('edit-nombre').value,
+                    whatsapp: whatsappCompleto,
+                    precio: document.getElementById('edit-precio').value,
+                    nota: document.getElementById('edit-nota').value
+                };
+
+                if(servSelect && servSelect.value) {
+                    updateData.servicio = catalogoGlobal[servSelect.value].nombre;
+                    updateData.precio = catalogoGlobal[servSelect.value].precio;
+                }
+
+                update(ref(db, 'citas/' + currentEditingId), updateData).then(() => { 
+                    showToast("CITA ACTUALIZADA"); 
+                    cerrarPop(); 
+                });
+            };
 
             // SINCRONIZACIÓN DE CITAS (TIEMPO REAL)
             onValue(ref(db, 'citas'), (snapshot) => {
