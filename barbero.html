@@ -656,22 +656,27 @@
         }
     };
 
-    // --- AUTENTICACIÓN ---
-    window.loginGoogle = () => signInWithPopup(auth, provider).catch(console.error);
-    window.logout = () => auth.signOut().then(() => location.reload());
+   // 3. FUNCIONES DE ACCESO
+window.loginGoogle = () => {
+    signInWithPopup(auth, provider).catch(console.error);
+};
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('admin-content').style.display = 'block';
-            initDashboard();
-        } else {
-            document.getElementById('login-overlay').style.display = 'flex';
-            document.getElementById('admin-content').style.display = 'none';
-        }
-    });
+window.logout = () => {
+    auth.signOut().then(() => location.reload());
+};
 
-    function initDashboard() {
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('admin-content').style.display = 'block';
+        initDashboard(); 
+    } else {
+        document.getElementById('login-overlay').style.display = 'flex';
+        document.getElementById('admin-content').style.display = 'none';
+    }
+});
+
+function initDashboard() {
         // Inicializar Teléfono (intl-tel-input)
         const inputTel = document.querySelector("#add-whatsapp-input");
         if (inputTel && !iti) {
