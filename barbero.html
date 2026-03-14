@@ -478,19 +478,20 @@
 </div>
 
         <div id="modalAddCita" class="modal">
-            <div class="modal-content">
-                <h3 style="color:var(--gold);">AGENDAR CITA</h3>
-                <p id="add-fecha-display" style="font-size: 0.8rem; color: #666; margin-bottom: 20px;"></p>
-                
-                <input type="text" id="add-nombre" placeholder="Nombre completo del cliente">
-                <input type="tel" id="add-whatsapp-input">
-                <select id="add-servicio-select"></select>
-                <textarea id="add-nota" placeholder="¿Alguna nota o instrucción especial?" rows="3"></textarea>
-                
-                <button class="btn btn-gold" id="btn-save-cita-calendar">CONFIRMAR CITA</button>
-                <button class="btn btn-outline" onclick="cerrarModalAdd()">CANCELAR</button>
-            </div>
-        </div>
+    <div class="modal-content">
+        <h3 style="color:var(--gold);">AGENDAR CITA</h3>
+        <p id="add-fecha-display" style="font-size: 0.8rem; color: #666; margin-bottom: 20px;"></p>
+        
+        <input type="text" id="add-nombre" list="listaClientes" placeholder="Nombre completo del cliente">
+        <datalist id="listaClientes"></datalist>
+        <input type="tel" id="add-whatsapp-input">
+        <select id="add-servicio-select"></select>
+        <textarea id="add-nota" placeholder="¿Alguna nota o instrucción especial?" rows="3"></textarea>
+        
+        <button class="btn btn-gold" id="btn-save-cita-calendar">CONFIRMAR CITA</button>
+        <button class="btn btn-outline" onclick="cerrarModalAdd()">CANCELAR</button>
+    </div>
+</div>
         
         <div id="modalEvento" class="modal">
             <div class="modal-content">
