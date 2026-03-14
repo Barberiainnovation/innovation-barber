@@ -965,6 +965,9 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                     if(!esFinalizada && cita.fecha.startsWith(fechaVisualizada)) {
                         pendientesDiaEnPantalla++;
                     }
+                    if(cita.estado !== 'Finalizada' && cita.fecha.startsWith(fechaVisualizada)) {
+                        pendientesDiaEnPantalla++;
+                    }
 
                     // 4. Configurar eventos del calendario
                     eventosCalendar.push({ 
