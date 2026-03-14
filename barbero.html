@@ -1292,18 +1292,21 @@ onSnapshot(collection(fs, "clientes"), (snapshot) => {
 // 2. Al escribir el nombre, si existe, poner el teléfono automático
 document.getElementById('add-nombre').addEventListener('input', async (e) => {
     const nombreDigitado = e.target.value;
-    if(nombreDigitado.length < 3) return; // Solo buscar si escribió más de 3 letras
+    if(nombreDigitado.length < 3) return; 
 
     const q = query(collection(fs, "clientes"), where("nombre", "==", nombreDigitado));
     const snap = await getDocs(q);
     
     snap.forEach((doc) => {
         const datos = doc.data();
-        // Usamos la variable 'iti' que ya tienes definida en tu código para el teléfono
-        if (iti) {
-            iti.setNumber(datos.telefono);
-        } else {
-            document.getElementById('add-whatsapp-input').value = datos.telefono;
+        const telCompleto = datos.whatsapp || datos.telefono || ""; 
+        
+        if (telCompleto) {
+            // Ejemplo: si telCompleto es "50212345678"
+            // Los primeros 3 dígitos van al selector (502)
+            document.getElementById('add-codigo-area').value = telCompleto.substring(0, 3);
+            // El resto va al input del número (12345678)
+            document.getElementById('add-whatsapp').value = telCompleto.substring(3);
         }
     });
 });
