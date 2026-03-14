@@ -994,17 +994,21 @@
             });
         };
 
-        document.getElementById('btn-add-serv').onclick = function() {
+       document.getElementById('btn-add-serv').onclick = () => {
             const n = document.getElementById('serv-n').value;
             const p = document.getElementById('serv-p').value;
+            const d = document.getElementById('serv-d').value; // <--- Esta es la nueva línea
+            
             if(n && p) {
-                push(ref(db, 'servicios'), { nombre: n, precio: p }).then(() => {
-                    document.getElementById('serv-n').value = '';
-                    document.getElementById('serv-p').value = '';
-                    showToast("NUEVO SERVICIO AÑADIDO");
+                push(ref(db, 'servicios'), { 
+                    nombre: n, 
+                    precio: p, 
+                    detalle: d // <--- Esto guarda el "¿Qué incluye?"
+                }).then(() => { 
+                    document.getElementById('serv-n').value=''; 
+                    document.getElementById('serv-p').value=''; 
+                    document.getElementById('serv-d').value=''; // <--- Esto limpia el cuadro
                 });
-            } else {
-                showToast("LLENA AMBOS CAMPOS");
             }
         };
 
