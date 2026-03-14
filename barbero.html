@@ -738,7 +738,11 @@
                     const listaDiv = document.getElementById('lista-citas');
                     const titulo = document.getElementById('titulo-agenda');
 
-                    const eventos = calendar.getEvents().filter(e => e.startStr.split('T')[0] === info.dateStr);
+                    const eventos = calendar.getEvents().filter(e => {
+    const mismaFecha = e.startStr.split('T')[0] === info.dateStr;
+    const esPendiente = e.extendedProps.estado === "Pendiente"; // <--- ESTO FILTRA LAS FINALIZADAS
+    return mismaFecha && esPendiente;
+});
 
                     detalleDiv.style.display = 'block';
                     titulo.innerText = "CITAS DEL DÍA: " + info.dateStr.split('-').reverse().join('/');
