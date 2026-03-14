@@ -615,6 +615,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, set, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getFirestore, collection, onSnapshot, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // CONFIGURACIÓN DE FIREBASE (TU BASE DE DATOS)
         const firebaseConfig = { 
@@ -627,6 +628,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
+        const fs = getFirestore(app);
         const provider = new GoogleAuthProvider();
         
         // VARIABLES DE CONTROL GLOBAL
@@ -1260,6 +1262,38 @@ onValue(ref(db, 'configuracion_horario'), snap => {
     const ev = calendar.getEventById(id);
     if(ev) calendar.trigger('eventClick', { event: ev });
 };
+        // --- LÓGICA DEL BUSCADOR DE CLIENTES ---
+
+// 1. Llenar la lista de sugerencias con los nombres de Firestore
+onSnapshot(collection(fs, "clientes"), (snapshot) => {
+    const datalist = document.getElementById('listaClientes');
+    if(!datalist) return;
+    datalist.innerHTML = "";
+    snapshot.forEach((doc) => {
+        const opt = document.createElement('option');
+        opt.value = doc.data().nombre;
+        datalist.appendChild(opt);
+    });
+});
+
+// 2. Al escribir el nombre, si existe, poner el teléfono automático
+document.getElementById('add-nombre').addEventListener('input', async (e) => {
+    const nombreDigitado = e.target.value;
+    if(nombreDigitado.length < 3) return; // Solo buscar si escribió más de 3 letras
+
+    const q = query(collection(fs, "clientes"), where("nombre", "==", nombreDigitado));
+    const snap = await getDocs(q);
+    
+    snap.forEach((doc) => {
+        const datos = doc.data();
+        // Usamos la variable 'iti' que ya tienes definida en tu código para el teléfono
+        if (iti) {
+            iti.setNumber(datos.telefono);
+        } else {
+            document.getElementById('add-whatsapp-input').value = datos.telefono;
+        }
+    });
+});
     </script>
 </body>
 </html>
