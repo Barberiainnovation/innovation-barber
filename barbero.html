@@ -706,6 +706,21 @@
         // --- INICIALIZACIÓN DEL DASHBOARD ---
         function initDashboard() {
     const calendarEl = document.getElementById('calendar');
+            document.addEventListener('DOMContentLoaded', function() {
+    
+    // --- PEGA ESTO AQUÍ (Línea 390 aprox) ---
+    const inputTel = document.querySelector("#add-whatsapp-input");
+    if (inputTel) {
+        iti = window.intlTelInput(inputTel, { 
+            initialCountry: "gt", 
+            separateDialCode: true,
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
+        });
+    }
+    // ---------------------------------------
+
+    const calendarEl = document.getElementById('calendar');
+    // ... sigue el resto de tu código ...
     calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth', // Vista inicial en Mes para ver el cambio
             locale: 'es',
