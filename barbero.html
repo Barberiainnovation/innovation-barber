@@ -954,9 +954,9 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                     }
 
                     // CONTEO DINÁMICO SEGÚN DÍA EN PANTALLA
-                    if(!esFinalizada && cita.fecha.startsWith(fechaVisualizada)) {
-                        pendientesDiaEnPantalla++;
-                    }
+                    if (cita.estado !== 'Finalizada' && cita.fecha.startsWith(fechaVisualizada)) {
+    pendientesDiaEnPantalla++;
+}
 
                     // Preparar objeto para FullCalendar
                     eventosCalendar.push({ 
