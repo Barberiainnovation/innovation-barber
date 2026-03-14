@@ -613,309 +613,667 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, set, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getFirestore, collection, onSnapshot, query, where, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, set, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getFirestore, collection, onSnapshot, query, where, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // 1. CONFIGURACIÓN DE FIREBASE (Tal cual tu archivo original)
-    const firebaseConfig = { 
-        apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", 
-        authDomain: "innovation-barber-studio.firebaseapp.com", 
-        projectId: "innovation-barber-studio", 
-        databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" 
-    };
+        // 1. CONFIGURACIÓN DE FIREBASE
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", 
+            authDomain: "innovation-barber-studio.firebaseapp.com", 
+            projectId: "innovation-barber-studio", 
+            databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" 
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-    const fs = getFirestore(app);
-    const provider = new GoogleAuthProvider();
+        // 2. INICIALIZACIÓN (ORDEN CORRECTO)
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const fs = getFirestore(app);
+        const provider = new GoogleAuthProvider();
 
-    // 2. VARIABLES GLOBALES
-    let calendar;
-    let selectedDateTime = null;
-    let catalogoGlobal = {};
-    let iti; 
-    let currentEditingId = null;
-    let fechaVisualizada = new Date().toISOString().split('T')[0];
+        // 3. VARIABLES GLOBALES
+        let calendar;
+        let selectedDateTime = null;
+        let catalogoGlobal = {};
+        let iti; 
+        let currentEditingId = null;
+        let fechaVisualizada = new Date().toISOString().split('T')[0];
 
-    // --- FUNCIONES DE NAVEGACIÓN (INDISPENSABLES) ---
-    window.toggleConfig = () => {
-        const m = document.getElementById('modalConfig');
-        m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
-    };
+        // 4. FUNCIONES DE ACCESO (EXPUESTAS AL BOTÓN)
+        window.loginGoogle = function() {
+            signInWithPopup(auth, provider)
+                .then((result) => { console.log("Sesión iniciada"); })
+                .catch((error) => { console.error("Error:", error); });
+        };
 
-    window.showToast = (msg) => {
-        const t = document.getElementById('toast');
-        if(t) {
-            t.innerText = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
-    };
+        window.logout = function() {
+            auth.signOut().then(() => { location.reload(); });
+        };
 
-   // 3. FUNCIONES DE ACCESO
-// 3. FUNCIONES DE ACCESO (Recuperado de 'copy')
-    window.loginGoogle = () => signInWithPopup(auth, provider).catch(console.error);
-    window.logout = () => auth.signOut().then(() => location.reload());
-
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('admin-content').style.display = 'block';
-            initDashboard();
-        } else {
-            document.getElementById('login-overlay').style.display = 'flex';
-            document.getElementById('admin-content').style.display = 'none';
-        }
-    });
-
-    // --- AQUÍ EMPIEZA TU FUNCIÓN ORIGINAL ---
-    function initDashboard() {
-        // ... (Aquí va todo tu código de FullCalendar y Firebase que ya tienes) ...
-    }
-
-    // --- LÓGICA DEL BUSCADOR DE CLIENTES (Recuperado de 'barbero.html') ---
-    // Este es el código que se perdía en las versiones "limpias"
-    onSnapshot(collection(fs, "clientes"), (snapshot) => {
-        const datalist = document.getElementById('listaClientes');
-        if(!datalist) return;
-        datalist.innerHTML = "";
-        snapshot.forEach((doc) => {
-            const opt = document.createElement('option');
-            opt.value = doc.data().nombre;
-            datalist.appendChild(opt);
-        });
-    });
-
-    document.getElementById('add-nombre').addEventListener('input', async (e) => {
-        const nombreDigitado = e.target.value;
-        if(nombreDigitado.length < 3) return;
-        const q = query(collection(fs, "clientes"), where("nombre", "==", nombreDigitado));
-        const snap = await getDocs(q);
-        snap.forEach((doc) => {
-            const datos = doc.data();
-            if (iti) iti.setNumber(datos.telefono);
-        });
-    });
-
-        // Inicializar Calendario
-        const calendarEl = document.getElementById('calendar');
-        if (!calendarEl || calendar) return;
-
-        calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            locale: 'es',
-            dayMaxEvents: 2,
-            height: 650,
-            selectable: true,
-            editable: true,
-            nowIndicator: true,
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
-            },
-            eventDrop: (info) => actualizarHorarioCita(info.event),
-            datesSet: (info) => {
-                fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
-                onValue(ref(db, 'citas'), snap => renderAdmin(snap.val()), { onlyOnce: true });
-            },
-            dateClick: function(info) {
-                fechaVisualizada = info.dateStr;
-                const detalleDiv = document.getElementById('detalle-agenda-dia');
-                const listaDiv = document.getElementById('lista-citas');
-                const titulo = document.getElementById('titulo-agenda');
-
-                const eventos = calendar.getEvents().filter(e => 
-                    e.startStr.split('T')[0] === info.dateStr && e.extendedProps.estado === "Pendiente"
-                );
-
-                detalleDiv.style.display = 'block';
-                titulo.innerText = "CITAS DEL DÍA: " + info.dateStr.split('-').reverse().join('/');
-                listaDiv.innerHTML = eventos.length === 0 ? "<p style='color:#666; text-align:center; padding:20px; width:100%;'>No hay citas agendadas.</p>" : "";
-
-                eventos.sort((a, b) => a.start - b.start).forEach(ev => {
-                    const meta = ev.extendedProps;
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.innerHTML = `
-                        <div style="flex:1; cursor:pointer;" onclick="abrirEventoDirecto('${ev.id}')">
-                            <div style="font-size:0.6rem; color:var(--gold); font-weight:600;">${ev.start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} - ${meta.servicio}</div>
-                            <h4 style="margin:0; font-size:0.85rem;">${meta.nombre}</h4>
-                        </div>
-                        <button class="btn-mini" onclick="cambiarEstado('${ev.id}','Finalizada')"><i class="fas fa-check"></i> FIN</button>
-                    `;
-                    listaDiv.appendChild(card);
+        // 5. INICIO DEL DASHBOARD
+        function initDashboard() {
+            // ACTIVAR BANDERAS
+            const inputTel = document.querySelector("#add-whatsapp-input");
+            if (inputTel) {
+                iti = window.intlTelInput(inputTel, { 
+                    initialCountry: "gt", 
+                    separateDialCode: true,
+                    utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
                 });
-                detalleDiv.scrollIntoView({ behavior: 'smooth' });
-                onValue(ref(db, 'citas'), snap => renderAdmin(snap.val()), { onlyOnce: true });
+            }
+
+            // 2. CONFIGURAR CALENDARIO
+            const calendarEl = document.getElementById('calendar');
+            if (!calendarEl) return;
+
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'es',
+                dayMaxEvents: 2,
+                height: 650,
+                fixedWeekCount: false,
+                allDaySlot: false,
+                slotDuration: '00:30:00',
+                nowIndicator: true,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                editable: true,
+                eventDurationEditable: false,
+                
+                eventDrop: function(info) {
+                    actualizarHorarioCita(info.event);
+                },
+            
+            datesSet: function(info) {
+                fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
+                onValue(ref(db, 'citas'), (snapshot) => {
+                    renderAdmin(snapshot.val());
+                }, { onlyOnce: true });
             },
+
+            // --- CLIC EN UN DÍA (TU NUEVA AGENDA DE CINTAS ABAJO) ---
+            dateClick: function(info) {
+                if (info.view.type === 'dayGridMonth') {
+                    fechaVisualizada = info.dateStr;
+                    
+                    const detalleDiv = document.getElementById('detalle-agenda-dia');
+                    const listaDiv = document.getElementById('lista-citas');
+                    const titulo = document.getElementById('titulo-agenda');
+
+                    const eventos = calendar.getEvents().filter(e => {
+    const mismaFecha = e.startStr.split('T')[0] === info.dateStr;
+    const esPendiente = e.extendedProps.estado === "Pendiente"; // <--- ESTO FILTRA LAS FINALIZADAS
+    return mismaFecha && esPendiente;
+});
+
+                    detalleDiv.style.display = 'block';
+                    titulo.innerText = "CITAS DEL DÍA: " + info.dateStr.split('-').reverse().join('/');
+                    listaDiv.innerHTML = "";
+
+                    if (eventos.length === 0) {
+                        listaDiv.innerHTML = "<p style='color:#666; text-align:center; padding:20px; width:100%;'>No hay citas agendadas.</p>";
+                    } else {
+                        eventos.sort((a, b) => a.start - b.start).forEach(ev => {
+                            const meta = ev.extendedProps;
+                            const hora = ev.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            
+                            const card = document.createElement('div');
+                            card.className = 'card'; 
+                            card.innerHTML = `
+                                <div style="flex:1; cursor:pointer;" onclick="abrirEventoDirecto('${ev.id}')">
+                                    <div style="font-size:0.6rem; color:var(--gold); font-weight:600; text-transform:uppercase; margin-bottom:2px;">
+                                        ${hora} - ${meta.servicio}
+                                    </div>
+                                    <h4 style="margin:0; font-size:0.85rem; letter-spacing:0.5px;">${meta.nombre}</h4>
+                                    ${meta.nota ? `<p style="margin:4px 0 0; font-size:0.65rem; color:#888; font-style:italic;">"${meta.nota}"</p>` : ""}
+                                </div>
+                                <button class="btn-mini" onclick="cambiarEstado('${ev.id}','Finalizada')">
+                                    <i class="fas fa-check"></i> FIN
+                                </button>
+                            `;
+                            listaDiv.appendChild(card);
+                        });
+                    }
+                    
+                    detalleDiv.scrollIntoView({ behavior: 'smooth' });
+
+                    // --- ESTO ES LO QUE ACTUALIZA EL NÚMERO DORADO AL HACER CLIC ---
+                    onValue(ref(db, 'citas'), (snapshot) => {
+                        renderAdmin(snapshot.val());
+                    }, { onlyOnce: true });
+
+                }
+            },
+
+            // --- SELECCIONAR HORA PARA NUEVA CITA ---
+            selectable: true,
             select: function(info) {
                 if(info.view.type !== 'dayGridMonth'){
-                    selectedDateTime = info.startStr.substring(0,16);
+                    const fecha = info.startStr.split('T')[0];
+                    const hora = info.start.getHours().toString().padStart(2,'0');
+                    const min = info.start.getMinutes().toString().padStart(2,'0');
+                    selectedDateTime = fecha + 'T' + hora + ':' + min;
+                    
                     document.getElementById('add-fecha-display').innerText = info.start.toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
                     document.getElementById('modalAddCita').style.display = 'flex';
                 }
             },
+
+            // --- CLIC EN CITA (DETALLE, WHATSAPP Y EDICIÓN) ---
             eventClick: function(info) {
                 currentEditingId = info.event.id;
                 const meta = info.event.extendedProps;
-                const fTxt = info.event.start.toLocaleString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+                const fTxt = info.event.start.toLocaleString('es-GT', { 
+                    weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' 
+                });
                 
                 document.getElementById('pop-nombre').innerText = meta.nombre;
                 document.getElementById('pop-fecha').innerText = fTxt;
-                document.getElementById('pop-detalle-corte').innerHTML = `<div style="color:var(--gold); font-weight:600;">${meta.servicio}</div><div style="color:var(--green);">Q${meta.precio}</div>`;
+                document.getElementById('pop-detalle-corte').innerHTML = `
+                    <div style="color:var(--gold); font-size:1.1rem; font-weight:600; margin-bottom:5px;">
+                        ${meta.servicio}
+                    </div>
+                    <div style="color:var(--green); font-weight:600; font-size:1.2rem;">Q${meta.precio}</div>
+                ` + (meta.nota ? `<p style="font-size:0.8rem; color:#888; margin-top:15px; background:#111; padding:10px; border-radius:10px;">Nota: ${meta.nota}</p>` : "");
                 
-                document.getElementById('pop-whatsapp').onclick = () => {
+                document.getElementById('pop-whatsapp').onclick = function() {
                     const num = meta.whatsapp.replace(/\D/g,'');
-                    window.open(`https://wa.me/${num}?text=${encodeURIComponent('Recordatorio de cita: ' + fTxt)}`);
+                    const msg = encodeURIComponent('Hola ' + meta.nombre + ', te recordamos tu cita en Innovation Barber Studio para el ' + fTxt + '. ¡Te esperamos!');
+                    window.open('https://wa.me/' + num + '?text=' + msg);
                 };
+                
+                const fullWhatsapp = meta.whatsapp || "";
+                const codigos = ["502", "503", "504", "505", "506", "507", "52", "1"];
+                let encontrado = "502"; 
+                let numLimpio = fullWhatsapp;
+
+                for (let cod of codigos) {
+                    if (fullWhatsapp.startsWith(cod)) {
+                        encontrado = cod;
+                        numLimpio = fullWhatsapp.substring(cod.length); 
+                        break;
+                    }
+                }
 
                 document.getElementById('edit-nombre').value = meta.nombre;
-                document.getElementById('edit-whatsapp').value = meta.whatsapp.slice(-8);
+                document.getElementById('edit-codigo-area').value = encontrado;
+                document.getElementById('edit-whatsapp').value = numLimpio;
                 document.getElementById('edit-precio').value = meta.precio;
                 document.getElementById('edit-nota').value = meta.nota || "";
+                document.getElementById('edit-servicio-select').value = ""; 
+
                 document.getElementById('modalEvento').style.display = 'flex';
+
+                document.getElementById('btn-eliminar-pop').onclick = function() {
+                    confirmarAccion("¿Seguro que quieres eliminar permanentemente esta cita?", function() {
+                        remove(ref(db, 'citas/' + currentEditingId)).then(() => {
+                            showToast("CITA ELIMINADA");
+                            cerrarPop();
+                        });
+                    });
+                };
             }
         });
-        calendar.render();
 
-        // --- CARGA DE DATOS ---
-        onValue(ref(db, 'citas'), snap => renderAdmin(snap.val()));
-        onValue(ref(db, 'servicios'), snap => renderServicios(snap.val() || {}));
-        onValue(ref(db, 'configuracion_horario'), snap => { 
-            const config = snap.val();
-            if(config && calendar){ 
-                calendar.setOption('slotMinTime', config.apertura.padStart(2,'0')+':00:00'); 
-                calendar.setOption('slotMaxTime', config.cierre.padStart(2,'0')+':00:00');
-            } 
-        });
+            calendar.render(); // Ahora sí, renderizamos
 
-        initBuscadorClientes();
-        initLogicaBloqueos();
-    }
-
-    // --- RENDER ADMIN (Métricas y Listas) ---
-    function renderAdmin(data) {
-        const lista = document.getElementById('lista-citas');
-        const desglose = document.getElementById('desglose-servicios');
-        if(!lista) return;
-        lista.innerHTML = ''; desglose.innerHTML = '';
+          // --- SINCRONIZACIÓN DE HORARIOS (onValue) ---
+onValue(ref(db, 'configuracion_horario'), snap => { 
+    const config = snap.val();
+    if(config && calendar){ 
+        // 1. Actualiza el calendario visualmente
+        calendar.setOption('slotMinTime', config.apertura.padStart(2,'0')+':00:00'); 
+        calendar.setOption('slotMaxTime', config.cierre.padStart(2,'0')+':00:00');
         
-        let finalizadosMes = 0, ingresosMes = 0, pendientesDia = 0;
-        let eventosCalendar = [], contadorServicios = {};
-        const fechaRef = new Date(fechaVisualizada + "T12:00:00");
+        // 2. ACTUALIZA LOS SELECTORES DEL PANEL DE CONFIGURACIÓN
+        // Buscamos los IDs correctos que tienes en tu HTML
+        const apS = document.getElementById('config-apertura');
+        const ciS = document.getElementById('config-cierre');
+        const lIn = document.getElementById('config-lunch-inicio');
+        const lFi = document.getElementById('config-lunch-fin');
 
-        if(data){
-            Object.keys(data).forEach(id => {
-                const cita = data[id];
-                const esFinalizada = cita.estado === 'Finalizada';
-                const fechaLimpia = cita.fecha.split('T')[0];
-                const fCita = new Date(fechaLimpia + "T12:00:00");
+        if(apS) apS.value = config.apertura; 
+        if(ciS) ciS.value = config.cierre;
+        if(lIn) lIn.value = config.lunch_inicio || "";
+        if(lFi) lFi.value = config.lunch_fin || "";
+        
+        calendar.updateSize(); 
+    } 
+});
 
-                if(esFinalizada && fCita.getMonth() === fechaRef.getMonth()) {
-                    finalizadosMes++; ingresosMes += parseFloat(cita.precio || 0);
-                    if(cita.servicio) contadorServicios[cita.servicio] = (contadorServicios[cita.servicio] || 0) + 1;
+            // --- BOTÓN DE ACTUALIZAR CITA ---
+            document.getElementById('btn-update-cita').onclick = function() {
+                const servSelect = document.getElementById('edit-servicio-select');
+                const cod = document.getElementById('edit-codigo-area').value;
+                const num = document.getElementById('edit-whatsapp').value;
+                const whatsappCompleto = cod + num;
+
+                const updateData = {
+                    nombre: document.getElementById('edit-nombre').value,
+                    whatsapp: whatsappCompleto,
+                    precio: document.getElementById('edit-precio').value,
+                    nota: document.getElementById('edit-nota').value
+                };
+
+                if(servSelect && servSelect.value) {
+                    updateData.servicio = catalogoGlobal[servSelect.value].nombre;
+                    updateData.precio = catalogoGlobal[servSelect.value].precio;
                 }
-                if(cita.estado === "Pendiente" && fechaLimpia === fechaVisualizada) pendientesDia++;
 
-                eventosCalendar.push({ 
-                    id, title: cita.nombre, start: cita.fecha,
-                    backgroundColor: esFinalizada ? '#1a1a1a' : '#d4af37',
-                    extendedProps: { ...cita } 
+                update(ref(db, 'citas/' + currentEditingId), updateData).then(() => { 
+                    showToast("CITA ACTUALIZADA"); 
+                    cerrarPop(); 
                 });
+            };
+            // SINCRONIZACIÓN DE CITAS (TIEMPO REAL)
+            onValue(ref(db, 'citas'), (snapshot) => {
+                renderAdmin(snapshot.val());
+            });
+
+            // SINCRONIZACIÓN DE CATÁLOGO
+            onValue(ref(db, 'servicios'), (snapshot) => {
+                renderServicios(snapshot.val() || {});
             });
         }
 
-        document.getElementById('citas-count').innerText = finalizadosMes;
-        document.getElementById('ingreso-total').innerText = 'Q' + ingresosMes.toLocaleString('es-GT');
-        document.getElementById('count-pendientes').innerText = pendientesDia;
-        
-        Object.keys(contadorServicios).forEach(serv => {
-            desglose.innerHTML += `<div class="serv-stat-item"><span>${serv}</span><span>x${contadorServicios[serv]}</span></div>`;
-        });
+        // --- RENDERIZADO MAESTRO DE DATOS ---
+       function renderAdmin(data) {
+    const lista = document.getElementById('lista-citas');
+    const cCount = document.getElementById('citas-count');
+    const iTotal = document.getElementById('ingreso-total');
+    const pCount = document.getElementById('count-pendientes');
+    const pLabel = document.getElementById('label-pendientes');
+    const desglose = document.getElementById('desglose-servicios');
+    
+    lista.innerHTML = ''; 
+    desglose.innerHTML = '';
+    
+    let finalizadosMes = 0;
+    let ingresosMes = 0;
+    let pendientesDiaEnPantalla = 0;
+    let eventosCalendar = [];
+    let contadorServicios = {};
 
-        calendar.removeAllEvents();
-        calendar.addEventSource(eventosCalendar);
+    // --- CORRECCIÓN DE MES DINÁMICO ---
+    // Extraemos mes y año de la fecha que está viendo el usuario en el calendario
+    const fechaReferencia = new Date(fechaVisualizada + "T12:00:00");
+    const mesEnPantalla = fechaReferencia.getMonth();
+    const añoEnPantalla = fechaReferencia.getFullYear();
+
+    const ahoraHoy = new Date();
+    const hoyRealIso = ahoraHoy.toISOString().split('T')[0];
+
+    // Actualizar etiqueta del contador dorado
+    if (fechaVisualizada === hoyRealIso) {
+        pLabel.innerText = "Pendientes Hoy";
+    } else {
+        const opciones = { day: 'numeric', month: 'short' };
+        const fechaFormateada = fechaReferencia.toLocaleDateString('es-GT', opciones);
+        pLabel.innerText = "Pendientes " + fechaFormateada;
     }
 
-    // --- BUSCADOR CLIENTES (Firestore) ---
-    function initBuscadorClientes() {
-        onSnapshot(collection(fs, "clientes"), (snap) => {
-            const dl = document.getElementById('listaClientes');
-            if(dl) {
-                dl.innerHTML = "";
-                snap.forEach(d => {
-                    const opt = document.createElement('option');
-                    opt.value = d.data().nombre;
-                    dl.appendChild(opt);
-                });
+    if(data){
+        // --- 1. ORDENAMIENTO POR HORA ---
+        const listaOrdenada = Object.keys(data).map(id => ({
+            id: id,
+            ...data[id]
+        })).sort((a, b) => {
+            if (!a.fecha || !b.fecha) return 0;
+            return a.fecha.localeCompare(b.fecha);
+        });
+
+        // --- 2. PROCESAMIENTO DE CITAS ---
+        listaOrdenada.forEach(cita => {
+            const id = cita.id;
+            if (!cita.fecha) return;
+
+            const esFinalizada = cita.estado === 'Finalizada';
+            const esPendiente = cita.estado !== 'Finalizada'; 
+            const fechaLimpia = cita.fecha.split('T')[0];
+            const fCita = new Date(fechaLimpia + "T12:00:00");
+
+            // MÉTRICAS BASADAS EN EL MES QUE ESTÁS VIENDO
+            if(esFinalizada && fCita.getMonth() === mesEnPantalla && fCita.getFullYear() === añoEnPantalla) { 
+                finalizadosMes++; 
+                ingresosMes += parseFloat(cita.precio || 0); 
+                if(cita.servicio) {
+                    contadorServicios[cita.servicio] = (contadorServicios[cita.servicio] || 0) + 1; 
+                }
+            }
+
+            // PENDIENTES DEL DÍA SELECCIONADO
+            if (esPendiente && fechaLimpia === fechaVisualizada) {
+                pendientesDiaEnPantalla++;
+            }
+
+            // EVENTOS DEL CALENDARIO
+            eventosCalendar.push({ 
+                id: id, 
+                title: cita.nombre, 
+                start: cita.fecha, 
+                backgroundColor: esFinalizada ? '#1a1a1a' : '#d4af37', 
+                borderColor: esFinalizada ? '#222' : '#aa8c2c',
+                textColor: esFinalizada ? '#555' : '#000', 
+                extendedProps: { ...cita } 
+            });
+            
+            // TARJETAS (CINTAS) EN ORDEN
+            if (esPendiente && fechaLimpia === fechaVisualizada){
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div style="flex:1">
+                        <div style="font-size:0.6rem; color:var(--gold); font-weight:600; text-transform:uppercase; margin-bottom:2px;">
+                            ${cita.fecha.split('T')[1]} - ${cita.servicio}
+                        </div>
+                        <h4 style="margin:0; font-size:0.85rem; letter-spacing:0.5px;">${cita.nombre}</h4>
+                        ${cita.nota ? `<p style="margin:4px 0 0; font-size:0.65rem; color:#555; font-style:italic;">"${cita.nota}"</p>` : ""}
+                    </div>
+                    <button class="btn-mini" onclick="cambiarEstado('${id}','Finalizada')">
+                        <i class="fas fa-check"></i> FIN
+                    </button>
+                `;
+                lista.appendChild(card);
             }
         });
     }
 
-    // --- BLOQUEOS ---
-    function initLogicaBloqueos() {
-        onValue(ref(db, 'dias_bloqueados'), snap => {
-            const list = document.getElementById('lista-bloqueos-admin');
-            list.innerHTML = '';
-            const bloqueos = snap.val() || {};
-            Object.keys(bloqueos).forEach(f => {
-                list.innerHTML += `<div class="block-item-admin"><span>${f}</span><i class="fas fa-trash" onclick="eliminarBloqueo('${f}')"></i></div>`;
-            });
-        });
-    }
+    // ACTUALIZACIÓN DE LA INTERFAZ
+    Object.keys(contadorServicios).forEach(serv => {
+        desglose.innerHTML += `<div class="serv-stat-item"><span>${serv}</span><span>x${contadorServicios[serv]}</span></div>`;
+    });
 
-    // --- FUNCIONES WINDOW (Para botones HTML) ---
-    window.cambiarEstado = (id, est) => update(ref(db, `citas/${id}`), { estado: est }).then(() => showToast("COMPLETADO"));
-    window.eliminarBloqueo = (f) => confirm("¿Desbloquear?") && remove(ref(db, `dias_bloqueados/${f}`));
-    window.cerrarPop = () => document.getElementById('modalEvento').style.display = 'none';
-    window.cerrarModalAdd = () => document.getElementById('modalAddCita').style.display = 'none';
-    window.abrirEventoDirecto = (id) => { const ev = calendar.getEventById(id); if(ev) calendar.trigger('eventClick', { event: ev }); };
+    cCount.innerText = finalizadosMes;
+    iTotal.innerText = 'Q' + ingresosMes.toLocaleString('es-GT', { minimumFractionDigits: 2 });
+    pCount.innerText = pendientesDiaEnPantalla;
 
-    // --- ACCIONES DE BOTONES ---
-    document.getElementById('btn-save-cita-calendar').onclick = function() {
-        const nombre = document.getElementById('add-nombre').value;
-        const sKey = document.getElementById('add-servicio-select').value;
-        if(!nombre || !sKey) return showToast("FALTA NOMBRE O SERVICIO");
+    calendar.removeAllEvents();
+    calendar.addEventSource(eventosCalendar);
+}
 
-        const servicio = catalogoGlobal[sKey];
-        const tel = iti.getNumber();
-        const nuevaCita = {
-            nombre, whatsapp: tel, servicio: servicio.nombre,
-            precio: servicio.precio, fecha: selectedDateTime,
-            estado: "Pendiente", nota: document.getElementById('add-nota').value
+        // --- FUNCIONES DE EDICIÓN ---
+        window.entrarModoEdicion = function() { 
+            document.getElementById('view-mode').style.display = 'none'; 
+            document.getElementById('edit-mode').style.display = 'block'; 
         };
 
-        push(ref(db, 'citas'), nuevaCita).then(() => {
-            setDoc(doc(fs, "clientes", nombre.toLowerCase().replace(/\s+/g, '_')), {
-                nombre, telefono: tel, ultima_visita: selectedDateTime.split('T')[0]
-            }, { merge: true });
-            cerrarModalAdd();
-            showToast("AGENDADA");
-        });
+        window.salirModoEdicion = function() { 
+            document.getElementById('view-mode').style.display = 'block'; 
+            document.getElementById('edit-mode').style.display = 'none'; 
+        };
+
+        document.getElementById('btn-update-cita').onclick = function() {
+    const servSelect = document.getElementById('edit-servicio-select');
+    
+    // CAPTURAMOS AMBOS CAMPOS Y LOS UNIMOS
+    const cod = document.getElementById('edit-codigo-area').value;
+    const num = document.getElementById('edit-whatsapp').value;
+    const whatsappCompleto = cod + num;
+
+    const updateData = {
+        nombre: document.getElementById('edit-nombre').value,
+        whatsapp: whatsappCompleto, // Guardamos la unión de código + número
+        precio: document.getElementById('edit-precio').value,
+        nota: document.getElementById('edit-nota').value
     };
 
-    function renderServicios(servs) {
-        catalogoGlobal = servs;
-        const selAdd = document.getElementById('add-servicio-select');
-        const listaAdmin = document.getElementById('lista-servicios-admin');
-        selAdd.innerHTML = '<option value="">Seleccionar...</option>';
-        listaAdmin.innerHTML = '';
-        Object.keys(servs).forEach(id => {
-            const s = servs[id];
-            selAdd.innerHTML += `<option value="${id}">${s.nombre} - Q${s.precio}</option>`;
-            listaAdmin.innerHTML += `<div class="serv-item">${s.nombre} <i class="fas fa-trash" onclick="eliminarServicio('${id}')"></i></div>`;
-        });
+    // Si se seleccionó un nuevo servicio del catálogo, actualizar nombre y precio
+    if(servSelect.value) {
+        updateData.servicio = catalogoGlobal[servSelect.value].nombre;
+        updateData.precio = catalogoGlobal[servSelect.value].precio;
     }
 
-    function actualizarHorarioCita(event) {
-        update(ref(db, 'citas/' + event.id), { fecha: event.start.toISOString().substring(0,16) })
-            .then(() => showToast("MOVIDA"));
+    update(ref(db, 'citas/' + currentEditingId), updateData).then(() => { 
+        showToast("CITA ACTUALIZADA"); 
+        cerrarPop(); 
+    });
+};
+
+        window.cambiarEstado = function(id, nuevoEstado) { 
+            update(ref(db, 'citas/' + id), { estado: nuevoEstado }).then(() => {
+                showToast("SERVICIO COMPLETADO");
+            });
+        };
+
+        window.cerrarPop = function() { 
+            document.getElementById('modalEvento').style.display = 'none'; 
+            salirModoEdicion(); 
+        };
+
+        window.cerrarModalAdd = function() { 
+            document.getElementById('modalAddCita').style.display = 'none'; 
+            // Limpiar campos
+            document.getElementById('add-nombre').value = '';
+            document.getElementById('add-nota').value = '';
+        };
+
+        // --- GESTIÓN DE SERVICIOS (CATÁLOGO) ---
+        function renderServicios(servs){
+            catalogoGlobal = servs;
+            const selAdd = document.getElementById('add-servicio-select');
+            const selEdit = document.getElementById('edit-servicio-select');
+            const listaAdmin = document.getElementById('lista-servicios-admin');
+            
+            selAdd.innerHTML = '<option value="">Selecciona un servicio...</option>';
+            selEdit.innerHTML = '<option value="">(Sin cambios de servicio)</option>';
+            listaAdmin.innerHTML = '';
+
+            Object.keys(servs).forEach(id => {
+                const s = servs[id];
+                const optHtml = `<option value="${id}">${s.nombre} - Q${s.precio}</option>`;
+                selAdd.innerHTML += optHtml;
+                selEdit.innerHTML += optHtml;
+
+                // Elemento visual para configuración
+                const item = document.createElement('div');
+                item.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #111; font-size:0.8rem; background:rgba(255,255,255,0.01); margin-bottom:5px; border-radius:10px;";
+                item.innerHTML = `
+                    <div style="font-weight:600;">${s.nombre} <span style="color:var(--gold); margin-left:10px;">Q${s.precio}</span></div>
+                    <button style="background:none; border:none; color:var(--red); cursor:pointer;" onclick="eliminarServicio('${id}')">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                `;
+                listaAdmin.appendChild(item);
+            });
+        }
+
+        window.eliminarServicio = function(id) {
+            confirmarAccion("¿Eliminar este servicio del catálogo? Esto no afectará citas ya agendadas.", function() {
+                remove(ref(db, 'servicios/' + id)).then(() => showToast("CATÁLOGO ACTUALIZADO"));
+            });
+        };
+
+        document.getElementById('btn-add-serv').onclick = () => {
+    const n = document.getElementById('serv-n').value;
+    const p = document.getElementById('serv-p').value;
+    const d = document.getElementById('serv-d').value; // <--- Agregamos esta línea
+
+    if(n && p) {
+        // Añadimos 'detalle: d' al objeto que se envía a Firebase
+        push(ref(db, 'servicios'), { 
+            nombre: n, 
+            precio: p, 
+            detalle: d 
+        }).then(() => {
+            // Limpiamos los tres campos después de guardar
+            document.getElementById('serv-n').value = '';
+            document.getElementById('serv-p').value = '';
+            document.getElementById('serv-d').value = ''; 
+            showToast("NUEVO SERVICIO AÑADIDO");
+        });
+    } else {
+        showToast("LLENA NOMBRE Y PRECIO");
     }
-</script>
+};
+
+        // --- ACCIÓN FINAL: GUARDAR CITA DESDE CALENDARIO ---
+        document.getElementById('btn-save-cita-calendar').onclick = function() {
+            const nombre = document.getElementById('add-nombre').value;
+            const sKey = document.getElementById('add-servicio-select').value;
+            
+            if(!nombre || !sKey) {
+                return showToast("FALTA NOMBRE O SERVICIO");
+            }
+
+            const servicio = catalogoGlobal[sKey];
+            const telFull = iti.getNumber(); // Obtenemos el teléfono una sola vez
+            const nuevaCita = {
+                nombre: nombre,
+                whatsapp: iti.getNumber(),
+                servicio: servicio.nombre,
+                precio: servicio.precio,
+                fecha: selectedDateTime,
+                estado: "Pendiente",
+                nota: document.getElementById('add-nota').value
+            };
+
+            push(ref(db, 'citas'), nuevaCita).then(() => {
+                cerrarModalAdd();
+                showToast("CITA AGENDADA CON ÉXITO");
+            });
+        };
+
+        // --- GUARDAR AJUSTES DE HORARIO ---
+      document.getElementById('btn-save-cita-calendar').onclick = function() {
+    const nombre = document.getElementById('add-nombre').value;
+    const sKey = document.getElementById('add-servicio-select').value;
+    
+    if(!nombre || !sKey) {
+        return showToast("FALTA NOMBRE O SERVICIO");
+    }
+
+    const servicio = catalogoGlobal[sKey];
+    const telFull = iti.getNumber(); // Obtenemos el teléfono una sola vez
+
+    const nuevaCita = {
+        nombre: nombre,
+        whatsapp: telFull,
+        servicio: servicio.nombre,
+        precio: servicio.precio,
+        fecha: selectedDateTime,
+        estado: "Pendiente",
+        nota: document.getElementById('add-nota').value
+    };
+
+    // 1. Guarda la cita en el Calendario (Realtime Database)
+    push(ref(db, 'citas'), nuevaCita).then(() => {
+        
+        // --- 2. REGISTRO AUTOMÁTICO DEL CLIENTE (Firestore) ---
+        // Esto es lo que hace que aparezca en el buscador la próxima vez
+        const clienteID = nombre.toLowerCase().trim().replace(/\s+/g, '_');
+        
+        setDoc(doc(fs, "clientes", clienteID), {
+            nombre: nombre,
+            telefono: telFull,
+            ultima_visita: selectedDateTime.split('T')[0]
+        }, { merge: true });
+
+        cerrarModalAdd();
+        showToast("CITA AGENDADA Y CLIENTE GUARDADO");
+    }).catch(err => {
+        console.error(err);
+        showToast("ERROR AL GUARDAR");
+    });
+};
+        // --- LÓGICA DE BLOQUEO DE DÍAS ---
+        const fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d" });
+
+        onValue(ref(db, 'dias_bloqueados'), snap => {
+            const list = document.getElementById('lista-bloqueos-admin');
+            list.innerHTML = ''; 
+            const bloqueos = snap.val() || {};
+            Object.keys(bloqueos).forEach(f => {
+                list.innerHTML += `<div class="block-item-admin"><span>${f}</span><i class="fas fa-trash" style="color:var(--red); cursor:pointer;" onclick="eliminarBloqueo('${f}')"></i></div>`;
+            });
+        });
+
+        window.eliminarBloqueo = (f) => {
+            if(confirm("¿Desbloquear este día?")) {
+                remove(ref(db, `dias_bloqueados/${f}`));
+            }
+        };
+
+        document.getElementById('btn-add-block').onclick = () => {
+            const f = document.getElementById('input-block-date').value;
+            if(f) {
+                set(ref(db, `dias_bloqueados/${f}`), true).then(() => {
+                    showToast("DÍA BLOQUEADO CORRECTAMENTE");
+                    document.getElementById('input-block-date').value = '';
+                });
+            } else {
+                showToast("SELECCIONA UNA FECHA");
+            }
+        };
+        // ... (todo tu código anterior de botones y bloqueos)
+
+        // --- FUNCIÓN PARA MOVER CITAS (DRAG & DROP) ---
+        function actualizarHorarioCita(event) {
+    const citaId = event.id;
+    
+    // Convertimos la fecha al formato que entiende tu sistema (YYYY-MM-DDTHH:mm)
+    // Esto asegura que el "index" detecte el cambio correctamente
+    const start = event.start;
+    const year = start.getFullYear();
+    const month = String(start.getMonth() + 1).padStart(2, '0');
+    const day = String(start.getDate()).padStart(2, '0');
+    const hours = String(start.getHours()).padStart(2, '0');
+    const minutes = String(start.getMinutes()).padStart(2, '0');
+    
+    const nuevaFechaFormateada = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+    // Actualizamos en Firebase
+    update(ref(db, 'citas/' + citaId), {
+        fecha: nuevaFechaFormateada
+    }).then(() => {
+        showToast("HORARIO ACTUALIZADOO");
+    }).catch((error) => {
+        console.error("Error al mover:", error);
+        showToast("ERROR AL REPROGRAMAR");
+        location.reload(); 
+    });
+}
+        window.abrirEventoDirecto = function(id) {
+    const ev = calendar.getEventById(id);
+    if(ev) calendar.trigger('eventClick', { event: ev });
+};
+        // --- LÓGICA DEL BUSCADOR DE CLIENTES ---
+
+// 1. Llenar la lista de sugerencias con los nombres de Firestore
+onSnapshot(collection(fs, "clientes"), (snapshot) => {
+    const datalist = document.getElementById('listaClientes');
+    if(!datalist) return;
+    datalist.innerHTML = "";
+    snapshot.forEach((doc) => {
+        const opt = document.createElement('option');
+        opt.value = doc.data().nombre;
+        datalist.appendChild(opt);
+    });
+});
+
+// 2. Al escribir el nombre, si existe, poner el teléfono automático
+document.getElementById('add-nombre').addEventListener('input', async (e) => {
+    const nombreDigitado = e.target.value;
+    if(nombreDigitado.length < 3) return; // Solo buscar si escribió más de 3 letras
+
+    const q = query(collection(fs, "clientes"), where("nombre", "==", nombreDigitado));
+    const snap = await getDocs(q);
+    
+    snap.forEach((doc) => {
+        const datos = doc.data();
+        // Usamos la variable 'iti' que ya tienes definida en tu código para el teléfono
+        if (iti) {
+            iti.setNumber(datos.telefono);
+        } else {
+            document.getElementById('add-whatsapp-input').value = datos.telefono;
+        }
+    });
+});
+    </script>
 </body>
 </html>
