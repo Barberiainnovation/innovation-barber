@@ -412,8 +412,17 @@
 
         <div class="main-grid">
             
-            <div id="calendar-container">
-                <div id="calendar"></div>
+           <div class="calendar-container">
+                <div id="calendar"></div> 
+                
+                <div id="detalle-agenda-dia" style="margin-top: 25px; display: none; padding-bottom: 50px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                        <h3 id="titulo-agenda" style="color: var(--gold); margin: 0; font-size: 1.1rem; text-transform: uppercase;"></h3>
+                        <span style="color: #666; font-size: 0.7rem;">TAP PARA EDITAR</span>
+                    </div>
+                    <div id="lista-eventos-dia" style="display: grid; gap: 12px;">
+                        </div>
+                </div>
             </div>
 
             <aside class="sidebar-stats">
