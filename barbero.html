@@ -663,6 +663,9 @@
                     center: 'title', 
                     right: 'dayGridMonth,timeGridWeek,timeGridDay' 
                 },
+
+                contentHeight: 'auto',
+                
                 // DETECCIÓN DINÁMICA DE CAMBIO DE FECHA
                 datesSet: function(info) {
                     fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
