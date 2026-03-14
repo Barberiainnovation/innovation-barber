@@ -1206,44 +1206,37 @@
         };
         // ... (todo tu código anterior de botones y bloqueos)
 
-        // --- FUNCIÓN PARA MOVER CITAS (DRAG & DROP) ---
-        function actualizarHorarioCita(event) {
-    const citaId = event.id;
-    
-    // Convertimos la fecha al formato que entiende tu sistema (YYYY-MM-DDTHH:mm)
-    // Esto asegura que el "index" detecte el cambio correctamente
-    const start = event.start;
-    const year = start.getFullYear();
-    const month = String(start.getMonth() + 1).padStart(2, '0');
-    const day = String(start.getDate()).padStart(2, '0');
-    const hours = String(start.getHours()).padStart(2, '0');
-    const minutes = String(start.getMinutes()).padStart(2, '0');
-    
-    const nuevaFechaFormateada = `${year}-${month}-${day}T${hours}:${minutes}`;
-
-    // Actualizamos en Firebase
-    update(ref(db, 'citas/' + citaId), {
-        fecha: nuevaFechaFormateada
-    }).then(() => {
-        showToast("HORARIO ACTUALIZADOO");
-    }).catch((error) => {
-        console.error("Error al mover:", error);
-        showToast("ERROR AL REPROGRAMAR");
-        location.reload(); 
-    });
-}
-   // ... (todo tu código anterior de botones y bloqueos)
+       // ... (tus funciones anteriores de bloquear días y botones)
 
         // --- FUNCIÓN PARA MOVER CITAS (DRAG & DROP) ---
         function actualizarHorarioCita(event) {
-            // ... (tu código actual) ...
+            const citaId = event.id;
+            const start = event.start;
+            const year = start.getFullYear();
+            const month = String(start.getMonth() + 1).padStart(2, '0');
+            const day = String(start.getDate()).padStart(2, '0');
+            const hours = String(start.getHours()).padStart(2, '0');
+            const minutes = String(start.getMinutes()).padStart(2, '0');
+            
+            const nuevaFechaFormateada = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+            update(ref(db, 'citas/' + citaId), {
+                fecha: nuevaFechaFormateada
+            }).then(() => {
+                showToast("HORARIO ACTUALIZADO");
+            }).catch((error) => {
+                console.error("Error al mover:", error);
+                showToast("ERROR AL REPROGRAMAR");
+                location.reload(); 
+            });
         }
 
-        // === PEGA LAS NUEVAS FUNCIONES AQUÍ ===
+        // === FUNCIONES PARA LA AGENDA DE ABAJO ===
         function finalizarDesdeLista(id) {
             confirmarAccion("¿Deseas finalizar y cobrar esta cita?", function() {
                 update(ref(db, 'citas/' + id), { estado: 'Finalizado' }).then(() => {
                     showToast("CITA FINALIZADA Y COBRADA");
+                    // Nota: Al actualizar Firebase, el calendario se refresca solo
                 });
             });
         }
