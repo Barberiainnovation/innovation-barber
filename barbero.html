@@ -633,6 +633,14 @@
         const db = getDatabase(app);
         const fs = getFirestore(app);
         const provider = new GoogleAuthProvider();
+      
+      // --- VARIABLES GLOBALES (AGREGA ESTO AQUÍ) ---
+        let calendar;
+        let selectedDateTime;
+        let currentEditingId;
+        let catalogoGlobal = {};
+        let fechaVisualizada = new Date().toISOString().split('T')[0];
+        let iti;
 
        // 3. FUNCIONES DE ACCESO
     window.loginGoogle = () => {
