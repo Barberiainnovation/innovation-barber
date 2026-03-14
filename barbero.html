@@ -634,7 +634,7 @@
         const fs = getFirestore(app); // Ahora 'app' ya existe para Firestore
         const provider = new GoogleAuthProvider();
        // --- FUNCIÓN DE LOGIN ---
-        function loginGoogle() {
+       function loginGoogle() {
             signInWithPopup(auth, provider)
                 .then((result) => {
                     // El observador onAuthStateChanged se encarga del resto
@@ -647,6 +647,7 @@
         }
         // ESTO ES LO QUE HACE QUE EL BOTÓN FUNCIONE
         window.loginGoogle = loginGoogle;
+        window.logout = logout;
         
         // 3. VARIABLES DE CONTROL GLOBAL
         let calendar;
