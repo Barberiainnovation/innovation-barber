@@ -388,6 +388,45 @@
         #toast.show { 
             bottom: 40px; 
         }
+
+        
+ /* ... todos tus estilos anteriores ... */
+
+        /* --- ESTILOS PARA LA AGENDA DE ABAJO --- */
+        #detalle-agenda-dia {
+            animation: fadeIn 0.5s ease;
+        }
+
+        #lista-eventos-dia > div {
+            transition: all 0.3s ease;
+        }
+
+        #lista-eventos-dia > div:hover {
+            transform: translateY(-2px);
+            background: rgba(212, 175, 55, 0.05) !important;
+            border-color: var(--gold) !important;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fc-daygrid-event {
+            border-radius: 4px !important;
+            padding: 2px 4px !important;
+            font-size: 0.75rem !important;
+        }
+
+        .fc-daygrid-day-frame {
+            min-height: 80px !important;
+        }
+
+        /* Tu estilo anterior de scroll-to-top o similar */
+        .scroll-to-top {
+            bottom: 40px; 
+        }
     </style>
 </head>
 <body>
