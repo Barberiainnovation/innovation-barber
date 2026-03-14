@@ -653,11 +653,23 @@
             auth.signOut().then(() => { location.reload(); });
         };
 
-        // 5. INICIO DEL DASHBOARD
+        // 5. OBSERVADOR DE ESTADO (Login automático)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                initDashboard();
+            } else {
+                document.getElementById('login-overlay').style.display = 'flex';
+                document.getElementById('admin-content').style.display = 'none';
+            }
+        });
+
+        // 6. INICIO DEL DASHBOARD
         function initDashboard() {
             // ACTIVAR BANDERAS
             const inputTel = document.querySelector("#add-whatsapp-input");
-            if (inputTel) {
+            if (inputTel && !iti) {
                 iti = window.intlTelInput(inputTel, { 
                     initialCountry: "gt", 
                     separateDialCode: true,
@@ -665,9 +677,8 @@
                 });
             }
 
-            // 2. CONFIGURAR CALENDARIO
             const calendarEl = document.getElementById('calendar');
-            if (!calendarEl) return;
+            if (!calendarEl || calendar) return;
 
             calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
@@ -685,17 +696,55 @@
                 },
                 editable: true,
                 eventDurationEditable: false,
-                
                 eventDrop: function(info) {
                     actualizarHorarioCita(info.event);
                 },
-            
-            datesSet: function(info) {
-                fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
-                onValue(ref(db, 'citas'), (snapshot) => {
-                    renderAdmin(snapshot.val());
-                }, { onlyOnce: true });
-            },
+                datesSet: function(info) {
+                    fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
+                    onValue(ref(db, 'citas'), (snapshot) => {
+                        renderAdmin(snapshot.val());
+                    }, { onlyOnce: true });
+                },
+                dateClick: function(info) {
+                    abrirModalNuevaCita(info.dateStr);
+                },
+                eventClick: function(info) {
+                    abrirDetalleCita(info.event.id);
+                }
+            });
+            calendar.render();
+
+            // Cargar servicios y buscador
+            onValue(ref(db, 'servicios'), (snapshot) => {
+                catalogoGlobal = snapshot.val() || {};
+                renderServicios(catalogoGlobal);
+            });
+            activarBuscadorClientes();
+        }
+
+        // 7. BUSCADOR DE CLIENTES (Firestore)
+        function activarBuscadorClientes() {
+            onSnapshot(collection(fs, "clientes"), (snapshot) => {
+                const datalist = document.getElementById('listaClientes');
+                if(!datalist) return;
+                datalist.innerHTML = "";
+                snapshot.forEach((doc) => {
+                    const opt = document.createElement('option');
+                    opt.value = doc.data().nombre;
+                    datalist.appendChild(opt);
+                });
+            });
+
+            document.getElementById('add-nombre').addEventListener('input', async (e) => {
+                const nombre = e.target.value;
+                if(nombre.length < 3) return;
+                const q = query(collection(fs, "clientes"), where("nombre", "==", nombre));
+                const snap = await getDocs(q);
+                snap.forEach((doc) => {
+                    if (iti) iti.setNumber(doc.data().telefono);
+                });
+            });
+        }
 
             // --- CLIC EN UN DÍA (TU NUEVA AGENDA DE CINTAS ABAJO) ---
             dateClick: function(info) {
