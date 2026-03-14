@@ -613,7 +613,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 
-   <script type="module">
+  <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, set, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -627,29 +627,14 @@
             databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" 
         };
 
-        // 2. INICIALIZACIÓN DE VARIABLES (Orden Crítico)
-        const app = initializeApp(firebaseConfig); // Primero inicializamos la app
+        // 2. INICIALIZACIÓN (ORDEN CORRECTO)
+        const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
-        const fs = getFirestore(app); // Ahora 'app' ya existe para Firestore
+        const fs = getFirestore(app);
         const provider = new GoogleAuthProvider();
-       // --- FUNCIÓN DE LOGIN ---
-       function loginGoogle() {
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    // El observador onAuthStateChanged se encarga del resto
-                    console.log("Sesión iniciada");
-                })
-                .catch((error) => {
-                    console.error("Error en login:", error);
-                    alert("Error al entrar con Google");
-                });
-        }
-        // ESTO ES LO QUE HACE QUE EL BOTÓN FUNCIONE
-        window.loginGoogle = loginGoogle;
-        window.logout = logout;
-        
-        // 3. VARIABLES DE CONTROL GLOBAL
+
+        // 3. VARIABLES GLOBALES
         let calendar;
         let selectedDateTime = null;
         let catalogoGlobal = {};
@@ -657,9 +642,20 @@
         let currentEditingId = null;
         let fechaVisualizada = new Date().toISOString().split('T')[0];
 
+        // 4. FUNCIONES DE ACCESO (EXPUESTAS AL BOTÓN)
+        window.loginGoogle = function() {
+            signInWithPopup(auth, provider)
+                .then((result) => { console.log("Sesión iniciada"); })
+                .catch((error) => { console.error("Error:", error); });
+        };
+
+        window.logout = function() {
+            auth.signOut().then(() => { location.reload(); });
+        };
+
+        // 5. INICIO DEL DASHBOARD
         function initDashboard() {
-        
-            // 1. ACTIVAR BANDERAS (Solo una vez)
+            // ACTIVAR BANDERAS
             const inputTel = document.querySelector("#add-whatsapp-input");
             if (inputTel) {
                 iti = window.intlTelInput(inputTel, { 
