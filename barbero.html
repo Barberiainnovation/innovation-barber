@@ -666,8 +666,12 @@
         function initDashboard() {
     const calendarEl = document.getElementById('calendar');
     calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'timeGridDay', 
-        locale: 'es', 
+        // ... dentro de la configuración de FullCalendar ...
+initialView: 'timeGridDay',
+locale: 'es',
+dayMaxEvents: 2,      // Muestra máximo 2 citas por cuadro, el resto dice "+X más"
+height: 650,          // Mantiene el calendario de un solo tamaño siempre
+contentHeight: 600,   // Ajuste fino del área de celdas
         allDaySlot: false, 
         slotDuration: '00:30:00',
         nowIndicator: true,
