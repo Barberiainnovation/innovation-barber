@@ -1050,6 +1050,24 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                 showToast("SELECCIONA UNA FECHA");
             }
         };
+        // ... (todo tu código anterior de botones y bloqueos)
+
+        // --- FUNCIÓN PARA MOVER CITAS (DRAG & DROP) ---
+        function actualizarHorarioCita(event) {
+            const citaId = event.id;
+            const nuevaFecha = event.start.toISOString();
+
+            // Usamos update para cambiar solo la fecha en la base de datos
+            update(ref(db, 'citas/' + citaId), {
+                fecha: nuevaFecha
+            }).then(() => {
+                showToast("CITA REPROGRAMADA");
+            }).catch((error) => {
+                console.error("Error al mover:", error);
+                showToast("ERROR AL MOVER");
+                location.reload(); 
+            });
+        }
     </script>
 </body>
 </html>
