@@ -966,6 +966,7 @@
         };
 
         // --- GUARDAR AJUSTES DE HORARIO ---
+       // --- FINAL DEL SCRIPT DE GUARDADO ---
         document.getElementById('btn-save-hours').onclick = () => {
             const nuevaAp = apS.value;
             const nuevaCi = ciS.value;
@@ -976,29 +977,21 @@
                 lunch_inicio: document.getElementById('lunch-inicio').value,
                 lunch_fin: document.getElementById('lunch-fin').value
             }).then(() => {
-                // Actualiza el calendario sin recargar la página
                 calendar.setOption('slotMinTime', nuevaAp.padStart(2, '0') + ':00:00');
                 calendar.setOption('slotMaxTime', nuevaCi.padStart(2, '0') + ':00:00');
                 showToast("HORARIOS DE ATENCIÓN ACTUALIZADOS");
             });
         };
+    </script> </body> </html> ```
 
-        window.eliminarBloqueo = (f) => {
-            if(confirm("¿Desbloquear este día?")) {
-                remove(ref(db, `dias_bloqueados/${f}`));
-            }
-        };
+### ¿Qué pasó?
+El error en la línea **1006** indica que el archivo se corta antes de cerrar el bloque `<script>`. Seguramente borraste el `};`, el `</script>` o el `</html>`.
 
-        document.getElementById('btn-add-block').onclick = () => {
-            const f = document.getElementById('input-block-date').value;
-            if(f) {
-                set(ref(db, `dias_bloqueados/${f}`), true).then(() => {
-                    showToast("DÍA BLOQUEADO CORRECTAMENTE");
-                    document.getElementById('input-block-date').value = '';
-                });
-            } else {
-                showToast("SELECCIONA UNA FECHA");
-            }
+**Instrucción:**
+1. Ve al final de tu código.
+2. Borra cualquier cosa que veas después de la función del botón de guardar.
+3. Pega estas 4 líneas finales:
+```javascript
         };
     </script>
 </body>
