@@ -1500,13 +1500,6 @@ if (btnGuardarH) {
             lunch_fin: document.getElementById('config-lunch-fin').value
         };
         set(ref(db, 'configuracion_horario'), config).then(() => {
-            showToast("CONFIGURACIÓN GUARDADA");
-            toggleConfig();
-        }).catch(err => {
-            console.error("Error al guardar:", err);
-            showToast("ERROR AL GUARDAR");
-        });
-    };
 }
     </script>
 </body>
