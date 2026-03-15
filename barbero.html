@@ -1475,7 +1475,7 @@ window.toggleConfig = async () => {
     }
 };
 
-// 5. Botón de guardar configuración
+// 5. Botón de guardar configuración (CORREGIDO)
 const btnGuardarH = document.getElementById('btn-save-hours');
 if (btnGuardarH) {
     btnGuardarH.onclick = () => {
@@ -1485,8 +1485,19 @@ if (btnGuardarH) {
             lunch_inicio: document.getElementById('config-lunch-inicio').value,
             lunch_fin: document.getElementById('config-lunch-fin').value
         };
+        
+        // Aquí es donde se cierran correctamente todas las funciones
         set(ref(db, 'configuracion_horario'), config).then(() => {
+            if (typeof showToast === 'function') showToast("CONFIGURACIÓN GUARDADA");
+            if (typeof toggleConfig === 'function') toggleConfig();
+        }).catch(err => {
+            console.error("Error al guardar:", err);
+            if (typeof showToast === 'function') showToast("ERROR AL GUARDAR");
+        });
+    };
 }
-    </script>
+
+// ESTE ES EL FINAL ABSOLUTO DEL ARCHIVO
+</script>
 </body>
 </html>
