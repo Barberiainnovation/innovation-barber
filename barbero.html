@@ -735,12 +735,13 @@
     // LLAMADA INMEDIATA: Para que al cargar la web ya tengan las horas puestas
     llenarSelectores();
 
-    window.toggleConfig = async () => {
+ window.toggleConfig = async () => {
         const modal = document.getElementById('modalConfig');
         if (!modal) return;
         
         if (modal.style.display === 'none' || modal.style.display === '') {
-            // Cargar datos actuales de Firebase
+            // 1. Llenar horas y cargar datos de Firebase
+            if (typeof llenarSelectores === 'function') llenarSelectores();
             try {
                 const snapshot = await get(ref(db, 'configuracion_horario'));
                 if (snapshot.exists()) {
@@ -750,12 +751,11 @@
                     if(data.lunch_inicio !== undefined) document.getElementById('config-lunch-inicio').value = data.lunch_inicio;
                     if(data.lunch_fin !== undefined) document.getElementById('config-lunch-fin').value = data.lunch_fin;
                 }
-            } catch (error) {
-                console.error("Error al leer de Firebase:", error);
-            }
-            modal.style.display = 'flex';
+            } catch (e) { console.error("Error al cargar:", e); }
+            
+            modal.style.display = 'flex'; // Abrir
         } else {
-            modal.style.display = 'none';
+            modal.style.display = 'none'; // CERRAR Y LIBERAR PANTALLA
         }
     };
 
@@ -1429,6 +1429,25 @@ const llenarSelectores = () => {
 
 // LA LLAMADA CLAVE:
 llenarSelectores();
+    // PEGA ESTO AL FINAL DEL ARCHIVO, ANTES DE </script>
+window.showToast = (message) => {
+    let toast = document.getElementById('toast-aviso');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast-aviso';
+        toast.style.cssText = `
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #1a1a1a; color: #d4af37; padding: 15px 30px;
+            border-radius: 10px; z-index: 999999; font-family: 'Poppins', sans-serif;
+            border: 2px solid #d4af37; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            font-weight: bold; min-width: 250px; text-align: center;
+        `;
+        document.body.appendChild(toast);
+    }
+    toast.innerText = message;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+};
     </script>
 </body>
 </html>
