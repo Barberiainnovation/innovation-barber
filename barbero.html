@@ -670,8 +670,8 @@
         signInWithPopup(auth, provider).catch(err => console.error("Error login:", err));
     };
 
-   // 3. FUNCIONES DE ACCESO CORREGIDAS
-    getRedirectResult(auth).catch(err => console.error("Error al volver de Google:", err));
+  // --- 3. FUNCIONES DE ACCESO (UNIFICADAS Y SIN DUPLICADOS) ---
+    getRedirectResult(auth).catch(err => console.error("Error redirect:", err));
 
     window.loginGoogle = () => {
         signInWithPopup(auth, provider).catch(err => {
@@ -690,22 +690,17 @@
     onAuthStateChanged(auth, (user) => {
         const loginOverlay = document.getElementById('login-overlay');
         const adminContent = document.getElementById('admin-content');
-
         if (user) {
-            console.log("LOGIN EXITOSO: ", user.email);
             if (loginOverlay) loginOverlay.style.display = 'none';
             if (adminContent) adminContent.style.display = 'block';
-            
-            if (typeof initDashboard === 'function') {
-                initDashboard();
-            }
+            if (typeof initDashboard === 'function') initDashboard();
         } else {
             if (loginOverlay) loginOverlay.style.display = 'flex';
             if (adminContent) adminContent.style.display = 'none';
         }
     });
 
-    // 4. LÓGICA DEL BOTÓN CONFIGURACIÓN
+    // --- 4. CONFIGURACIÓN (CONECTADA AL BOTÓN DORADO) ---
     window.toggleConfig = () => {
         const modal = document.getElementById('modalConfig');
         if (modal) {
@@ -713,13 +708,13 @@
         }
     };
 
-    // Llenar selectores de horas (00 a 23)
+    // Llenar selectores de horas
     const configurarSelects = () => {
         const ids = ['config-apertura', 'config-cierre', 'config-lunch-inicio', 'config-lunch-fin'];
         ids.forEach(id => {
             const sel = document.getElementById(id);
             if (sel) {
-                sel.innerHTML = id.includes('lunch') ? '<option value="">Sin lunch</option>' : '';
+                sel.innerHTML = "";
                 for (let i = 0; i < 24; i++) {
                     let h = i.toString().padStart(2, '0');
                     sel.innerHTML += `<option value="${h}">${h}:00</option>`;
@@ -729,17 +724,17 @@
     };
     configurarSelects();
 
-    // Guardar horarios
-    const btnSaveH = document.getElementById('btn-save-hours');
-    if (btnSaveH) {
-        btnSaveH.onclick = () => {
-            const config = {
+    // Guardar en Firebase
+    const bSave = document.getElementById('btn-save-hours');
+    if (bSave) {
+        bSave.onclick = () => {
+            const data = {
                 apertura: document.getElementById('config-apertura').value,
                 cierre: document.getElementById('config-cierre').value,
                 lunch_inicio: document.getElementById('config-lunch-inicio').value,
                 lunch_fin: document.getElementById('config-lunch-fin').value
             };
-            set(ref(db, 'configuracion_horario'), config).then(() => {
+            set(ref(db, 'configuracion_horario'), data).then(() => {
                 showToast("HORARIOS ACTUALIZADOS");
                 toggleConfig();
             });
