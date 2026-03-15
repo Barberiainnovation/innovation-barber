@@ -706,40 +706,44 @@
         }
     });
 
-   // --- 4. CONFIGURACIÓN (CON "GET" DEFINIDO Y CARGA DE DATOS) ---
+ // --- 4. LÓGICA DE CONFIGURACIÓN ---
+
+    // Función para llenar los selectores con 00:00 a 23:00
+    const llenarOpcionesHorarios = () => {
+        const ids = ['config-apertura', 'config-cierre', 'config-lunch-inicio', 'config-lunch-fin'];
+        ids.forEach(id => {
+            const sel = document.getElementById(id);
+            if (sel) {
+                // Si es lunch, la primera opción es "Sin lunch"
+                sel.innerHTML = id.includes('lunch') ? '<option value="">Sin lunch</option>' : '';
+                for (let i = 0; i < 24; i++) {
+                    let h = i.toString().padStart(2, '0');
+                    sel.innerHTML += `<option value="${h}">${h}:00</option>`;
+                }
+            }
+        });
+    };
+
+    // Llamamos a la función de inmediato para que nunca estén vacíos
+    llenarOpcionesHorarios();
+
     window.toggleConfig = async () => {
         const modal = document.getElementById('modalConfig');
         if (!modal) return;
         
         if (modal.style.display === 'none' || modal.style.display === '') {
-            // 1. Llenar los selectores (Apertura/Cierre y Lunch)
-            const ids = ['config-apertura', 'config-cierre', 'config-lunch-inicio', 'config-lunch-fin'];
-            ids.forEach(id => {
-                const sel = document.getElementById(id);
-                if (sel) {
-                    // Si es de lunch, ponemos la opción de "Sin lunch" primero
-                    sel.innerHTML = id.includes('lunch') ? '<option value="">Sin lunch</option>' : '';
-                    for (let i = 0; i < 24; i++) {
-                        let h = i.toString().padStart(2, '0');
-                        sel.innerHTML += `<option value="${h}">${h}:00</option>`;
-                    }
-                }
-            });
-
-            // 2. Cargar lo que ya tienes guardado en Firebase
+            // Cargar los datos guardados de Firebase
             try {
-                // Aquí usamos el 'get' que acabamos de importar arriba
                 const snapshot = await get(ref(db, 'configuracion_horario'));
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     if(data.apertura) document.getElementById('config-apertura').value = data.apertura;
                     if(data.cierre) document.getElementById('config-cierre').value = data.cierre;
-                    // Para el lunch, si no hay dato, se queda en "Sin lunch"
-                    document.getElementById('config-lunch-inicio').value = data.lunch_inicio || "";
-                    document.getElementById('config-lunch-fin').value = data.lunch_fin || "";
+                    if(data.lunch_inicio !== undefined) document.getElementById('config-lunch-inicio').value = data.lunch_inicio;
+                    if(data.lunch_fin !== undefined) document.getElementById('config-lunch-fin').value = data.lunch_fin;
                 }
             } catch (error) {
-                console.error("Error al leer horarios:", error);
+                console.error("Error cargando config:", error);
             }
             modal.style.display = 'flex';
         } else {
@@ -747,7 +751,6 @@
         }
     };
 
-    // Botón Guardar (Manteniendo la conexión)
     const btnSaveH = document.getElementById('btn-save-hours');
     if (btnSaveH) {
         btnSaveH.onclick = () => {
@@ -758,7 +761,7 @@
                 lunch_fin: document.getElementById('config-lunch-fin').value
             };
             set(ref(db, 'configuracion_horario'), config).then(() => {
-                showToast("CONFIGURACIÓN ACTUALIZADA");
+                showToast("CONFIGURACIÓN GUARDADA");
                 toggleConfig();
             });
         };
