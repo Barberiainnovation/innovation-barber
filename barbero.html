@@ -1448,6 +1448,82 @@ window.showToast = (message) => {
     toast.style.display = 'block';
     setTimeout(() => { toast.style.display = 'none'; }, 3000);
 };
+    // --- 1. FUNCIÓN PARA LLENAR HORAS (NOMBRE ÚNICO PARA EVITAR ERRORES) ---
+const inicializarHorasConfig = () => {
+    const ids = ['config-apertura', 'config-cierre', 'config-lunch-inicio', 'config-lunch-fin'];
+    ids.forEach(id => {
+        const sel = document.getElementById(id);
+        if (sel) {
+            sel.innerHTML = id.includes('lunch') ? '<option value="">Sin lunch</option>' : '';
+            for (let i = 0; i < 24; i++) {
+                let h = i.toString().padStart(2, '0');
+                sel.innerHTML += `<option value="${h}">${h}:00</option>`;
+            }
+        }
+    });
+};
+
+// --- 2. FUNCIÓN DE MENSAJES (SHOWTOAST) ---
+window.showToast = (message) => {
+    let toast = document.getElementById('toast-aviso');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast-aviso';
+        toast.style.cssText = `
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #1a1a1a; color: #d4af37; padding: 15px 30px;
+            border-radius: 10px; z-index: 999999; font-family: 'Poppins', sans-serif;
+            border: 2px solid #d4af37; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            font-weight: bold; min-width: 250px; text-align: center;
+        `;
+        document.body.appendChild(toast);
+    }
+    toast.innerText = message;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+};
+
+// --- 3. ACTIVACIÓN AUTOMÁTICA ---
+inicializarHorasConfig();
+
+// --- 4. FUNCIÓN DEL BOTÓN CONFIGURACIÓN ---
+window.toggleConfig = async () => {
+    const modal = document.getElementById('modalConfig');
+    if (!modal) return;
+    
+    if (modal.style.display === 'none' || modal.style.display === '') {
+        try {
+            const snapshot = await get(ref(db, 'configuracion_horario'));
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                if(data.apertura) document.getElementById('config-apertura').value = data.apertura;
+                if(data.cierre) document.getElementById('config-cierre').value = data.cierre;
+                document.getElementById('config-lunch-inicio').value = data.lunch_inicio || "";
+                document.getElementById('config-lunch-fin').value = data.lunch_fin || "";
+            }
+        } catch (e) { console.error("Error cargando:", e); }
+        modal.style.display = 'flex';
+    } else {
+        modal.style.display = 'none'; // Aquí libera el panel
+    }
+};
+
+// --- 5. BOTÓN GUARDAR ---
+const btnSaveH = document.getElementById('btn-save-hours');
+if (btnSaveH) {
+    btnSaveH.onclick = () => {
+        const config = {
+            apertura: document.getElementById('config-apertura').value,
+            cierre: document.getElementById('config-cierre').value,
+            lunch_inicio: document.getElementById('config-lunch-inicio').value,
+            lunch_fin: document.getElementById('config-lunch-fin').value
+        };
+        set(ref(db, 'configuracion_horario'), config).then(() => {
+            showToast("CONFIGURACIÓN GUARDADA");
+            toggleConfig();
+        });
+    };
+}
     </script>
 </body>
 </html>
