@@ -1441,24 +1441,26 @@ document.getElementById('add-nombre').addEventListener('input', async (e) => {
 
 // --- BLOQUE FINAL DE SEGURIDAD ---
 
-// 1. Función de avisos (Toast)
 window.showToast = (message) => {
     let toast = document.getElementById('toast-aviso');
     if (!toast) {
         toast = document.createElement('div');
         toast.id = 'toast-aviso';
-        toast.style.cssText = `
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: #1a1a1a; color: #d4af37; padding: 15px 30px;
-            border-radius: 10px; z-index: 999999; font-family: 'Poppins', sans-serif;
-            border: 2px solid #d4af37; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            font-weight: bold; min-width: 250px; text-align: center;
-        `;
         document.body.appendChild(toast);
     }
-    toast.innerText = message;
-    toast.style.display = 'block';
-    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    
+    // Icono y mensaje
+    toast.innerHTML = `<i class="fas fa-check-circle"></i> <span>${message}</span>`;
+    
+    // Activamos la animación de subida
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 100);
+
+    // Lo bajamos y ocultamos tras 3 segundos
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
 };
 
 // 2. Definición de carga de horas con nombre blindado (para evitar el "already declared")
