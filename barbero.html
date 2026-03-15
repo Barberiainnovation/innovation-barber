@@ -1412,20 +1412,6 @@ document.getElementById('add-nombre').addEventListener('input', async (e) => {
         }
     });
 });
-    // Esta función llena los selectores de horas automáticamente
-const llenarSelectores = () => {
-    const ids = ['config-apertura', 'config-cierre', 'config-lunch-inicio', 'config-lunch-fin'];
-    ids.forEach(id => {
-        const sel = document.getElementById(id);
-        if (sel) {
-            sel.innerHTML = id.includes('lunch') ? '<option value="">Sin lunch</option>' : '';
-            for (let i = 0; i < 24; i++) {
-                let h = i.toString().padStart(2, '0');
-                sel.innerHTML += `<option value="${h}">${h}:00</option>`;
-            }
-        }
-    });
-};
 
 // --- BLOQUE FINAL DE SEGURIDAD ---
 
