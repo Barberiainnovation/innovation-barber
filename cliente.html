@@ -51,9 +51,53 @@
         .flatpickr-calendar { background: #0d0d0d !important; border: 1px solid var(--border) !important; box-shadow: none !important; }
         .flatpickr-day.selected { background: var(--gold) !important; border-color: var(--gold) !important; color: #000 !important; }
         .flatpickr-day.flatpickr-disabled, .flatpickr-day.flatpickr-disabled:hover { color: rgba(255,255,255,0.1) !important; background: transparent !important; border-color: transparent !important; cursor: not-allowed !important; }
-    </style>
+   
+   /* Botón Home flotante */
+.home-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 45px;
+    height: 45px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--gold);
+    font-size: 1.2rem;
+    text-decoration: none;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.home-btn:hover {
+    background: var(--gold);
+    color: #000;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--gold);
+}
+
+/* Ajuste para móviles para que no estorbe */
+@media (max-width: 480px) {
+    .home-btn {
+        top: 15px;
+        left: 15px;
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+}
+   
+   </style>
 </head>
 <body>
+
+    <a href="index.html" class="home-btn" title="Volver al inicio">
+    <i class="fas fa-home"></i>
+</a>  
+
 
     <div class="container">
         <header><img src="logo.png" class="logo"><h1>INNOVATION</h1></header>
