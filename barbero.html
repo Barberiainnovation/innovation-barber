@@ -13,8 +13,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
-    <link rel="icon" type="image/png" href="icono.png">
-    <link rel="shortcut icon" type="image/png" href="icono.png">
 
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/es.global.min.js"></script>
@@ -551,7 +549,7 @@
                     
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                         <button class="btn btn-gold" onclick="entrarModoEdicion()" style="padding:14px; font-size: 0.65rem;">EDITAR</button>
-                        <button class="btn btn-red" id="btn-eliminar-pop" style="padding:14px; font-size: 0.65rem;">ELIMINAR</button>
+                       <button class="btn btn-red" id="btn-eliminar-pop" onclick="eliminarCita()" style="padding:14px; font-size: 0.65rem;">ELIMINAR</button>
                     </div>
                     <button class="btn btn-outline" onclick="cerrarPop()">CERRAR VENTANA</button>
                 </div>
@@ -787,26 +785,6 @@
         }
     };
 
-    const btnSaveH = document.getElementById('btn-save-hours');
-    if (btnSaveH) {
-        btnSaveH.onclick = () => {
-            const config = {
-                apertura: document.getElementById('config-apertura').value,
-                cierre: document.getElementById('config-cierre').value,
-                lunch_inicio: document.getElementById('config-lunch-inicio').value,
-                lunch_fin: document.getElementById('config-lunch-fin').value
-            };
-            set(ref(db, 'configuracion_horario'), config)
-                .then(() => {
-                    mostrarAviso("HORARIOS GUARDADOS CORRECTAMENTE");
-                    toggleConfig();
-                })
-                .catch(err => {
-                    console.error("Error al guardar:", err);
-                    mostrarAviso("ERROR AL GUARDAR");
-                });
-        };
-    }
 
         // 5. INICIO DEL DASHBOARD
         function initDashboard() {
@@ -1118,19 +1096,22 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                 extendedProps: { ...cita } 
             });
             
-            // TARJETAS (CINTAS) EN ORDEN
+            // TARJETAS (CINTAS) EN ORDEN (MODIFICADO)
             if (esPendiente && fechaLimpia === fechaVisualizada){
                 const card = document.createElement('div');
                 card.className = 'card';
+                // Hacemos que toda la tarjeta parezca cliqueable
+                card.style.cursor = "pointer"; 
+                
                 card.innerHTML = `
-                    <div style="flex:1">
+                    <div style="flex:1" onclick="abrirEventoDirecto('${id}')">
                         <div style="font-size:0.6rem; color:var(--gold); font-weight:600; text-transform:uppercase; margin-bottom:2px;">
                             ${cita.fecha.split('T')[1]} - ${cita.servicio}
                         </div>
                         <h4 style="margin:0; font-size:0.85rem; letter-spacing:0.5px;">${cita.nombre}</h4>
                         ${cita.nota ? `<p style="margin:4px 0 0; font-size:0.65rem; color:#555; font-style:italic;">"${cita.nota}"</p>` : ""}
                     </div>
-                    <button class="btn-mini" onclick="cambiarEstado('${id}','Finalizada')">
+                    <button class="btn-mini" onclick="event.stopPropagation(); cambiarEstado('${id}','Finalizada')">
                         <i class="fas fa-check"></i> FIN
                     </button>
                 `;
@@ -1189,6 +1170,52 @@ onValue(ref(db, 'configuracion_horario'), snap => {
         cerrarPop(); 
     });
 };
+
+
+// --- FUNCIÓN PARA ELIMINAR CITA ---
+window.eliminarCita = function() {
+    if (!currentEditingId) {
+        showToast("ERROR: NO SE ENCONTRÓ LA CITA");
+        return;
+    }
+
+    // Personalizamos el texto del modal que ya tienes
+    const txt = document.getElementById('confirm-text');
+    if (txt) txt.innerText = "¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTA CITA? ESTA ACCIÓN NO SE PUEDE DESHACER.";
+
+    // Mostramos tu modal elegante
+    const modalConfirm = document.getElementById('modalConfirm');
+    if (modalConfirm) modalConfirm.style.display = 'flex';
+};
+
+// Definimos confirmarAccion para que el navegador deje de lanzar el error
+window.confirmarAccion = function() {
+    eliminarCita(); 
+};
+
+// --- 2. ACCIÓN REAL DE ELIMINAR AL DARLE A "SÍ, PROCEDER" ---
+document.getElementById('confirm-yes').onclick = function() {
+    if (!currentEditingId) return;
+
+    const citaRef = ref(db, 'citas/' + currentEditingId);
+    
+    remove(citaRef).then(() => {
+        // Cerramos el modal de confirmación
+        document.getElementById('modalConfirm').style.display = 'none';
+        
+        // Cerramos el modal de detalles de la cita (modalEvento)
+        const modalEvento = document.getElementById('modalEvento');
+        if (modalEvento) modalEvento.style.display = 'none';
+        
+        showToast("CITA ELIMINADA EXITOSAMENTE");
+        currentEditingId = null; // Limpiamos el ID
+    }).catch((error) => {
+        console.error("Error al eliminar:", error);
+        showToast("ERROR AL ELIMINAR");
+    });
+};
+
+
 
         window.cambiarEstado = function(id, nuevoEstado) { 
             update(ref(db, 'citas/' + id), { estado: nuevoEstado }).then(() => {
@@ -1267,83 +1294,7 @@ onValue(ref(db, 'configuracion_horario'), snap => {
     }
 };
 
-        // --- ACCIÓN FINAL: GUARDAR CITA DESDE CALENDARIO ---
-        document.getElementById('btn-save-cita-calendar').onclick = function() {
-    const nombre = document.getElementById('add-nombre').value;
-    const sKey = document.getElementById('add-servicio-select').value;
-    
-    // --- NUEVA CAPTURA DE TELÉFONO SIN ITI ---
-    const codArea = document.getElementById('add-codigo-area').value;
-    const numTel = document.getElementById('add-whatsapp').value;
-    const whatsappCompleto = codArea + numTel; // Unimos ej: 502 + 12345678
-    
-    // Validamos que también pongan el número
-    if(!nombre || !sKey || !numTel) {
-        return showToast("FALTA NOMBRE, SERVICIO O WHATSAPP");
-    }
-
-    const servicio = catalogoGlobal[sKey];
-    
-    const nuevaCita = {
-        nombre: nombre,
-        whatsapp: whatsappCompleto, // Guardamos el número ya unido
-        servicio: servicio.nombre,
-        precio: servicio.precio,
-        fecha: selectedDateTime,
-        estado: "Pendiente",
-        nota: document.getElementById('add-nota').value
-    };
-
-    // ... aquí sigue tu código de Firebase (push/setDoc)
-
-            push(ref(db, 'citas'), nuevaCita).then(() => {
-                cerrarModalAdd();
-                showToast("CITA AGENDADA CON ÉXITO");
-            });
-        };
-
-        // --- GUARDAR AJUSTES DE HORARIO ---
-      document.getElementById('btn-save-cita-calendar').onclick = function() {
-    const nombre = document.getElementById('add-nombre').value;
-    const sKey = document.getElementById('add-servicio-select').value;
-    
-    if(!nombre || !sKey) {
-        return showToast("FALTA NOMBRE O SERVICIO");
-    }
-
-    const servicio = catalogoGlobal[sKey];
-    const telFull = iti.getNumber(); // Obtenemos el teléfono una sola vez
-
-    const nuevaCita = {
-        nombre: nombre,
-        whatsapp: telFull,
-        servicio: servicio.nombre,
-        precio: servicio.precio,
-        fecha: selectedDateTime,
-        estado: "Pendiente",
-        nota: document.getElementById('add-nota').value
-    };
-
-    // 1. Guarda la cita en el Calendario (Realtime Database)
-    push(ref(db, 'citas'), nuevaCita).then(() => {
-        
-        // --- 2. REGISTRO AUTOMÁTICO DEL CLIENTE (Firestore) ---
-        // Esto es lo que hace que aparezca en el buscador la próxima vez
-        const clienteID = nombre.toLowerCase().trim().replace(/\s+/g, '_');
-        
-        setDoc(doc(fs, "clientes", clienteID), {
-            nombre: nombre,
-            telefono: telFull,
-            ultima_visita: selectedDateTime.split('T')[0]
-        }, { merge: true });
-
-        cerrarModalAdd();
-        showToast("CITA AGENDADA Y CLIENTE GUARDADO");
-    }).catch(err => {
-        console.error(err);
-        showToast("ERROR AL GUARDAR");
-    });
-};
+       
         // --- LÓGICA DE BLOQUEO DE DÍAS ---
         const fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d" });
 
@@ -1505,29 +1456,40 @@ window.toggleConfig = async () => {
     }
 };
 
-// 5. Botón de guardar configuración (CORREGIDO)
-const btnGuardarH = document.getElementById('btn-save-hours');
-if (btnGuardarH) {
-    btnGuardarH.onclick = () => {
-        const config = {
-            apertura: document.getElementById('config-apertura').value,
-            cierre: document.getElementById('config-cierre').value,
-            lunch_inicio: document.getElementById('config-lunch-inicio').value,
-            lunch_fin: document.getElementById('config-lunch-fin').value
-        };
-        
-        // Aquí es donde se cierran correctamente todas las funciones
-        set(ref(db, 'configuracion_horario'), config).then(() => {
-            if (typeof showToast === 'function') showToast("CONFIGURACIÓN GUARDADA");
-            if (typeof toggleConfig === 'function') toggleConfig();
-        }).catch(err => {
-            console.error("Error al guardar:", err);
-            if (typeof showToast === 'function') showToast("ERROR AL GUARDAR");
-        });
-    };
-}
+// BUSCA ESTE BLOQUE Y ASEGÚRATE QUE SEA EL ÚNICO PARA CITAS
+document.getElementById('btn-save-cita-calendar').onclick = function() {
+    const nombre = document.getElementById('add-nombre').value;
+    const sKey = document.getElementById('add-servicio-select').value;
+    const codArea = document.getElementById('add-codigo-area').value;
+    const numTel = document.getElementById('add-whatsapp').value;
+    const nota = document.getElementById('add-nota').value;
 
-// ESTE ES EL FINAL ABSOLUTO DEL ARCHIVO
+    if(!nombre || !sKey || !numTel) {
+        return showToast("FALTA NOMBRE, SERVICIO O WHATSAPP");
+    }
+
+    const servicio = catalogoGlobal[sKey];
+    const whatsappCompleto = codArea + numTel;
+
+    const nuevaCita = {
+        nombre: nombre,
+        whatsapp: whatsappCompleto,
+        servicio: servicio.nombre,
+        precio: servicio.precio,
+        fecha: selectedDateTime,
+        estado: "Pendiente",
+        nota: nota
+    };
+
+    push(ref(db, 'citas'), nuevaCita).then(() => {
+        cerrarModalAdd();
+        showToast("CITA AGENDADA CON ÉXITO");
+    }).catch(err => {
+        console.error("Error:", err);
+        showToast("ERROR AL GUARDAR");
+    });
+};
+
 </script>
 </body>
 </html>
