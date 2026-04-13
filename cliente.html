@@ -173,7 +173,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = { 
@@ -189,19 +189,47 @@
         let ocupados = [], fechaSeleccionada = "", horaSeleccionada = "", fp;
         let horaApertura = 7, horaCierre = 21, lunchInicio = -1, lunchFin = -1;
 
-        // Inicializar Flatpickr
-        fp = flatpickr("#calendar-inline", {
-            inline: true,
-            minDate: "today",
-            dateFormat: "Y-m-d",
-            "locale": "es",
-            disableMobile: true, // Forzar diseño web en móviles para respetar bloqueos
-            disable: [], 
-            onChange: (selectedDates, dateStr) => {
-                fechaSeleccionada = dateStr;
-                window.renderSlots();
+      // --- CONFIGURACIÓN DE FLATPICKR CORREGIDA ---
+fp = flatpickr("#calendar-inline", {
+    inline: true,
+    minDate: "today",
+    dateFormat: "Y-m-d",
+    "locale": "es",
+    disableMobile: true,
+    disable: [], 
+    onChange: (selectedDates, dateStr) => {
+        fechaSeleccionada = dateStr;
+        
+        // Mapeo de días para Firebase
+        const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+        const fechaObj = new Date(dateStr + "T12:00:00");
+        const nombreDia = diasSemana[fechaObj.getDay()];
+
+        // Consulta dinámica por día
+        get(ref(db, `configuracion_horario/${nombreDia}`)).then((snapshot) => {
+            if (snapshot.exists()) {
+                const config = snapshot.val();
+                horaApertura = parseInt(config.apertura) || 8; 
+                horaCierre = parseInt(config.cierre) || 20;
+                lunchInicio = (config.lunch_inicio) ? parseInt(config.lunch_inicio) : -1;
+                lunchFin = (config.lunch_fin) ? parseInt(config.lunch_fin) : -1;
+            } else {
+                // Horario por defecto si el día no tiene configuración propia
+                horaApertura = 8; horaCierre = 20; lunchInicio = -1; lunchFin = -1;
             }
-        });
+            window.renderSlots(); 
+        }).catch(err => console.error("Error al cargar horario:", err));
+    }
+});
+
+// --- EL "TRUCO" PARA EL DEPLOY: CARGA AUTOMÁTICA AL INICIAR ---
+const hoyIso = new Date().toISOString().split('T')[0];
+fechaSeleccionada = hoyIso;
+fp.setDate(hoyIso); // Marca hoy en el calendario visualmente
+// Ejecutamos la lógica de búsqueda de horario para hoy mismo
+fp.config.onChange[0]([new Date()], hoyIso);
+
+
 
         window.renderSlots = () => {
             const container = document.getElementById('slots-container');
@@ -287,16 +315,7 @@
             }
         });
 
-        onValue(ref(db, 'configuracion_horario'), (snapshot) => {
-            const config = snapshot.val();
-            if (config) { 
-                horaApertura = parseInt(config.apertura); 
-                horaCierre = parseInt(config.cierre);
-                lunchInicio = (config.lunch_inicio && config.lunch_inicio !== "") ? parseInt(config.lunch_inicio) : -1;
-                lunchFin = (config.lunch_fin && config.lunch_fin !== "") ? parseInt(config.lunch_fin) : -1;
-                window.renderSlots(); 
-            }
-        });
+        
 
         onValue(ref(db, 'citas'), (snap) => {
             ocupados = [];
