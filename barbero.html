@@ -594,23 +594,33 @@
     <div class="modal-content" style="max-width: 450px; max-height: 85vh; overflow-y: auto;">
         <h3 style="color:var(--gold);">PANEL DE CONTROL</h3>
         
-       <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px;">HORARIO DE ATENCIÓN</p>
-                <div style="display:flex; gap:12px; margin-bottom:15px;">
-                    <div style="flex:1">
-                        <span style="font-size: 0.6rem; color: #444;">APERTURA</span>
-                        <select id="config-apertura"></select>
-                    </div>
-                    <div style="flex:1">
-                        <span style="font-size: 0.6rem; color: #444;">CIERRE</span>
-                        <select id="config-cierre"></select>
-                    </div>
-                </div>
+       <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px;">GESTIÓN POR DÍA</p>
+<select id="config-dia-semana" style="border: 1px solid var(--gold); background: rgba(212,175,55,0.1);">
+    <option value="lunes">LUNES</option>
+    <option value="martes">MARTES</option>
+    <option value="miercoles">MIÉRCOLES</option>
+    <option value="jueves">JUEVES</option>
+    <option value="viernes">VIERNES</option>
+    <option value="sabado">SÁBADO</option>
+    <option value="domingo">DOMINGO</option>
+</select>
 
-                <p style="font-size: 0.7rem; color: #555; margin-top: 15px; text-align: left;">HORARIO DE ALMUERZO (LUNCH)</p>
-                <div style="display:flex; gap:10px; margin-bottom:15px;">
-                    <select id="config-lunch-inicio"><option value="">Sin lunch</option></select>
-                    <select id="config-lunch-fin"><option value="">Sin lunch</option></select>
-                </div>
+<div style="display:flex; gap:12px; margin-bottom:15px;">
+    <div style="flex:1">
+        <span style="font-size: 0.6rem; color: #444;">APERTURA</span>
+        <select id="config-apertura"></select>
+    </div>
+    <div style="flex:1">
+        <span style="font-size: 0.6rem; color: #444;">CIERRE</span>
+        <select id="config-cierre"></select>
+    </div>
+</div>
+
+<p style="font-size: 0.7rem; color: #555; margin-top: 15px; text-align: left;">HORARIO DE ALMUERZO (LUNCH)</p>
+<div style="display:flex; gap:10px; margin-bottom:15px;">
+    <select id="config-lunch-inicio"><option value="">Sin lunch</option></select>
+    <select id="config-lunch-fin"><option value="">Sin lunch</option></select>
+</div>
 
         <button class="btn btn-gold" id="btn-save-hours">ACTUALIZAR HORARIOS</button>
 <h4 style="font-size:0.7rem; color:var(--gold); border-bottom:1px solid #222; text-align:left; margin-top:25px; margin-bottom:10px;">BLOQUEAR DÍA ENTERO</h4>
@@ -665,7 +675,7 @@
         onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    import { getDatabase, ref, set, onValue, push, remove, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, remove, update, get, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getFirestore, collection, onSnapshot, query, where, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // 1. CONFIGURACIÓN DE FIREBASE
@@ -690,6 +700,48 @@
         let catalogoGlobal = {};
         let fechaVisualizada = new Date().toISOString().split('T')[0];
         let iti;
+        let fechaBloqueoParaBorrar = null;
+
+
+
+// --- MONITOR DE NOTIFICACIONES (LÍNEA 706) ---
+const citasRef = ref(db, 'citas');
+let inicializado = false;
+
+// Pedir permiso inmediatamente al abrir la App
+if ("Notification" in window && Notification.permission !== "granted") {
+    Notification.requestPermission();
+}
+
+// Marcamos las citas actuales para no recibir alertas de lo que ya pasó
+get(citasRef).then(() => { inicializado = true; });
+
+// Este vigilante detecta cada cliente nuevo en tiempo real
+onChildAdded(citasRef, (snapshot) => {
+    if (!inicializado) return; 
+
+    const nuevaCita = snapshot.val();
+    const hora = nuevaCita.fecha ? nuevaCita.fecha.split('T')[1] : "";
+
+    // 1. Notificación al celular (Vibración y Texto)
+    if (Notification.permission === "granted") {
+        new Notification("⭐ NUEVA CITA RECIBIDA", {
+            body: `${nuevaCita.nombre} - ${nuevaCita.servicio} (${hora})`,
+            icon: "icono.png"
+        });
+    }
+
+    // 2. Alerta sonora para tu jornada de 6am a 10pm
+    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
+    audio.play().catch(e => console.log("Audio bloqueado hasta interacción"));
+
+    // 3. Aviso visual en tu panel dorado
+    if (typeof showToast === 'function') {
+        showToast(`¡ALERTA: ${nuevaCita.nombre.toUpperCase()} AGENDÓ!`);
+    }
+});
+
+
 
        // 3. FUNCIONES DE ACCESO
     window.loginGoogle = () => {
@@ -800,36 +852,40 @@
 
             // 2. CONFIGURAR CALENDARIO
             const calendarEl = document.getElementById('calendar');
-            if (!calendarEl) return;
+if (!calendarEl) return;
 
-            calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                locale: 'es',
-                dayMaxEvents: 2,
-                height: 650,
-                fixedWeekCount: false,
-                allDaySlot: false,
-                slotDuration: '00:30:00',
-                nowIndicator: true,
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                editable: true,
-                eventDurationEditable: false,
-                
-                eventDrop: function(info) {
-                    actualizarHorarioCita(info.event);
-                },
-            
-            datesSet: function(info) {
-                fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
-                onValue(ref(db, 'citas'), (snapshot) => {
-                    renderAdmin(snapshot.val());
-                }, { onlyOnce: true });
-            },
+calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    locale: 'es',
+    dayMaxEvents: 2,
+    height: 650,
+    fixedWeekCount: false,
+    allDaySlot: false,
+    slotDuration: '00:30:00',
+    nowIndicator: true,
+    
+    // --- ESTO TE DA EL CONTROL TOTAL ---
+    slotMinTime: '06:00:00', // Tu día empieza a las 6 AM
+    slotMaxTime: '24:00:00', // Tu día termina a las 12 AM
+    
+    headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    },
+    editable: true,
+    eventDurationEditable: false,
+    
+    eventDrop: function(info) {
+        actualizarHorarioCita(info.event);
+    },
 
+    datesSet: function(info) {
+        fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
+        onValue(ref(db, 'citas'), (snapshot) => {
+            renderAdmin(snapshot.val());
+        }, { onlyOnce: true });
+    },
             // --- CLIC EN UN DÍA (TU NUEVA AGENDA DE CINTAS ABAJO) ---
             dateClick: function(info) {
                 if (info.view.type === 'dayGridMonth') {
@@ -960,17 +1016,18 @@
 onValue(ref(db, 'configuracion_horario'), snap => { 
     const config = snap.val();
     if(config && calendar){ 
-        // 1. Actualiza el calendario visualmente
-        calendar.setOption('slotMinTime', config.apertura.padStart(2,'0')+':00:00'); 
-        calendar.setOption('slotMaxTime', config.cierre.padStart(2,'0')+':00:00');
-        
-        // 2. ACTUALIZA LOS SELECTORES DEL PANEL DE CONFIGURACIÓN
-        // Buscamos los IDs correctos que tienes en tu HTML
+        // --- 1. CONFIGURACIÓN VISUAL DEL ADMIN ---
+        // Eliminamos setOption('slotMinTime') y slotMaxTime para que 
+        // tu vista se mantenga fija en el rango amplio (6 AM - 12 AM).
+
+        // --- 2. ACTUALIZA LOS SELECTORES DEL PANEL DE CONFIGURACIÓN ---
         const apS = document.getElementById('config-apertura');
         const ciS = document.getElementById('config-cierre');
         const lIn = document.getElementById('config-lunch-inicio');
         const lFi = document.getElementById('config-lunch-fin');
 
+        // Estos valores reflejan lo que LOS CLIENTES ven, 
+        // pero no afectan el tamaño de tu calendario personal.
         if(apS) apS.value = config.apertura; 
         if(ciS) ciS.value = config.cierre;
         if(lIn) lIn.value = config.lunch_inicio || "";
@@ -1195,26 +1252,32 @@ window.confirmarAccion = function() {
 
 // --- 2. ACCIÓN REAL DE ELIMINAR AL DARLE A "SÍ, PROCEDER" ---
 document.getElementById('confirm-yes').onclick = function() {
-    if (!currentEditingId) return;
-
-    const citaRef = ref(db, 'citas/' + currentEditingId);
-    
-    remove(citaRef).then(() => {
-        // Cerramos el modal de confirmación
-        document.getElementById('modalConfirm').style.display = 'none';
-        
-        // Cerramos el modal de detalles de la cita (modalEvento)
-        const modalEvento = document.getElementById('modalEvento');
-        if (modalEvento) modalEvento.style.display = 'none';
-        
-        showToast("CITA ELIMINADA EXITOSAMENTE");
-        currentEditingId = null; // Limpiamos el ID
-    }).catch((error) => {
-        console.error("Error al eliminar:", error);
-        showToast("ERROR AL ELIMINAR");
-    });
+    // CASO A: Borrar Servicio
+    if (idServicioParaBorrar) {
+        remove(ref(db, 'servicios/' + idServicioParaBorrar)).then(() => {
+            showToast("SERVICIO ELIMINADO");
+            idServicioParaBorrar = null;
+            document.getElementById('modalConfirm').style.display = 'none';
+        });
+    } 
+    // CASO B: Borrar Bloqueo de Día (NUEVO)
+    else if (fechaBloqueoParaBorrar) {
+        remove(ref(db, `dias_bloqueados/${fechaBloqueoParaBorrar}`)).then(() => {
+            showToast("DÍA DESBLOQUEADO");
+            fechaBloqueoParaBorrar = null; // Limpiamos la variable
+            document.getElementById('modalConfirm').style.display = 'none';
+        });
+    }
+    // CASO C: Borrar Cita
+    else if (currentEditingId) {
+        remove(ref(db, 'citas/' + currentEditingId)).then(() => {
+            showToast("CITA ELIMINADA");
+            document.getElementById('modalConfirm').style.display = 'none';
+            const modalEvento = document.getElementById('modalEvento');
+            if (modalEvento) modalEvento.style.display = 'none';
+        });
+    }
 };
-
 
 
         window.cambiarEstado = function(id, nuevoEstado) { 
@@ -1236,94 +1299,176 @@ document.getElementById('confirm-yes').onclick = function() {
         };
 
         // --- GESTIÓN DE SERVICIOS (CATÁLOGO) ---
-        function renderServicios(servs){
-            catalogoGlobal = servs;
-            const selAdd = document.getElementById('add-servicio-select');
-            const selEdit = document.getElementById('edit-servicio-select');
-            const listaAdmin = document.getElementById('lista-servicios-admin');
+        function renderServicios(servs) {
+    catalogoGlobal = servs;
+    const selAdd = document.getElementById('add-servicio-select');
+    const selEdit = document.getElementById('edit-servicio-select');
+    const listaAdmin = document.getElementById('lista-servicios-admin');
+    
+    selAdd.innerHTML = '<option value="">Selecciona un servicio...</option>';
+    selEdit.innerHTML = '<option value="">(Sin cambios de servicio)</option>';
+    listaAdmin.innerHTML = '';
+
+    Object.keys(servs).forEach(id => {
+        const s = servs[id];
+        const optHtml = `<option value="${id}">${s.nombre} - Q${s.precio}</option>`;
+        selAdd.innerHTML += optHtml;
+        selEdit.innerHTML += optHtml;
+
+        const item = document.createElement('div');
+        // Estilo de contenedor tipo tarjeta
+        item.style.cssText = "background:rgba(255,255,255,0.03); margin-bottom:10px; border-radius:15px; border:1px solid #1a1a1a; overflow:hidden;";
+        
+        item.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; cursor:pointer;" 
+                 onclick="const panel = this.nextElementSibling; panel.style.display = panel.style.display === 'none' ? 'block' : 'none'">
+                <div style="font-size:0.8rem; font-weight:600;">
+                    ${s.nombre} <span style="color:var(--gold); margin-left:10px;">Q${s.precio}</span>
+                </div>
+                <i class="fas fa-chevron-down" style="font-size:0.7rem; color:#444;"></i>
+            </div>
             
-            selAdd.innerHTML = '<option value="">Selecciona un servicio...</option>';
-            selEdit.innerHTML = '<option value="">(Sin cambios de servicio)</option>';
-            listaAdmin.innerHTML = '';
-
-            Object.keys(servs).forEach(id => {
-                const s = servs[id];
-                const optHtml = `<option value="${id}">${s.nombre} - Q${s.precio}</option>`;
-                selAdd.innerHTML += optHtml;
-                selEdit.innerHTML += optHtml;
-
-                // Elemento visual para configuración
-                const item = document.createElement('div');
-                item.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #111; font-size:0.8rem; background:rgba(255,255,255,0.01); margin-bottom:5px; border-radius:10px;";
-                item.innerHTML = `
-                    <div style="font-weight:600;">${s.nombre} <span style="color:var(--gold); margin-left:10px;">Q${s.precio}</span></div>
-                    <button style="background:none; border:none; color:var(--red); cursor:pointer;" onclick="eliminarServicio('${id}')">
+            <div style="display:none; padding:0 15px 15px; border-top:1px solid #111; background: rgba(0,0,0,0.2);">
+                <p style="font-size:0.7rem; color:#888; margin:12px 0; line-height:1.4;">
+                    <strong style="color:var(--gold); font-size:0.6rem; text-transform:uppercase;">Incluye:</strong><br>
+                    ${s.detalle || "Sin descripción disponible"}
+                </p>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-mini" style="background:var(--gold); flex:1; height:35px;" onclick="prepararEdicionServicio('${id}')">
+                        <i class="fas fa-edit"></i> EDITAR
+                    </button>
+                    <button class="btn-mini" style="background:rgba(255,77,77,0.1); color:var(--red); border:1px solid var(--red); width:40px; height:35px;" onclick="eliminarServicio('${id}')">
                         <i class="fas fa-trash-alt"></i>
                     </button>
-                `;
-                listaAdmin.appendChild(item);
-            });
-        }
+                </div>
+            </div>
+        `;
+        listaAdmin.appendChild(item);
+    });
+}
 
-        window.eliminarServicio = function(id) {
-            confirmarAccion("¿Eliminar este servicio del catálogo? Esto no afectará citas ya agendadas.", function() {
-                remove(ref(db, 'servicios/' + id)).then(() => showToast("CATÁLOGO ACTUALIZADO"));
-            });
-        };
 
-        document.getElementById('btn-add-serv').onclick = () => {
+// IMPORTANTE: Esta variable debe estar afuera para que todo el script la vea
+let idServicioEnEdicion = null; 
+
+window.prepararEdicionServicio = function(id) {
+    const s = catalogoGlobal[id];
+    idServicioEnEdicion = id; // Aquí guardamos el ID para que el botón sepa qué editar
+    
+    document.getElementById('serv-n').value = s.nombre;
+    document.getElementById('serv-p').value = s.precio;
+    document.getElementById('serv-d').value = s.detalle || "";
+    
+    const btn = document.getElementById('btn-add-serv');
+    btn.innerText = "GUARDAR CAMBIOS";
+    btn.style.background = "#2ecc71"; // Verde para saber que estamos editando
+    
+    document.getElementById('serv-n').scrollIntoView({ behavior: 'smooth' });
+};
+
+// 3. Modificamos tu evento original para que sepa si está agregando o editando
+document.getElementById('btn-add-serv').onclick = () => {
     const n = document.getElementById('serv-n').value;
     const p = document.getElementById('serv-p').value;
-    const d = document.getElementById('serv-d').value; // <--- Agregamos esta línea
+    const d = document.getElementById('serv-d').value;
 
-    if(n && p) {
-        // Añadimos 'detalle: d' al objeto que se envía a Firebase
-        push(ref(db, 'servicios'), { 
-            nombre: n, 
-            precio: p, 
-            detalle: d 
+    if(!n || !p) return showToast("LLENA NOMBRE Y PRECIO");
+
+    if(idServicioEnEdicion) {
+        // --- MODO ACTUALIZAR (Usa el ID guardado) ---
+        update(ref(db, 'servicios/' + idServicioEnEdicion), {
+            nombre: n, precio: p, detalle: d
         }).then(() => {
-            // Limpiamos los tres campos después de guardar
-            document.getElementById('serv-n').value = '';
-            document.getElementById('serv-p').value = '';
-            document.getElementById('serv-d').value = ''; 
-            showToast("NUEVO SERVICIO AÑADIDO");
+            showToast("SERVICIO ACTUALIZADO");
+            limpiarFormServicio();
         });
     } else {
-        showToast("LLENA NOMBRE Y PRECIO");
+        // --- MODO AGREGAR (Crea uno nuevo solo si el ID es null) ---
+        push(ref(db, 'servicios'), {
+            nombre: n, precio: p, detalle: d
+        }).then(() => {
+            showToast("NUEVO SERVICIO AÑADIDO");
+            limpiarFormServicio();
+        });
     }
 };
 
+function limpiarFormServicio() {
+    idServicioEnEdicion = null; // CRÍTICO: Resetear para que el próximo clic sea "Agregar"
+    document.getElementById('serv-n').value = '';
+    document.getElementById('serv-p').value = '';
+    document.getElementById('serv-d').value = '';
+    
+    const btn = document.getElementById('btn-add-serv');
+    btn.innerText = "AGREGAR SERVICIO";
+    btn.style.background = ""; // Vuelve al dorado original
+}
+
+        let idServicioParaBorrar = null; // Variable global para el servicio
+
+window.eliminarServicio = function(id) {
+    idServicioParaBorrar = id; // Guardamos el ID del servicio
+    
+    // Cambiamos el texto del modal para que sea específico al servicio
+    const txt = document.getElementById('confirm-text');
+    if (txt) txt.innerText = "¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE SERVICIO DEL CATÁLOGO?";
+
+    // Mostramos tu modal personalizado
+    const modalConfirm = document.getElementById('modalConfirm');
+    if (modalConfirm) modalConfirm.style.display = 'flex';
+};
+
        
-        // --- LÓGICA DE BLOQUEO DE DÍAS ---
-        const fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d" });
+        // --- LÓGICA DE BLOQUEO DE DÍAS CON AUTO-LIMPIEZA ---
+const fpBlock = flatpickr("#input-block-date", { locale: "es", minDate: "today", dateFormat: "Y-m-d" });
 
-        onValue(ref(db, 'dias_bloqueados'), snap => {
-            const list = document.getElementById('lista-bloqueos-admin');
-            list.innerHTML = ''; 
-            const bloqueos = snap.val() || {};
-            Object.keys(bloqueos).forEach(f => {
-                list.innerHTML += `<div class="block-item-admin"><span>${f}</span><i class="fas fa-trash" style="color:var(--red); cursor:pointer;" onclick="eliminarBloqueo('${f}')"></i></div>`;
-            });
+onValue(ref(db, 'dias_bloqueados'), snap => {
+    const list = document.getElementById('lista-bloqueos-admin');
+    list.innerHTML = ''; 
+    const bloqueos = snap.val() || {};
+    
+    // 1. Obtenemos la fecha de hoy (YYYY-MM-DD)
+    const hoy = new Date().toISOString().split('T')[0];
+
+    Object.keys(bloqueos).forEach(f => {
+        // 2. Si la fecha guardada es menor a hoy, la borramos de Firebase
+        if (f < hoy) {
+            remove(ref(db, `dias_bloqueados/${f}`));
+        } else {
+            // 3. Solo mostramos los días presentes o futuros
+            list.innerHTML += `
+                <div class="block-item-admin">
+                    <span>${f}</span>
+                    <i class="fas fa-trash" style="color:var(--red); cursor:pointer;" 
+                       onclick="eliminarBloqueo('${f}')"></i>
+                </div>`;
+        }
+    });
+});
+
+window.eliminarBloqueo = (f) => {
+    fechaBloqueoParaBorrar = f; // Guardamos la fecha
+    
+    // Cambiamos el texto del modal
+    const txt = document.getElementById('confirm-text');
+    if (txt) txt.innerText = "¿ESTÁS SEGURO DE QUE DESEAS DESBLOQUEAR EL DÍA " + f + "?";
+
+    // Mostramos tu modal elegante
+    const modalConfirm = document.getElementById('modalConfirm');
+    if (modalConfirm) modalConfirm.style.display = 'flex';
+};
+
+document.getElementById('btn-add-block').onclick = () => {
+    const f = document.getElementById('input-block-date').value;
+    if(f) {
+        set(ref(db, `dias_bloqueados/${f}`), true).then(() => {
+            showToast("DÍA BLOQUEADO CORRECTAMENTE");
+            document.getElementById('input-block-date').value = '';
         });
-
-        window.eliminarBloqueo = (f) => {
-            if(confirm("¿Desbloquear este día?")) {
-                remove(ref(db, `dias_bloqueados/${f}`));
-            }
-        };
-
-        document.getElementById('btn-add-block').onclick = () => {
-            const f = document.getElementById('input-block-date').value;
-            if(f) {
-                set(ref(db, `dias_bloqueados/${f}`), true).then(() => {
-                    showToast("DÍA BLOQUEADO CORRECTAMENTE");
-                    document.getElementById('input-block-date').value = '';
-                });
-            } else {
-                showToast("SELECCIONA UNA FECHA");
-            }
-        };
+    } else {
+        showToast("SELECCIONA UNA FECHA");
+    }
+};
         // ... (todo tu código anterior de botones y bloqueos)
 
         // --- FUNCIÓN PARA MOVER CITAS (DRAG & DROP) ---
@@ -1456,38 +1601,51 @@ window.toggleConfig = async () => {
     }
 };
 
-// BUSCA ESTE BLOQUE Y ASEGÚRATE QUE SEA EL ÚNICO PARA CITAS
-document.getElementById('btn-save-cita-calendar').onclick = function() {
-    const nombre = document.getElementById('add-nombre').value;
-    const sKey = document.getElementById('add-servicio-select').value;
-    const codArea = document.getElementById('add-codigo-area').value;
-    const numTel = document.getElementById('add-whatsapp').value;
-    const nota = document.getElementById('add-nota').value;
 
-    if(!nombre || !sKey || !numTel) {
-        return showToast("FALTA NOMBRE, SERVICIO O WHATSAPP");
+
+
+document.getElementById('config-dia-semana').onchange = async (e) => {
+    const dia = e.target.value;
+    try {
+        const snapshot = await get(ref(db, `configuracion_horario/${dia}`));
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            document.getElementById('config-apertura').value = data.apertura;
+            document.getElementById('config-cierre').value = data.cierre;
+            document.getElementById('config-lunch-inicio').value = data.lunch_inicio || "";
+            document.getElementById('config-lunch-fin').value = data.lunch_fin || "";
+        }
+    } catch (e) { console.error("Error al cargar día:", e); }
+};
+
+
+// --- LÓGICA PARA EL BOTÓN DE ACTUALIZAR HORARIOS ---
+document.getElementById('btn-save-hours').onclick = async () => {
+    const dia = document.getElementById('config-dia-semana').value; // <--- ESTO ES LO QUE LO HACE INDEPENDIENTE
+    const apertura = document.getElementById('config-apertura').value;
+    const cierre = document.getElementById('config-cierre').value;
+    const lunch_inicio = document.getElementById('config-lunch-inicio').value;
+    const lunch_fin = document.getElementById('config-lunch-fin').value;
+
+    if (parseInt(apertura) >= parseInt(cierre)) {
+        return showToast("LA APERTURA DEBE SER ANTES DEL CIERRE");
     }
 
-    const servicio = catalogoGlobal[sKey];
-    const whatsappCompleto = codArea + numTel;
+    try {
+        // La ruta DEBE incluir el día: `configuracion_horario/${dia}`
+        await set(ref(db, `configuracion_horario/${dia}`), {
+            apertura: apertura,
+            cierre: cierre,
+            lunch_inicio: lunch_inicio,
+            lunch_fin: lunch_fin
+        });
 
-    const nuevaCita = {
-        nombre: nombre,
-        whatsapp: whatsappCompleto,
-        servicio: servicio.nombre,
-        precio: servicio.precio,
-        fecha: selectedDateTime,
-        estado: "Pendiente",
-        nota: nota
-    };
-
-    push(ref(db, 'citas'), nuevaCita).then(() => {
-        cerrarModalAdd();
-        showToast("CITA AGENDADA CON ÉXITO");
-    }).catch(err => {
-        console.error("Error:", err);
+        showToast(`HORARIO DE ${dia.toUpperCase()} ACTUALIZADO`);
+        toggleConfig(); // Cierra el panel al terminar
+    } catch (error) {
+        console.error(error);
         showToast("ERROR AL GUARDAR");
-    });
+    }
 };
 
 </script>
