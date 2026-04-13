@@ -459,17 +459,17 @@
         <div class="login-box">
             <img src="logo.png" style="width: 90px; margin-bottom: 25px;">
             <h2 style="font-size: 1rem; color: var(--gold); margin-bottom: 30px; letter-spacing: 2px;">ADMIN PANEL</h2>
-            <button class="btn btn-gold" onclick="loginGoogle()">
-                <i class="fab fa-google" style="margin-right: 10px;"></i> ENTRAR AL SISTEMA
-            </button>
+            <button class="btn btn-gold" onclick="loginGoogle(); activarNotificaciones()">
+    <i class="fab fa-google" style="margin-right: 10px;"></i> ENTRAR AL SISTEMA
+</button>
         </div>
     </div>
 
     <div id="admin-content">
         
-        <button class="btn-config-float" onclick="toggleConfig()">
-            <i class="fas fa-sliders-h"></i>
-        </button>
+        <button class="btn-config-float" onclick="toggleConfig(); activarNotificaciones()">
+    <i class="fas fa-sliders-h"></i>
+</button>
 
         <div class="main-grid">
             
@@ -741,7 +741,35 @@ onChildAdded(citasRef, (snapshot) => {
     }
 });
 
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(() => {
+        console.log("Service Worker registrado con éxito");
+    });
+}
 
+// 2. Función global para el botón
+window.activarNotificaciones = async () => {
+    // 1. Verificamos si ya tenemos permiso para no molestar al sistema
+    if ("Notification" in window && Notification.permission === 'granted') {
+        console.log("Notificaciones ya estaban activas.");
+        return; 
+    }
+
+    // 2. Si no hay permiso, lo solicitamos (esto disparará el cuadro en iPhone)
+    const permission = await Notification.requestPermission();
+    
+    if (permission === 'granted') {
+        showToast("¡NOTIFICACIONES ACTIVADAS!");
+        
+        // 3. Enviamos una confirmación visual inmediata
+        new Notification("Innovation Admin", { 
+            body: "Las alertas están listas para tu jornada",
+            icon: "icono.png" 
+        });
+    } else if (permission === 'denied') {
+        showToast("Permiso bloqueado. Actívalo en ajustes.");
+    }
+};
 
        // 3. FUNCIONES DE ACCESO
     window.loginGoogle = () => {
