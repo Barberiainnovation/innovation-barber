@@ -1687,30 +1687,50 @@ document.getElementById('config-dia-semana').onchange = async (e) => {
 
 
 // --- LÓGICA PARA EL BOTÓN DE ACTUALIZAR HORARIOS ---
-document.getElementById('btn-save-hours').onclick = async () => {
-    const dia = document.getElementById('config-dia-semana').value; // <--- ESTO ES LO QUE LO HACE INDEPENDIENTE
-    const apertura = document.getElementById('config-apertura').value;
-    const cierre = document.getElementById('config-cierre').value;
-    const lunch_inicio = document.getElementById('config-lunch-inicio').value;
-    const lunch_fin = document.getElementById('config-lunch-fin').value;
+// --- LÓGICA PARA EL BOTÓN CONFIRMAR CITA (AGREGAR AL CALENDARIO) ---
+document.getElementById('btn-save-cita-calendar').onclick = async () => {
+    const nombre = document.getElementById('add-nombre').value;
+    const cod = document.getElementById('add-codigo-area').value;
+    const num = document.getElementById('add-whatsapp').value;
+    const servicioId = document.getElementById('add-servicio-select').value;
+    const nota = document.getElementById('add-nota').value;
 
-    if (parseInt(apertura) >= parseInt(cierre)) {
-        return showToast("LA APERTURA DEBE SER ANTES DEL CIERRE");
+    // 1. Validaciones de seguridad
+    if (!nombre || !num || !servicioId || !selectedDateTime) {
+        showToast("LLENA NOMBRE, TELÉFONO Y SERVICIO");
+        return;
     }
 
-    try {
-        // La ruta DEBE incluir el día: `configuracion_horario/${dia}`
-        await set(ref(db, `configuracion_horario/${dia}`), {
-            apertura: apertura,
-            cierre: cierre,
-            lunch_inicio: lunch_inicio,
-            lunch_fin: lunch_fin
-        });
+    const servicio = catalogoGlobal[servicioId];
+    const whatsappCompleto = cod + num;
 
-        showToast(`HORARIO DE ${dia.toUpperCase()} ACTUALIZADO`);
-        toggleConfig(); // Cierra el panel al terminar
+    // 2. Estructura de la cita para Firebase
+    const nuevaCita = {
+        nombre: nombre,
+        whatsapp: whatsappCompleto,
+        servicio: servicio.nombre,
+        precio: servicio.precio,
+        nota: nota || "Sin notas",
+        fecha: selectedDateTime, // Se captura al hacer clic en el calendario
+        estado: 'Pendiente'
+    };
+
+    try {
+        // 3. Guardar en Realtime Database (Agenda activa)
+        await push(ref(db, 'citas'), nuevaCita);
+
+        // 4. Sincronizar con Firestore (Buscador de clientes)
+        const clienteID = nombre.toLowerCase().trim().replace(/\s+/g, '_');
+        await setDoc(doc(fs, "clientes", clienteID), {
+            nombre: nombre,
+            whatsapp: whatsappCompleto,
+            ultima_visita: new Date().toISOString()
+        }, { merge: true });
+
+        showToast("CITA AGENDADA CON ÉXITO");
+        cerrarModalAdd(); // Función que ya tienes para limpiar y cerrar
     } catch (error) {
-        console.error(error);
+        console.error("Error al agendar:", error);
         showToast("ERROR AL GUARDAR");
     }
 };
