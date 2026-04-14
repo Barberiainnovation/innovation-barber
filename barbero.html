@@ -1129,8 +1129,8 @@ onValue(ref(db, 'configuracion_horario'), snap => {
     });
 }
 
-        // --- RENDERIZADO MAESTRO DE DATOS ---
-       function renderAdmin(data) {
+       // --- RENDERIZADO MAESTRO DE DATOS ---
+function renderAdmin(data) {
     const lista = document.getElementById('lista-citas');
     const cCount = document.getElementById('citas-count');
     const iTotal = document.getElementById('ingreso-total');
@@ -1148,7 +1148,6 @@ onValue(ref(db, 'configuracion_horario'), snap => {
     let contadorServicios = {};
 
     // --- CORRECCIÓN DE MES DINÁMICO ---
-    // Extraemos mes y año de la fecha que está viendo el usuario en el calendario
     const fechaReferencia = new Date(fechaVisualizada + "T12:00:00");
     const mesEnPantalla = fechaReferencia.getMonth();
     const añoEnPantalla = fechaReferencia.getFullYear();
@@ -1199,8 +1198,8 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                 pendientesDiaEnPantalla++;
             }
 
-            // EVENTOS DEL CALENDARIO
-            eventosCalendar.push({ 
+            // --- EVENTOS DEL CALENDARIO (CORREGIDO PARA PERSISTENCIA VISUAL) ---
+            let objetoEvento = { 
                 id: id, 
                 title: cita.nombre, 
                 start: cita.fecha, 
@@ -1208,19 +1207,29 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                 borderColor: esFinalizada ? '#222' : '#aa8c2c',
                 textColor: esFinalizada ? '#555' : '#000', 
                 extendedProps: { ...cita } 
-            });
+            };
+
+            // Si la cita tiene hora de fin guardada (estiramiento), se la pasamos al calendario
+            if (cita.horaFin) {
+                objetoEvento.end = `${fechaLimpia}T${cita.horaFin}`;
+            }
+
+            eventosCalendar.push(objetoEvento);
             
-            // TARJETAS (CINTAS) EN ORDEN (MODIFICADO)
+            // --- TARJETAS (CINTAS) EN ORDEN (CORREGIDO PARA MOSTRAR RANGO DE TIEMPO) ---
             if (esPendiente && fechaLimpia === fechaVisualizada){
                 const card = document.createElement('div');
                 card.className = 'card';
-                // Hacemos que toda la tarjeta parezca cliqueable
                 card.style.cursor = "pointer"; 
+                
+                // Formateo de la hora: muestra rango si existe horaFin (ej: 09:00 - 10:30)
+                const horaInicio = cita.fecha.split('T')[1];
+                const horaRango = cita.horaFin ? `${horaInicio} - ${cita.horaFin}` : horaInicio;
                 
                 card.innerHTML = `
                     <div style="flex:1" onclick="abrirEventoDirecto('${id}')">
                         <div style="font-size:0.6rem; color:var(--gold); font-weight:600; text-transform:uppercase; margin-bottom:2px;">
-                            ${cita.fecha.split('T')[1]} - ${cita.servicio}
+                            ${horaRango} | ${cita.servicio}
                         </div>
                         <h4 style="margin:0; font-size:0.85rem; letter-spacing:0.5px;">${cita.nombre}</h4>
                         ${cita.nota ? `<p style="margin:4px 0 0; font-size:0.65rem; color:#555; font-style:italic;">"${cita.nota}"</p>` : ""}
@@ -1234,7 +1243,7 @@ onValue(ref(db, 'configuracion_horario'), snap => {
         });
     }
 
-    // ACTUALIZACIÓN DE LA INTERFAZ
+    // ACTUALIZACIÓN DE LA INTERFAZ (TOTALES Y DESGLOSE)
     Object.keys(contadorServicios).forEach(serv => {
         desglose.innerHTML += `<div class="serv-stat-item"><span>${serv}</span><span>x${contadorServicios[serv]}</span></div>`;
     });
@@ -1243,6 +1252,7 @@ onValue(ref(db, 'configuracion_horario'), snap => {
     iTotal.innerText = 'Q' + ingresosMes.toLocaleString('es-GT', { minimumFractionDigits: 2 });
     pCount.innerText = pendientesDiaEnPantalla;
 
+    // Sincronizar calendario con los nuevos objetos (con soporte de estiramiento)
     calendar.removeAllEvents();
     calendar.addEventSource(eventosCalendar);
 }
