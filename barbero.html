@@ -902,10 +902,16 @@ calendar = new FullCalendar.Calendar(calendarEl, {
         right: 'dayGridMonth,timeGridWeek,timeGridDay'
     },
     editable: true,
-    eventDurationEditable: false,
+    eventDurationEditable: true, // <-- CAMBIAR A TRUE
     
+    // Función para cuando mueves la cita (ya la tienes)
     eventDrop: function(info) {
         actualizarHorarioCita(info.event);
+    },
+
+    // --- NUEVA FUNCIÓN: PARA CUANDO ESTIRAS LA CITA ---
+    eventResize: function(info) {
+        actualizarDuracionCita(info.event);
     },
 
     datesSet: function(info) {
@@ -1099,6 +1105,29 @@ onValue(ref(db, 'configuracion_horario'), snap => {
                 renderServicios(snapshot.val() || {});
             });
         }
+
+        function actualizarDuracionCita(event) {
+    const citaId = event.id;
+    const fin = event.end;
+
+    if (!fin) return; // Si no tiene hora de fin definida, no hace nada
+
+    // Formateamos la hora final (HH:mm)
+    const horas = String(fin.getHours()).padStart(2, '0');
+    const minutos = String(fin.getMinutes()).padStart(2, '0');
+    const nuevaHoraFin = `${horas}:${minutos}`;
+
+    // Actualizamos en Firebase agregando el campo horaFin
+    update(ref(db, 'citas/' + citaId), {
+        horaFin: nuevaHoraFin
+    }).then(() => {
+        showToast("DURACIÓN ACTUALIZADA");
+    }).catch((error) => {
+        console.error("Error al redimensionar:", error);
+        showToast("ERROR AL CAMBIAR DURACIÓN");
+        location.reload(); 
+    });
+}
 
         // --- RENDERIZADO MAESTRO DE DATOS ---
        function renderAdmin(data) {
