@@ -232,32 +232,43 @@ fp.config.onChange[0]([new Date()], hoyIso);
 
 
         window.renderSlots = () => {
-            const container = document.getElementById('slots-container');
-            container.innerHTML = "";
-            if (!fechaSeleccionada) return;
+    const container = document.getElementById('slots-container');
+    container.innerHTML = "";
+    if (!fechaSeleccionada) return;
 
-            for (let h = horaApertura; h < horaCierre; h++) {
-                if (lunchInicio !== -1 && lunchFin !== -1) {
-                    if (h >= lunchInicio && h < lunchFin) continue; 
-                }
+    for (let h = horaApertura; h < horaCierre; h++) {
+        if (lunchInicio !== -1 && lunchFin !== -1) {
+            if (h >= lunchInicio && h < lunchFin) continue; 
+        }
 
-                const horaStr = `${h.toString().padStart(2, '0')}:00`;
-                const fullDateTimeISO = `${fechaSeleccionada}T${horaStr}`;
-                const isOccupied = ocupados.some(o => o.startsWith(fullDateTimeISO));
+        const horaStr = `${h.toString().padStart(2, '0')}:00`;
+        
+        // --- LÓGICA DE BLOQUEO POR RANGO (CORREGIDA) ---
+        const isOccupied = ocupados.some(cita => {
+            const [fechaCita, inicioCita] = cita.fecha.split('T');
+            if (fechaCita !== fechaSeleccionada) return false;
 
-                if (!isOccupied) {
-                    const div = document.createElement('div');
-                    div.className = 'slot';
-                    div.innerText = h > 12 ? `${h-12}:00 PM` : (h === 12 ? `12:00 PM` : `${h}:00 AM`);
-                    div.onclick = () => {
-                        document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
-                        div.classList.add('selected');
-                        horaSeleccionada = horaStr;
-                    };
-                    container.appendChild(div);
-                }
-            }
-        };
+            const hInicio = parseInt(inicioCita.split(':')[0]);
+            // Si no hay horaFin, asumimos que dura 1 hora (hInicio + 1)
+            const hFin = cita.horaFin ? parseInt(cita.horaFin.split(':')[0]) : hInicio + 1;
+
+            // Bloqueamos el slot si la hora actual (h) está entre el inicio y el fin
+            return h >= hInicio && h < hFin;
+        });
+
+        if (!isOccupied) {
+            const div = document.createElement('div');
+            div.className = 'slot';
+            div.innerText = h > 12 ? `${h-12}:00 PM` : (h === 12 ? `12:00 PM` : `${h}:00 AM`);
+            div.onclick = () => {
+                document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+                div.classList.add('selected');
+                horaSeleccionada = horaStr;
+            };
+            container.appendChild(div);
+        }
+    }
+};
 
         window.actualizarInfoServicio = () => {
             const sel = document.getElementById('servicio'), opt = sel.selectedOptions[0];
@@ -318,10 +329,16 @@ fp.config.onChange[0]([new Date()], hoyIso);
         
 
         onValue(ref(db, 'citas'), (snap) => {
-            ocupados = [];
+            ocupados = []; // Reiniciamos la lista
             snap.forEach(c => { 
                 const d = c.val();
-                if(d.fecha && d.estado !== 'Cancelada') ocupados.push(d.fecha.replace(" ", "T")); 
+                // Si la cita tiene fecha y no está cancelada, guardamos el objeto completo
+                if(d.fecha && d.estado !== 'Cancelada' && d.estado !== 'Finalizada') { 
+                    ocupados.push({
+                        fecha: d.fecha.replace(" ", "T"),
+                        horaFin: d.horaFin || null // Traemos la hora de fin si existe
+                    });
+                }
             });
             window.renderSlots(); 
         });
