@@ -449,6 +449,21 @@
     bottom: 40px; /* Sube elegantemente */
     opacity: 1;
 }
+
+
+/* Fuerza el estilo de punto para el lunch en la vista de mes */
+.fc-daygrid-event.lunch-event {
+    display: list-item !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+/* El punto rojo específico para el lunch */
+.fc-daygrid-event.lunch-event .fc-daygrid-event-dot {
+    border-color: #ff4d4d !important;
+}
+
+
     </style>
 </head>
 <body>
@@ -683,7 +698,11 @@
             apiKey: "AIzaSyAKbopaMnZVA5Xy132EC1roRFihl9nXW4I", 
             authDomain: "innovation-barber-studio.firebaseapp.com", 
             projectId: "innovation-barber-studio", 
-            databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com" 
+            databaseURL: "https://innovation-barber-studio-default-rtdb.firebaseio.com",
+            storageBucket: "innovation-barber-studio.firebasestorage.app",
+            messagingSenderId: "589786876751",
+            appId: "1:589786876751:web:31b40f11b3810470e9933a",
+            measurementId: "G-KEQM3D5L1P"
         };
 
         // 2. INICIALIZACIÓN (ORDEN CORRECTO)
@@ -701,6 +720,9 @@
         let fechaVisualizada = new Date().toISOString().split('T')[0];
         let iti;
         let fechaBloqueoParaBorrar = null;
+
+
+
 
 
 
@@ -802,18 +824,41 @@ window.activarNotificaciones = async () => {
             if (loginOverlay) loginOverlay.style.display = 'none';
             if (adminContent) adminContent.style.display = 'block';
             
-            // --- NUEVO: CARGAMOS TUS HORARIOS EN MEMORIA PARA QUE SEAN FIJOS ---
+            // 1. Cargamos horarios en memoria
             get(ref(db, 'configuracion_horario')).then(snap => {
                 if (snap.exists()) {
                     window.configuracionHorariosGlobal = snap.val();
-                    // Una vez cargados los horarios, iniciamos el dashboard
-                    if (typeof initDashboard === 'function') {
-                        initDashboard();
-                    }
+                    if (typeof initDashboard === 'function') initDashboard();
                 } else {
                     if (typeof initDashboard === 'function') initDashboard();
                 }
             });
+
+            // --- NUEVO: VIGILANTE DE NOTIFICACIONES EN TIEMPO REAL ---
+            // Este bloque se queda escuchando cada vez que entra una cita nueva
+            let inicializado = false; 
+            onValue(ref(db, 'citas'), (snapshot) => {
+                if (!snapshot.exists()) return;
+                
+                // Evitamos que te notifique todas las citas viejas al abrir la página
+                if (!inicializado) {
+                    inicializado = true;
+                    return; 
+                }
+
+                const citas = snapshot.val();
+                const ids = Object.keys(citas);
+                const ultimaId = ids[ids.length - 1];
+                const nuevaCita = citas[ultimaId];
+
+                // Solo notificamos si es "Pendiente" y ocurrió ahora mismo
+                if (nuevaCita.estado === "Pendiente") {
+                    // Usamos tu función de notificación existente
+                    if (typeof enviarNotificacion === 'function') {
+                        enviarNotificacion(nuevaCita.nombre, nuevaCita.servicio);
+                    }
+                }
+            }, { onlyOnce: false }); // <--- CLAVE: Mantiene la escucha activa siempre
 
         } else {
             if (loginOverlay) loginOverlay.style.display = 'flex';
@@ -849,7 +894,35 @@ window.activarNotificaciones = async () => {
 
 
 
+// Agrega 'getToken' y 'getMessaging' a tus imports existentes
+import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
+const messaging = getMessaging(app);
+
+// Esta función genera tu dirección única para recibir alertas
+async function solicitarToken() {
+    try {
+        const token = await getToken(messaging, { 
+            vapidKey: 'BOmQ-4XoBwWr7R_ySjO_qU1S0heAaGB_MNV-KAKBAOl3dsI_7245zon9RNrROn9v8k7Klu4TY06s2wdeTDdGLyM' 
+        });
+        
+        if (token) {
+            // Guardamos tu token en la base de datos
+            await set(ref(db, 'admin_tokens/token_principal'), token);
+            console.log("¡Dirección de notificaciones guardada!");
+        }
+    } catch (err) {
+        console.error("Error al obtener el token:", err);
+    }
+}
+
+// Llama a la función dentro de tu onAuthStateChanged actual
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        solicitarToken(); // Se activa automáticamente al entrar
+        // ... (el resto de tu código onAuthStateChanged) ...
+    }
+});
 
 
         // 5. INICIO DEL DASHBOARD
@@ -901,40 +974,11 @@ calendar = new FullCalendar.Calendar(calendarEl, {
     },
 
    datesSet: function(info) {
-        fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
-        
-        // Limpiamos rápido cualquier lunch viejo para no duplicar
-        calendar.getEvents().forEach(ev => { if(ev.id && ev.id.startsWith('lunch-')) ev.remove(); });
-
-        onValue(ref(db, 'citas'), (snapshot) => {
-            renderAdmin(snapshot.val());
-
-            // DIBUJO INSTANTÁNEO DESDE MEMORIA
-            let fechaIterada = new Date(info.start);
-            const fechaFinVista = new Date(info.end);
-
-            while (fechaIterada < fechaFinVista) {
-                const isoFecha = fechaIterada.toISOString().split('T')[0];
-                const diasBusqueda = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
-                const nombreDia = diasBusqueda[fechaIterada.getDay()];
-
-                const conf = window.configuracionHorariosGlobal ? window.configuracionHorariosGlobal[nombreDia] : null;
-                
-                if (conf && conf.lunch_inicio && conf.lunch_fin) {
-                    calendar.addEvent({
-                        id: 'lunch-' + isoFecha,
-                        title: '🍴 LUNCH TIME',
-                        start: `${isoFecha}T${conf.lunch_inicio}:00`,
-                        end: `${isoFecha}T${conf.lunch_fin}:00`,
-                        color: '#ff4d4d',
-                        editable: false,
-                        display: 'block'
-                    });
-                }
-                fechaIterada.setDate(fechaIterada.getDate() + 1);
-            }
-        }, { onlyOnce: true });
-    },
+    fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
+    onValue(ref(db, 'citas'), (snapshot) => {
+        renderAdmin(snapshot.val());
+    }, { onlyOnce: true });
+},
 
             // --- SELECCIONAR HORA PARA NUEVA CITA ---
             selectable: true,
@@ -1105,6 +1149,37 @@ function renderAdmin(data) {
         pLabel.innerText = "Pendientes " + fechaFormateada;
     }
 
+    // --- NUEVO: INTEGRACIÓN DE LUNCH TIME (PARA QUE NO PARPADEE) ---
+    // Recorremos los días visibles en el calendario para pintar los bloques rojos
+    const diasBusqueda = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+    let fIterada = new Date(calendar.view.activeStart);
+    const fFin = new Date(calendar.view.activeEnd);
+
+    while (fIterada < fFin) {
+        const iso = fIterada.toISOString().split('T')[0];
+        const nombreDia = diasBusqueda[fIterada.getDay()];
+        
+        // Usamos la configuración que ya tenemos en memoria global
+        const conf = window.configuracionHorariosGlobal ? window.configuracionHorariosGlobal[nombreDia] : null;
+
+        if (conf && conf.lunch_inicio && conf.lunch_fin) {
+    eventosCalendar.push({
+        id: 'lunch-' + iso,
+        title: 'LUNCH TIME', // Quitamos el emoji para que no se vea amontonado en el mes
+        start: `${iso}T${conf.lunch_inicio}:00`,
+        end: `${iso}T${conf.lunch_fin}:00`,
+        backgroundColor: '#ff4d4d', 
+        borderColor: '#ff4d4d',
+        textColor: '#ffffff',
+        editable: false,
+        // CAMBIOS CLAVE:
+        display: 'auto', // En Mes será punto, en Semana/Día será bloque
+        classNames: ['lunch-event'] // Clase para el CSS
+    });
+}
+        fIterada.setDate(fIterada.getDate() + 1);
+    }
+
     if(data){
         // --- 1. ORDENAMIENTO POR HORA ---
         const listaOrdenada = Object.keys(data).map(id => ({
@@ -1139,7 +1214,7 @@ function renderAdmin(data) {
                 pendientesDiaEnPantalla++;
             }
 
-            // --- EVENTOS DEL CALENDARIO (CORREGIDO PARA PERSISTENCIA VISUAL) ---
+            // --- EVENTOS DEL CALENDARIO ---
             let objetoEvento = { 
                 id: id, 
                 title: cita.nombre, 
@@ -1150,20 +1225,18 @@ function renderAdmin(data) {
                 extendedProps: { ...cita } 
             };
 
-            // Si la cita tiene hora de fin guardada (estiramiento), se la pasamos al calendario
             if (cita.horaFin) {
                 objetoEvento.end = `${fechaLimpia}T${cita.horaFin}`;
             }
 
             eventosCalendar.push(objetoEvento);
             
-            // --- TARJETAS (CINTAS) EN ORDEN (CORREGIDO PARA MOSTRAR RANGO DE TIEMPO) ---
+            // --- TARJETAS (CINTAS) ---
             if (esPendiente && fechaLimpia === fechaVisualizada){
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.style.cursor = "pointer"; 
                 
-                // Formateo de la hora: muestra rango si existe horaFin (ej: 09:00 - 10:30)
                 const horaInicio = cita.fecha.split('T')[1];
                 const horaRango = cita.horaFin ? `${horaInicio} - ${cita.horaFin}` : horaInicio;
                 
@@ -1184,7 +1257,7 @@ function renderAdmin(data) {
         });
     }
 
-    // ACTUALIZACIÓN DE LA INTERFAZ (TOTALES Y DESGLOSE)
+    // ACTUALIZACIÓN DE LA INTERFAZ
     Object.keys(contadorServicios).forEach(serv => {
         desglose.innerHTML += `<div class="serv-stat-item"><span>${serv}</span><span>x${contadorServicios[serv]}</span></div>`;
     });
@@ -1193,7 +1266,7 @@ function renderAdmin(data) {
     iTotal.innerText = 'Q' + ingresosMes.toLocaleString('es-GT', { minimumFractionDigits: 2 });
     pCount.innerText = pendientesDiaEnPantalla;
 
-    // Sincronizar calendario con los nuevos objetos (con soporte de estiramiento)
+    // LIMPIEZA Y RE-PINTADO TOTAL (Citas + Lunch juntos)
     calendar.removeAllEvents();
     calendar.addEventSource(eventosCalendar);
 }
