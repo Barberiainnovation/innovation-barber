@@ -595,7 +595,7 @@
         <h3 style="color:var(--gold);">PANEL DE CONTROL</h3>
         
        <p style="font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px;">GESTIÓN POR DÍA</p>
-<select id="config-dia-semana" style="border: 1px solid var(--gold); background: rgba(212,175,55,0.1);">
+<select id="config-dia-semana" onchange="cargarConfigDia(this.value)" style="border: 1px solid var(--gold); background: rgba(212,175,55,0.1);">
     <option value="lunes">LUNES</option>
     <option value="martes">MARTES</option>
     <option value="miercoles">MIÉRCOLES</option>
@@ -802,10 +802,19 @@ window.activarNotificaciones = async () => {
             if (loginOverlay) loginOverlay.style.display = 'none';
             if (adminContent) adminContent.style.display = 'block';
             
-            // ESTA ES LA LÍNEA QUE RECUPERA TUS DATOS
-            if (typeof initDashboard === 'function') {
-                initDashboard();
-            }
+            // --- NUEVO: CARGAMOS TUS HORARIOS EN MEMORIA PARA QUE SEAN FIJOS ---
+            get(ref(db, 'configuracion_horario')).then(snap => {
+                if (snap.exists()) {
+                    window.configuracionHorariosGlobal = snap.val();
+                    // Una vez cargados los horarios, iniciamos el dashboard
+                    if (typeof initDashboard === 'function') {
+                        initDashboard();
+                    }
+                } else {
+                    if (typeof initDashboard === 'function') initDashboard();
+                }
+            });
+
         } else {
             if (loginOverlay) loginOverlay.style.display = 'flex';
             if (adminContent) adminContent.style.display = 'none';
@@ -838,32 +847,9 @@ window.activarNotificaciones = async () => {
         });
     };
 
-    // LLAMADA INMEDIATA: Para que al cargar la web ya tengan las horas puestas
-    llenarSelectores();
 
- window.toggleConfig = async () => {
-        const modal = document.getElementById('modalConfig');
-        if (!modal) return;
-        
-        if (modal.style.display === 'none' || modal.style.display === '') {
-            // 1. Llenar horas y cargar datos de Firebase
-            if (typeof llenarSelectores === 'function') llenarSelectores();
-            try {
-                const snapshot = await get(ref(db, 'configuracion_horario'));
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    if(data.apertura) document.getElementById('config-apertura').value = data.apertura;
-                    if(data.cierre) document.getElementById('config-cierre').value = data.cierre;
-                    if(data.lunch_inicio !== undefined) document.getElementById('config-lunch-inicio').value = data.lunch_inicio;
-                    if(data.lunch_fin !== undefined) document.getElementById('config-lunch-fin').value = data.lunch_fin;
-                }
-            } catch (e) { console.error("Error al cargar:", e); }
-            
-            modal.style.display = 'flex'; // Abrir
-        } else {
-            modal.style.display = 'none'; // CERRAR Y LIBERAR PANTALLA
-        }
-    };
+
+
 
 
         // 5. INICIO DEL DASHBOARD
@@ -914,65 +900,41 @@ calendar = new FullCalendar.Calendar(calendarEl, {
         actualizarDuracionCita(info.event);
     },
 
-    datesSet: function(info) {
+   datesSet: function(info) {
         fechaVisualizada = info.view.currentStart.toISOString().split('T')[0];
+        
+        // Limpiamos rápido cualquier lunch viejo para no duplicar
+        calendar.getEvents().forEach(ev => { if(ev.id && ev.id.startsWith('lunch-')) ev.remove(); });
+
         onValue(ref(db, 'citas'), (snapshot) => {
             renderAdmin(snapshot.val());
+
+            // DIBUJO INSTANTÁNEO DESDE MEMORIA
+            let fechaIterada = new Date(info.start);
+            const fechaFinVista = new Date(info.end);
+
+            while (fechaIterada < fechaFinVista) {
+                const isoFecha = fechaIterada.toISOString().split('T')[0];
+                const diasBusqueda = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+                const nombreDia = diasBusqueda[fechaIterada.getDay()];
+
+                const conf = window.configuracionHorariosGlobal ? window.configuracionHorariosGlobal[nombreDia] : null;
+                
+                if (conf && conf.lunch_inicio && conf.lunch_fin) {
+                    calendar.addEvent({
+                        id: 'lunch-' + isoFecha,
+                        title: '🍴 LUNCH TIME',
+                        start: `${isoFecha}T${conf.lunch_inicio}:00`,
+                        end: `${isoFecha}T${conf.lunch_fin}:00`,
+                        color: '#ff4d4d',
+                        editable: false,
+                        display: 'block'
+                    });
+                }
+                fechaIterada.setDate(fechaIterada.getDate() + 1);
+            }
         }, { onlyOnce: true });
     },
-            // --- CLIC EN UN DÍA (TU NUEVA AGENDA DE CINTAS ABAJO) ---
-            dateClick: function(info) {
-                if (info.view.type === 'dayGridMonth') {
-                    fechaVisualizada = info.dateStr;
-                    
-                    const detalleDiv = document.getElementById('detalle-agenda-dia');
-                    const listaDiv = document.getElementById('lista-citas');
-                    const titulo = document.getElementById('titulo-agenda');
-
-                    const eventos = calendar.getEvents().filter(e => {
-    const mismaFecha = e.startStr.split('T')[0] === info.dateStr;
-    const esPendiente = e.extendedProps.estado === "Pendiente"; // <--- ESTO FILTRA LAS FINALIZADAS
-    return mismaFecha && esPendiente;
-});
-
-                    detalleDiv.style.display = 'block';
-                    titulo.innerText = "CITAS DEL DÍA: " + info.dateStr.split('-').reverse().join('/');
-                    listaDiv.innerHTML = "";
-
-                    if (eventos.length === 0) {
-                        listaDiv.innerHTML = "<p style='color:#666; text-align:center; padding:20px; width:100%;'>No hay citas agendadas.</p>";
-                    } else {
-                        eventos.sort((a, b) => a.start - b.start).forEach(ev => {
-                            const meta = ev.extendedProps;
-                            const hora = ev.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                            
-                            const card = document.createElement('div');
-                            card.className = 'card'; 
-                            card.innerHTML = `
-                                <div style="flex:1; cursor:pointer;" onclick="abrirEventoDirecto('${ev.id}')">
-                                    <div style="font-size:0.6rem; color:var(--gold); font-weight:600; text-transform:uppercase; margin-bottom:2px;">
-                                        ${hora} - ${meta.servicio}
-                                    </div>
-                                    <h4 style="margin:0; font-size:0.85rem; letter-spacing:0.5px;">${meta.nombre}</h4>
-                                    ${meta.nota ? `<p style="margin:4px 0 0; font-size:0.65rem; color:#888; font-style:italic;">"${meta.nota}"</p>` : ""}
-                                </div>
-                                <button class="btn-mini" onclick="cambiarEstado('${ev.id}','Finalizada')">
-                                    <i class="fas fa-check"></i> FIN
-                                </button>
-                            `;
-                            listaDiv.appendChild(card);
-                        });
-                    }
-                    
-                    detalleDiv.scrollIntoView({ behavior: 'smooth' });
-
-                    // --- ESTO ES LO QUE ACTUALIZA EL NÚMERO DORADO AL HACER CLIC ---
-                    onValue(ref(db, 'citas'), (snapshot) => {
-                        renderAdmin(snapshot.val());
-                    }, { onlyOnce: true });
-
-                }
-            },
 
             // --- SELECCIONAR HORA PARA NUEVA CITA ---
             selectable: true,
@@ -1015,6 +977,7 @@ calendar = new FullCalendar.Calendar(calendarEl, {
                 const codigos = ["502", "503", "504", "505", "506", "507", "52", "1"];
                 let encontrado = "502"; 
                 let numLimpio = fullWhatsapp;
+                let configuracionHorariosGlobal = {}; // Guardará todos los días aquí
 
                 for (let cod of codigos) {
                     if (fullWhatsapp.startsWith(cod)) {
@@ -1046,30 +1009,8 @@ calendar = new FullCalendar.Calendar(calendarEl, {
 
             calendar.render(); // Ahora sí, renderizamos
 
-          // --- SINCRONIZACIÓN DE HORARIOS (onValue) ---
-onValue(ref(db, 'configuracion_horario'), snap => { 
-    const config = snap.val();
-    if(config && calendar){ 
-        // --- 1. CONFIGURACIÓN VISUAL DEL ADMIN ---
-        // Eliminamos setOption('slotMinTime') y slotMaxTime para que 
-        // tu vista se mantenga fija en el rango amplio (6 AM - 12 AM).
 
-        // --- 2. ACTUALIZA LOS SELECTORES DEL PANEL DE CONFIGURACIÓN ---
-        const apS = document.getElementById('config-apertura');
-        const ciS = document.getElementById('config-cierre');
-        const lIn = document.getElementById('config-lunch-inicio');
-        const lFi = document.getElementById('config-lunch-fin');
 
-        // Estos valores reflejan lo que LOS CLIENTES ven, 
-        // pero no afectan el tamaño de tu calendario personal.
-        if(apS) apS.value = config.apertura; 
-        if(ciS) ciS.value = config.cierre;
-        if(lIn) lIn.value = config.lunch_inicio || "";
-        if(lFi) lFi.value = config.lunch_fin || "";
-        
-        calendar.updateSize(); 
-    } 
-});
 
             // --- BOTÓN DE ACTUALIZAR CITA ---
             document.getElementById('btn-update-cita').onclick = function() {
@@ -1345,6 +1286,46 @@ document.getElementById('confirm-yes').onclick = function() {
         });
     }
 };
+
+
+
+// --- FUNCIÓN PARA CARGAR DATOS SEGÚN EL DÍA (CON RESET VISUAL) ---
+window.cargarConfigDia = async (dia) => {
+    // 1. Limpiamos el display inmediatamente antes de consultar
+    document.getElementById('config-apertura').value = "06";
+    document.getElementById('config-cierre').value = "22";
+    document.getElementById('config-lunch-inicio').value = "";
+    document.getElementById('config-lunch-fin').value = "";
+
+    try {
+        const snapshot = await get(ref(db, `configuracion_horario/${dia}`));
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            document.getElementById('config-apertura').value = data.apertura || "06";
+            document.getElementById('config-cierre').value = data.cierre || "22";
+            document.getElementById('config-lunch-inicio').value = data.lunch_inicio || "";
+            document.getElementById('config-lunch-fin').value = data.lunch_fin || "";
+        }
+    } catch (e) {
+        console.error("Error al cargar configuración:", e);
+    }
+};
+
+// --- FUNCIÓN PARA ABRIR EL PANEL (AHORA CARGA EL DÍA AUTOMÁTICAMENTE) ---
+window.toggleConfig = () => {
+    const modal = document.getElementById('modalConfig');
+    if (!modal) return;
+    
+    if (modal.style.display === 'none' || modal.style.display === '') {
+        llenarSelectores(); // Llenamos las listas de horas 00-23
+        const diaActual = document.getElementById('config-dia-semana').value;
+        cargarConfigDia(diaActual); // Forzamos la carga del día visible
+        modal.style.display = 'flex';
+    } else {
+        modal.style.display = 'none';
+    }
+};
+
 
 
         window.cambiarEstado = function(id, nuevoEstado) { 
@@ -1628,65 +1609,13 @@ window.showToast = (message) => {
     }, 3000);
 };
 
-// 2. Definición de carga de horas con nombre blindado (para evitar el "already declared")
-const f_CargarHorarios_Final = () => {
-    const ids = ['config-apertura', 'config-cierre', 'config-lunch-inicio', 'config-lunch-fin'];
-    ids.forEach(id => {
-        const sel = document.getElementById(id);
-        if (sel) {
-            sel.innerHTML = id.includes('lunch') ? '<option value="">Sin lunch</option>' : '';
-            for (let i = 0; i < 24; i++) {
-                let h = i.toString().padStart(2, '0');
-                sel.innerHTML += `<option value="${h}">${h}:00</option>`;
-            }
-        }
-    });
-};
-
-// 3. Ejecutar la carga de horas inmediatamente
-f_CargarHorarios_Final();
-
-// 4. Lógica de apertura/cierre del panel de configuración
-window.toggleConfig = async () => {
-    const modal = document.getElementById('modalConfig');
-    if (!modal) return;
-    
-    if (modal.style.display === 'none' || modal.style.display === '') {
-        try {
-            const snapshot = await get(ref(db, 'configuracion_horario'));
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                if(data.apertura) document.getElementById('config-apertura').value = data.apertura;
-                if(data.cierre) document.getElementById('config-cierre').value = data.cierre;
-                document.getElementById('config-lunch-inicio').value = data.lunch_inicio || "";
-                document.getElementById('config-lunch-fin').value = data.lunch_fin || "";
-            }
-        } catch (e) { console.error("Error al leer Firebase:", e); }
-        modal.style.display = 'flex';
-    } else {
-        modal.style.display = 'none'; // Cierra y libera el bloqueo de pantalla
-    }
-};
 
 
 
 
-document.getElementById('config-dia-semana').onchange = async (e) => {
-    const dia = e.target.value;
-    try {
-        const snapshot = await get(ref(db, `configuracion_horario/${dia}`));
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            document.getElementById('config-apertura').value = data.apertura;
-            document.getElementById('config-cierre').value = data.cierre;
-            document.getElementById('config-lunch-inicio').value = data.lunch_inicio || "";
-            document.getElementById('config-lunch-fin').value = data.lunch_fin || "";
-        }
-    } catch (e) { console.error("Error al cargar día:", e); }
-};
 
 
-// --- LÓGICA PARA EL BOTÓN DE ACTUALIZAR HORARIOS ---
+
 // --- LÓGICA PARA EL BOTÓN CONFIRMAR CITA (AGREGAR AL CALENDARIO) ---
 document.getElementById('btn-save-cita-calendar').onclick = async () => {
     const nombre = document.getElementById('add-nombre').value;
@@ -1731,6 +1660,52 @@ document.getElementById('btn-save-cita-calendar').onclick = async () => {
         cerrarModalAdd(); // Función que ya tienes para limpiar y cerrar
     } catch (error) {
         console.error("Error al agendar:", error);
+        showToast("ERROR AL GUARDAR");
+    }
+};
+
+
+// Busca el botón por su nuevo ID
+document.getElementById('btn-save-hours').onclick = async () => {
+    // 1. Capturamos los valores de los inputs del panel
+    const dia = document.getElementById('config-dia-semana').value; 
+    const apertura = document.getElementById('config-apertura').value;
+    const cierre = document.getElementById('config-cierre').value;
+    const lunch_inicio = document.getElementById('config-lunch-inicio').value;
+    const lunch_fin = document.getElementById('config-lunch-fin').value;
+
+    // 2. Validación de seguridad para tu jornada (6 am a 10 pm)
+    if (parseInt(apertura) >= parseInt(cierre)) {
+        showToast("LA APERTURA DEBE SER ANTES DEL CIERRE");
+        return;
+    }
+
+    try {
+        const nuevaConfig = {
+            apertura: apertura,
+            cierre: cierre,
+            lunch_inicio: lunch_inicio,
+            lunch_fin: lunch_fin
+        };
+
+        // 3. Guardar en la base de datos
+        await set(ref(db, `configuracion_horario/${dia}`), nuevaConfig);
+
+        // --- PASO CLAVE 1: ACTUALIZAR LA MEMORIA GLOBAL DE INMEDIATO ---
+        if (!window.configuracionHorariosGlobal) window.configuracionHorariosGlobal = {};
+        window.configuracionHorariosGlobal[dia] = nuevaConfig;
+
+        // --- PASO CLAVE 2: REFRESCAR EL CALENDARIO PARA PINTAR EL LUNCH ---
+        if (calendar) {
+            // Esto obliga al calendario a ejecutar 'datesSet' otra vez con los nuevos datos
+            const vistaActual = calendar.view.type;
+            calendar.changeView(vistaActual); 
+        }
+
+        showToast(`HORARIO DE ${dia.toUpperCase()} ACTUALIZADO`);
+        
+    } catch (error) {
+        console.error(error);
         showToast("ERROR AL GUARDAR");
     }
 };
